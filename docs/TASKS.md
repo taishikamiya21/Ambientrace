@@ -17,7 +17,7 @@
   - [x] Add Privacy Policy placeholder
 - [x] **App Icon** <!-- completed: 2026-02-03 -->
   - [x] Configure `flutter_launcher_icons` in pubspec.yaml
-  - [ ] Generate assets for iOS/Android (requires icon image)
+  - [x] Generate assets for iOS/Android
 
 ## 🚀 Phase 3.5: UI/UX Polish
 - [x] **Error Feedback** <!-- completed: 2026-02-03 -->
@@ -27,9 +27,14 @@
   - [x] Created STORE_METADATA.md with descriptions and keywords
 
 ## 🔍 Phase 4: Verification & Store Prep
+- [x] **App Icon Generated** <!-- completed: 2026-02-03 -->
+  - [x] App icon image created (1024x1024 PNG)
+  - [x] iOS/Android icons generated via flutter_launcher_icons
+- [x] **Build Verification** <!-- completed: 2026-02-03 -->
+  - [x] iOS build successful
+  - [x] Android build successful (fixed v1 embedding issue)
 - [ ] **Real Device Testing**
   - [ ] iOS Verification (Permissions: Cam/Loc/Mic)
   - [ ] Android Verification
 - [ ] **Store Assets**
   - [ ] Screenshots (Home, Capture, Detail)
-  - [ ] App icon image (1024x1024 PNG)

@@ -1,6 +1,6 @@
 # Ambientrace 開発ステータス
 
-**最終更新:** 2026-02-03 17:30 JST
+**最終更新:** 2026-02-03 18:00 JST
 
 ---
 
@@ -85,24 +85,31 @@
 | **スプラッシュ画面** | ネイティブスプラッシュ（ブランドカラー） | ✅ |
 | **オンボーディング** | 初回起動時のコンセプト説明（3ページ） | ✅ |
 | **設定画面（情報）** | About/Licenses/Privacy Policy | ✅ |
-| **アプリアイコン設定** | flutter_launcher_icons構成済み | ⏳ 画像待ち |
+| **アプリアイコン** | iOS/Android両対応のアイコン生成済み | ✅ |
 | **エラーフィードバック** | スタイル付きSnackbar | ✅ |
 | **ストアメタデータ** | 説明文・キーワード作成済み | ✅ |
 
 ---
 
-### 🔄 2026-02-03 の変更履歴 (Phase 4: ビルド検証)
+### 🔄 2026-02-03 の変更履歴 (Phase 4: ビルド検証・アイコン生成)
+
+**アプリアイコン:**
+1. **アイコン画像:** ユーザーが1024x1024 PNGを `assets/icon/` に作成。
+2. **アイコン生成:** `dart run flutter_launcher_icons` でiOS/Android両対応のアイコンを生成。
 
 **ビルド準備:**
 1. **ネイティブスプラッシュ生成:** `dart run flutter_native_splash:create` を実行、iOS/Android両方に適用完了。
 2. **Androidパーミッション修正:** `ACTIVITY_RECOGNITION` 権限を追加（歩数計測用）。
 3. **Androidアプリ名修正:** 「ambientrace」→「Ambientrace」に修正。
-4. **ビルド検証:** macOS/iOSビルドが正常に完了することを確認。
-5. **静的解析:** エラーなし（print文の警告のみ）。
+4. **Android v2 embedding修正:** `flutter create --platforms=android .` で再生成、MainActivityを追加。
+5. **ビルド検証:** iOS/Androidビルドが正常に完了することを確認。
 
 **変更ファイル:**
+- `assets/icon/app_icon.png`: アプリアイコン画像
+- `assets/icon/app_icon_foreground.png`: Androidアダプティブアイコン用
 - `android/app/src/main/AndroidManifest.xml`: 権限追加、アプリ名修正
-- `android/app/src/main/res/`: スプラッシュ画面リソース生成
+- `android/app/src/main/kotlin/.../MainActivity.kt`: 新規作成
+- `android/app/src/main/res/`: アイコン・スプラッシュ画面リソース生成
 
 ---
 
@@ -292,11 +299,7 @@ Developer App Certificate is not trusted
 
 ### 優先度: 高（Phase 4）
 
-1. **アプリアイコン作成**
-   - 1024x1024 PNG画像を `assets/icon/app_icon.png` に配置
-   - `dart run flutter_launcher_icons` で全サイズ生成
-
-2. **iOS/Android 実機テスト**
+1. **iOS/Android 実機テスト**
    - カメラ機能の動作確認
    - ノイズ計測（iOS/Androidのみ）の確認
    - シェア機能（画像生成・SNS連携）の確認
@@ -319,6 +322,7 @@ Developer App Certificate is not trusted
 - ~~設定画面拡充~~ → About/Licenses/Privacy Policy追加済み
 - ~~エラーフィードバック~~ → スタイル付きSnackbar実装済み
 - ~~ストアメタデータ~~ → STORE_METADATA.md作成済み
+- ~~アプリアイコン~~ → iOS/Android両対応のアイコン生成済み
 
 ---
 
