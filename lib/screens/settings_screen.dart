@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../services/gemini_service.dart';
+import 'onboarding_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   final GeminiService geminiService;
@@ -14,6 +16,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final _apiKeyController = TextEditingController();
   bool _isObscured = true;
   bool _isSaving = false;
+  String _appVersion = '';
+  String _buildNumber = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAppInfo();
+  }
+
+  Future<void> _loadAppInfo() async {
+    final info = await PackageInfo.fromPlatform();
+    if (mounted) {
+      setState(() {
+        _appVersion = info.version;
+        _buildNumber = info.buildNumber;
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -233,12 +253,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             const SizedBox(height: 32),
 
-            // About Section
-            _buildSectionTitle('About'),
+            // General Section
+            _buildSectionTitle('General'),
             const SizedBox(height: 16),
-            
+
             Container(
-              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(16),
@@ -247,38 +266,188 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  // About
+                  _buildListTile(
+                    icon: Icons.info_outline,
+                    title: 'About',
+                    subtitle: _appVersion.isNotEmpty
+                        ? 'Version $_appVersion ($_buildNumber)'
+                        : 'Loading...',
+                    onTap: _showAboutDialog,
+                  ),
+                  _buildDivider(),
+                  // Licenses
+                  _buildListTile(
+                    icon: Icons.description_outlined,
+                    title: 'Open Source Licenses',
+                    onTap: () => _showLicenses(context),
+                  ),
+                  _buildDivider(),
+                  // Privacy Policy
+                  _buildListTile(
+                    icon: Icons.privacy_tip_outlined,
+                    title: 'Privacy Policy',
+                    onTap: _showPrivacyPolicy,
+                  ),
+                  _buildDivider(),
+                  // View Tutorial
+                  _buildListTile(
+                    icon: Icons.play_circle_outline,
+                    title: 'View Tutorial',
+                    subtitle: 'See the introduction again',
+                    onTap: _showTutorial,
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 32),
+
+            // App Info
+            Center(
+              child: Column(
+                children: [
+                  Text(
                     'Ambientrace',
                     style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Capture the ambient trace of your moments - not the photo, just the feeling.',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.5),
-                      fontSize: 14,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Version 1.0.0',
-                    style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.3),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 2,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Capture the feeling, not the photo.',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.2),
                       fontSize: 12,
+                      fontStyle: FontStyle.italic,
                     ),
                   ),
                 ],
               ),
             ),
+
+            const SizedBox(height: 24),
           ],
         ),
       ),
+    );
+  }
+
+  void _showAboutDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1A2E),
+        title: const Text(
+          'Ambientrace',
+          style: TextStyle(color: Colors.white),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Capture the ambient trace of your moments - not the photo, just the feeling.',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.7),
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Version $_appVersion (Build $_buildNumber)',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.5),
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showTutorial() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => OnboardingScreen(
+          onComplete: () => Navigator.pop(context),
+          showSplashFirst: false,
+        ),
+      ),
+    );
+  }
+
+  void _showLicenses(BuildContext context) {
+    showLicensePage(
+      context: context,
+      applicationName: 'Ambientrace',
+      applicationVersion: _appVersion,
+      applicationLegalese: '© 2026 Ambientrace',
+    );
+  }
+
+  void _showPrivacyPolicy() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Privacy Policy will be available soon.'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
+  Widget _buildListTile({
+    required IconData icon,
+    required String title,
+    String? subtitle,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      leading: Icon(
+        icon,
+        color: Colors.white.withValues(alpha: 0.6),
+        size: 22,
+      ),
+      title: Text(
+        title,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 16,
+        ),
+      ),
+      subtitle: subtitle != null
+          ? Text(
+              subtitle,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.4),
+                fontSize: 12,
+              ),
+            )
+          : null,
+      trailing: Icon(
+        Icons.chevron_right,
+        color: Colors.white.withValues(alpha: 0.3),
+      ),
+      onTap: onTap,
+    );
+  }
+
+  Widget _buildDivider() {
+    return Divider(
+      height: 1,
+      indent: 56,
+      color: Colors.white.withValues(alpha: 0.1),
     );
   }
 

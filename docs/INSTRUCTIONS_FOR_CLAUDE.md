@@ -1,57 +1,108 @@
-# Instructions for Claude Code (Phase 3: Polish & Publish)
+# Claude Code への指示書 (Phase 4: ストア公開準備)
 
-Phase 2 ("Less is More") is complete. The app is now a focused, minimalist tool.
-**The Goal:** Ensure the app works flawlessly on real devices and prepare it for the App Store.
+Phase 3〜3.5（プロダクト化・UI/UX洗練）が完了しました。アプリは現在、リリース候補版（RC）の品質に近づいています。
+**目標:** 実機テストを完了し、App Store / Google Play への公開準備を整えること。
 
-## Context
-**Current State:**
-- ✅ AI Sketch & Step Count removed.
-- ✅ Atmosphere section consolidated.
-- ✅ Core features (Gemini, Location, Weather) implemented.
+## コンテキスト
 
-**Problem:**
-- ⚠️ Real device testing (iOS) is pending.
-- ⚠️ macOS location permissions are flaky.
-- ⚠️ No app icon or store assets.
+**完了済み:**
+- ✅ Phase 1: コア機能（カメラ、Gemini連携、位置情報、天気）
+- ✅ Phase 2: コンセプト鮮明化（AI Sketch削除、Step Count非表示）
+- ✅ Phase 3: プロダクト化（スプラッシュ、オンボーディング、設定画面拡充）
+- ✅ Phase 3.5: UI/UX洗練（エラーフィードバック、ストアメタデータ）
 
-## Task 1: Real Device Verification (Priority High)
-**Target:** iOS & Android (Physical Devices)
+**残りの課題:**
+- ⏳ アプリアイコン画像の作成・配置
+- ⏳ 実機（iOS/Android）でのテスト
+- ⏳ スクリーンショット撮影
+- ⏳ ストア申請
 
-1.  **Permissions:**
-    - Verify Camera, Location, and Microphone (for noise) permission flows.
-    - Ensure graceful degradation if permissions are denied.
-2.  **Functionality:**
-    - Test "Share" (Trace Card generation) on actual hardware.
-    - Verify Geocoding works on mobile (even if skipped on macOS).
+---
 
-## Task 2: Store Preparation
-**Target:** `ios/Runner/Assets.xcassets`, `android/app/src/main/res`
+## Task 1: アプリアイコン作成（優先度：高）
 
-1.  **App Icon:**
-    - Generate and set the App Icon (using the "Ambientrace" logo/concept).
-    - Ensure all sizes are present.
-2.  **Screenshots:**
-    - Capture clean screenshots of:
-        - Home (History)
-        - Capture (Camera/Animation)
-        - Detail (Trace Card)
-3.  **Metadata:**
-    - Draft Description and Keywords.
+**対象:** `assets/icon/`
 
-## Task 3: UI/UX Polish (Details)
-**File:** `lib/screens/`
+1. **アイコン画像を作成:**
+   - サイズ: 1024x1024 PNG
+   - ファイル名: `app_icon.png`
+   - 配置先: `assets/icon/app_icon.png`
 
-1.  **Error Feedback:**
-    - If API fails (Gemini/Weather), show user-friendly Toasts/Snackbars instead of raw error dumps.
-2.  **Visual Tweaks:**
-    - Ensure the "Dissolve" animation is smooth on 60fps devices.
-    - Check Dark Mode contrast.
+2. **デザインガイドライン:**
+   - コンセプト: 「空気の痕跡」「溶ける」「ミニマル」
+   - 背景色: #0A0A0F（ダークテーマ）
+   - 参考: `assets/icon/README.md`
 
-## Features to Maintain (Do Not Re-add)
-| Feature | Status | Reason |
+3. **生成コマンド:**
+   ```bash
+   dart run flutter_launcher_icons
+   ```
+
+---
+
+## Task 2: 実機での検証（優先度：高）
+
+**対象:** iOS & Android（物理デバイス）
+
+1. **パーミッション確認:**
+   - カメラ、位置情報、マイク（ノイズ計測用）の許可フロー
+   - 拒否時のグレースフル・デグラデーション
+
+2. **機能確認:**
+   - シェア機能（Trace Card生成）
+   - ジオコーディング（地名取得）
+   - オンボーディングフロー
+
+---
+
+## Task 3: スクリーンショット撮影
+
+**対象:** App Store / Google Play 用
+
+撮影する画面:
+1. ホーム（履歴一覧）
+2. キャプチャ（カメラビュー）
+3. 溶解アニメーション
+4. 詳細画面（Trace Card）
+5. シェア機能
+
+---
+
+## Task 4: ストア申請準備
+
+1. **必要なもの:**
+   - プライバシーポリシーURL
+   - サポートURL（GitHub Issues など）
+   - 説明文・キーワード → `docs/STORE_METADATA.md` 参照
+
+2. **App Store Connect / Google Play Console:**
+   - アプリ情報登録
+   - スクリーンショットアップロード
+   - 審査申請
+
+---
+
+## 維持すべき機能（復活させない）
+
+| 機能 | 状態 | 理由 |
 | :--- | :--- | :--- |
-| **AI Sketch** | ❌ **KEEP DELETED** | Contradicts "imagination from data". |
-| **Step Count** | ❌ **KEEP HIDDEN** | Not a fitness app. |
+| **AI Sketch** | ❌ 削除維持 | 「データから想像する」コンセプトと矛盾 |
+| **Step Count** | ❌ 非表示維持 | フィットネスアプリではない |
 
-## Final Output
-The app should be **Release Candidate (RC)** ready. Stable, beautiful, and crash-free.
+---
+
+## 参照ドキュメント
+
+- **タスク管理:** `docs/TASKS.md`
+- **ストアメタデータ:** `docs/STORE_METADATA.md`
+- **作業ログ:** `docs/WORK_LOG_2026-02-03.md`
+- **ステータス:** `docs/STATUS.md`
+
+---
+
+## 最終成果物
+
+アプリは **リリース候補版 (Release Candidate - RC)** として、以下の品質を満たすこと:
+- 安定的（クラッシュしない）
+- 美しい（コンセプトに沿ったミニマルなUI）
+- 機能的（全機能が正常に動作）

@@ -1,6 +1,6 @@
 # Ambientrace 開発ステータス
 
-**最終更新:** 2026-02-03 13:40 JST
+**最終更新:** 2026-02-03 17:30 JST
 
 ---
 
@@ -28,7 +28,8 @@
 │   │   ├── home_screen.dart         # ホーム画面（検索・フィルター付き）
 │   │   ├── capture_screen.dart      # 撮影/画像選択画面
 │   │   ├── trace_detail_screen.dart # 詳細表示・削除
-│   │   └── settings_screen.dart     # 設定画面（APIキー入力）
+│   │   ├── settings_screen.dart     # 設定画面（APIキー・情報）
+│   │   └── onboarding_screen.dart   # オンボーディング（初回起動）
 │   ├── services/
 │   │   ├── storage_service.dart     # ローカルストレージ
 │   │   ├── location_service.dart    # GPS・位置情報
@@ -46,7 +47,12 @@
 ├── docs/
 │   ├── SPEC.md                      # 企画書・仕様書
 │   ├── STATUS.md                    # このファイル
+│   ├── TASKS.md                     # タスク管理
+│   ├── STORE_METADATA.md            # ストア用メタデータ
+│   ├── WORK_LOG_2026-02-03.md       # 作業ログ
 │   └── INSTRUCTIONS_FOR_CLAUDE.md   # Claude Code用指示書
+├── assets/
+│   └── icon/                        # アプリアイコン用
 ├── ios/                             # iOS設定
 ├── macos/                           # macOS設定
 └── android/                         # Android設定
@@ -69,14 +75,73 @@
 | **溶解アニメーション** | 写真がデータに変換されるビジュアル演出 | ✅ |
 | **ログ一覧** | 日付グループ化、検索、フィルター機能 | ✅ |
 | **詳細画面** | トレースの全データ表示、削除機能 | ✅ |
-| **設定画面** | Gemini APIキーの入力・管理 | ✅ |
-| **設定画面** | Gemini APIキーの入力・管理 | ✅ |
+| **設定画面** | Gemini APIキー、About、Licenses、Tutorial | ✅ |
 | **ユニットテスト** | GeminiServiceのテスト | ✅ |
 | **感覚フィードバック** | シャッター・アニメーション・シェア時のハプティクス | ✅ |
 | **シェア機能** | "Trace Card" 画像生成とSNS共有 | ✅ |
 | **周辺音計測** | 撮影時の騒音レベル(dB)測定（macOS不可） | ✅ |
 | **歩数計測** | 撮影時の歩数取得（macOS不可） | ❌ UI非表示（データは収集継続） |
 | **AIスケッチ生成** | トレースデータから抽象画を生成 | ❌ 削除（Phase 2で「想像」を重視） |
+| **スプラッシュ画面** | ネイティブスプラッシュ（ブランドカラー） | ✅ |
+| **オンボーディング** | 初回起動時のコンセプト説明（3ページ） | ✅ |
+| **設定画面（情報）** | About/Licenses/Privacy Policy | ✅ |
+| **アプリアイコン設定** | flutter_launcher_icons構成済み | ⏳ 画像待ち |
+| **エラーフィードバック** | スタイル付きSnackbar | ✅ |
+| **ストアメタデータ** | 説明文・キーワード作成済み | ✅ |
+
+---
+
+### 🔄 2026-02-03 の変更履歴 (Phase 4: ビルド検証)
+
+**ビルド準備:**
+1. **ネイティブスプラッシュ生成:** `dart run flutter_native_splash:create` を実行、iOS/Android両方に適用完了。
+2. **Androidパーミッション修正:** `ACTIVITY_RECOGNITION` 権限を追加（歩数計測用）。
+3. **Androidアプリ名修正:** 「ambientrace」→「Ambientrace」に修正。
+4. **ビルド検証:** macOS/iOSビルドが正常に完了することを確認。
+5. **静的解析:** エラーなし（print文の警告のみ）。
+
+**変更ファイル:**
+- `android/app/src/main/AndroidManifest.xml`: 権限追加、アプリ名修正
+- `android/app/src/main/res/`: スプラッシュ画面リソース生成
+
+---
+
+### 🔄 2026-02-03 の変更履歴 (Phase 3.5: UI/UX Polish)
+
+**UI/UX改善:**
+1. **オンボーディング改善:** タイトルスプラッシュが溶けてオンボーディングに遷移。ミニマルなデザインに変更。
+2. **設定から再表示:** 「View Tutorial」オプションを追加。
+3. **エラーフィードバック:** スタイル付きSnackbarでユーザーフレンドリーなエラー表示。
+4. **アプリアイコン:** `flutter_launcher_icons` 設定済み（画像追加後に生成可能）。
+5. **ストアメタデータ:** `STORE_METADATA.md` に説明文・キーワード作成。
+
+**追加パッケージ:**
+- `flutter_launcher_icons: ^0.14.1`
+
+**新規ファイル:**
+- `docs/STORE_METADATA.md`
+- `assets/icon/README.md`
+
+---
+
+### 🔄 2026-02-03 の変更履歴 (Phase 3: Productization)
+
+**プロダクト化:**
+1. **スプラッシュ画面:** `flutter_native_splash` を導入。ブランドカラー (#0A0A0F) を設定。
+2. **オンボーディング:** 初回起動時に3ページのチュートリアルを表示（Capture → Dissolve → Remain）。
+3. **設定画面の拡充:** About（バージョン情報）、Licenses（OSSライセンス）、Privacy Policy（プレースホルダー）を追加。
+
+**追加パッケージ:**
+- `flutter_native_splash: ^2.4.0`
+- `package_info_plus: ^8.0.0`
+
+**新規ファイル:**
+- `lib/screens/onboarding_screen.dart`
+
+**変更ファイル:**
+- `lib/main.dart`: オンボーディングフロー統合
+- `lib/screens/settings_screen.dart`: Generalセクション追加
+- `pubspec.yaml`: パッケージ追加、スプラッシュ設定
 
 ---
 
@@ -225,34 +290,35 @@ Developer App Certificate is not trusted
 
 ## 🔲 今後のタスク
 
-### 優先度: 高
+### 優先度: 高（Phase 4）
 
-1. **iOS/Android 実機テスト**
+1. **アプリアイコン作成**
+   - 1024x1024 PNG画像を `assets/icon/app_icon.png` に配置
+   - `dart run flutter_launcher_icons` で全サイズ生成
+
+2. **iOS/Android 実機テスト**
    - カメラ機能の動作確認
-   - ノイズ計測・歩数計測（iOS/Androidのみ）の確認
+   - ノイズ計測（iOS/Androidのみ）の確認
    - シェア機能（画像生成・SNS連携）の確認
    - 位置情報・ジオコーディングの権限確認
 
-2. **ストア公開準備**
-   - アプリアイコン作成（iOS/Android各サイズ）
-   - スクリーンショット撮影
-   - プライバシーポリシーの作成
+3. **ストア公開準備**
+   - スクリーンショット撮影（ホーム、キャプチャ、詳細、シェア）
+   - プライバシーポリシーURL作成
    - App Store / Google Play Console への登録
 
 ### 優先度: 中
 
-3. **macOS位置情報の問題解決**
-   - デバッグして原因特定（開発環境用として修正推奨）
+4. **macOS位置情報の問題解決**（開発環境用）
+   - デバッグして原因特定
 
-4. **UI/UXの改善**
-   - エラー時のユーザーフィードバック改善（トースト表示など）
-   - ラベル表示の視覚的ブラッシュアップ
+### ✅ 完了済み
 
-### 優先度: 低（将来の拡張）
-
-5. **パフォーマンス最適化**
-   - アプリ起動速度の改善
-   - 画像処理のさらなる軽量化
+- ~~スプラッシュ画面~~ → `flutter_native_splash` 設定済み
+- ~~オンボーディング~~ → 3ページのチュートリアル実装済み
+- ~~設定画面拡充~~ → About/Licenses/Privacy Policy追加済み
+- ~~エラーフィードバック~~ → スタイル付きSnackbar実装済み
+- ~~ストアメタデータ~~ → STORE_METADATA.md作成済み
 
 ---
 
