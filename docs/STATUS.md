@@ -1,6 +1,6 @@
 # Ambientrace 開発ステータス
 
-**最終更新:** 2026-02-03 18:00 JST
+**最終更新:** 2026-02-03 23:00 JST
 
 ---
 
@@ -70,7 +70,7 @@
 | **位置情報** | GPS座標の取得 | ⚠️ macOSでパーミッション問題あり |
 | **地名取得 (Geocoding)** | 座標から地名を取得 | ⚠️ macOS非対応（スキップ） |
 | **天気API** | Open-Meteo APIで気温・天候取得 | ✅ |
-| **Gemini画像ラベリング** | gemini-2.5-flash で画像からラベル抽出 | ✅ 動作確認済み |
+| **画像ラベリング** | ML Kit（実機） + Gemini API（オプション） | ✅ iOS実機確認済み |
 | **画像圧縮** | API送信前に画像を圧縮（1024px, JPEG 80%） | ✅ |
 | **溶解アニメーション** | 写真がデータに変換されるビジュアル演出 | ✅ |
 | **ログ一覧** | 日付グループ化、検索、フィルター機能 | ✅ |
@@ -88,6 +88,26 @@
 | **アプリアイコン** | iOS/Android両対応のアイコン生成済み | ✅ |
 | **エラーフィードバック** | スタイル付きSnackbar | ✅ |
 | **ストアメタデータ** | 説明文・キーワード作成済み | ✅ |
+
+---
+
+### 🔄 2026-02-03 の変更履歴 (Phase 4: iOS実機テスト・バグ修正)
+
+**実機テストで発見・修正した問題:**
+
+1. **Ambient Traces が空になる問題**
+   - **原因:** Gemini API未設定時にラベルが取得できなかった
+   - **修正:** `google_mlkit_image_labeling` を有効化し、ML Kitをフォールバックとして使用
+   - **追加:** ML Kitのラベルを「Ambient風」に変換するマッピング（例: `sky` → `Open Sky`）
+
+2. **Share機能が失敗する問題**
+   - **原因:** iOSでは `sharePositionOrigin` パラメータが必須
+   - **修正:** `Share.shareXFiles` に `sharePositionOrigin` を追加
+
+**変更ファイル:**
+- `lib/services/image_labeling_service.dart`: ML Kit統合、Ambientラベル変換
+- `lib/screens/trace_detail_screen.dart`: Share機能修正、エラーログ追加
+- `pubspec.yaml`: `google_mlkit_image_labeling` 有効化
 
 ---
 

@@ -486,16 +486,24 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
         final file = File('${tempDir.path}/ambientrace_${widget.trace.id}.png');
         await file.writeAsBytes(imageBytes);
 
-        // Share the image
+        // Share the image (sharePositionOrigin required for iPad)
+        final box = context.findRenderObject() as RenderBox?;
+        final sharePositionOrigin = box != null
+            ? box.localToGlobal(Offset.zero) & box.size
+            : null;
+
         await Share.shareXFiles(
           [XFile(file.path)],
           text: 'Captured with Ambientrace',
+          sharePositionOrigin: sharePositionOrigin,
         );
 
         // Haptic feedback on success
         HapticFeedback.mediumImpact();
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('Share error: $e');
+      print('Stack trace: $stackTrace');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -507,10 +515,10 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
                   size: 20,
                 ),
                 const SizedBox(width: 12),
-                const Expanded(
+                Expanded(
                   child: Text(
-                    'Failed to share trace. Please try again.',
-                    style: TextStyle(color: Colors.white),
+                    'Failed to share: ${e.toString().length > 50 ? e.toString().substring(0, 50) : e.toString()}',
+                    style: const TextStyle(color: Colors.white),
                   ),
                 ),
               ],
@@ -538,13 +546,16 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
     late OverlayEntry overlayEntry;
     overlayEntry = OverlayEntry(
       builder: (context) => Positioned(
-        left: -1000, // Off-screen
-        top: -1000,
+        left: -2000, // Off-screen (further away for safety)
+        top: -2000,
         child: Material(
           color: Colors.transparent,
           child: RepaintBoundary(
             key: repaintKey,
-            child: widget,
+            child: SizedBox(
+              width: 400, // Fixed width for consistent rendering
+              child: widget,
+            ),
           ),
         ),
       ),
@@ -552,18 +563,39 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
 
     overlayState.insert(overlayEntry);
 
-    // Wait for the widget to be rendered
-    await Future.delayed(const Duration(milliseconds: 100));
+    // Wait for the widget to be rendered (longer delay for real devices)
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    // Wait for the frame to be rendered
+    await WidgetsBinding.instance.endOfFrame;
 
     try {
       // Capture the image
       final boundary = repaintKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
-      if (boundary == null) return null;
+      if (boundary == null) {
+        print('Share error: RenderRepaintBoundary is null');
+        return null;
+      }
 
+      if (!boundary.hasSize) {
+        print('Share error: RenderRepaintBoundary has no size');
+        return null;
+      }
+
+      print('Share: Capturing image with size ${boundary.size}');
       final image = await boundary.toImage(pixelRatio: 3.0);
       final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
 
-      return byteData?.buffer.asUint8List();
+      if (byteData == null) {
+        print('Share error: byteData is null');
+        return null;
+      }
+
+      print('Share: Image captured successfully, size: ${byteData.lengthInBytes} bytes');
+      return byteData.buffer.asUint8List();
+    } catch (e) {
+      print('Share error in _captureWidgetAsImage: $e');
+      rethrow;
     } finally {
       overlayEntry.remove();
     }

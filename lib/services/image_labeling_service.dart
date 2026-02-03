@@ -1,23 +1,36 @@
 import 'dart:io';
+import 'package:google_mlkit_image_labeling/google_mlkit_image_labeling.dart';
 import 'gemini_service.dart';
 
 /// Unified image labeling service that uses the best available method
 class ImageLabelingService {
   final GeminiService _geminiService = GeminiService();
+  ImageLabeler? _imageLabeler;
   bool _initialized = false;
 
   /// Initialize the service
   Future<void> init() async {
     await _geminiService.init();
+
+    // Initialize ML Kit on mobile platforms
+    if (Platform.isIOS || Platform.isAndroid) {
+      try {
+        _imageLabeler = ImageLabeler(
+          options: ImageLabelerOptions(confidenceThreshold: 0.5),
+        );
+        print('ImageLabelingService: ML Kit initialized');
+      } catch (e) {
+        print('ImageLabelingService: Failed to initialize ML Kit - $e');
+      }
+    }
+
     _initialized = true;
   }
 
   /// Check if any labeling method is available
   bool get isAvailable {
-    // On mobile, ML Kit would be available
-    // On other platforms, check if Gemini is configured
     if (Platform.isIOS || Platform.isAndroid) {
-      return true; // ML Kit available on real devices
+      return _imageLabeler != null || _geminiService.isConfigured;
     }
     return _geminiService.isConfigured;
   }
@@ -35,23 +48,118 @@ class ImageLabelingService {
     print('ImageLabelingService: Getting labels for $imagePath');
     print('ImageLabelingService: Platform is iOS=${Platform.isIOS}, Android=${Platform.isAndroid}');
     print('ImageLabelingService: Gemini configured=${_geminiService.isConfigured}');
+    print('ImageLabelingService: ML Kit available=${_imageLabeler != null}');
     print('ImageLabelingService: Language code=$languageCode');
 
-    // Use Gemini API if configured
+    // Prefer Gemini API if configured (better "ambient" labels)
     if (_geminiService.isConfigured) {
       print('ImageLabelingService: Using Gemini API');
-      final labels = await _geminiService.analyzeImage(imagePath, languageCode: languageCode);
-      print('ImageLabelingService: Got labels: $labels');
-      return labels;
+      try {
+        final labels = await _geminiService.analyzeImage(imagePath, languageCode: languageCode);
+        if (labels.isNotEmpty) {
+          print('ImageLabelingService: Got Gemini labels: $labels');
+          return labels;
+        }
+      } catch (e) {
+        print('ImageLabelingService: Gemini failed - $e');
+      }
     }
 
-    print('ImageLabelingService: No labeling method available');
-    // No labeling available
+    // Fall back to ML Kit on mobile devices
+    if (_imageLabeler != null && (Platform.isIOS || Platform.isAndroid)) {
+      print('ImageLabelingService: Using ML Kit');
+      try {
+        final inputImage = InputImage.fromFilePath(imagePath);
+        final labels = await _imageLabeler!.processImage(inputImage);
+
+        // Convert to ambient-style labels
+        final ambientLabels = _convertToAmbientLabels(labels);
+        print('ImageLabelingService: Got ML Kit labels: $ambientLabels');
+        return ambientLabels;
+      } catch (e) {
+        print('ImageLabelingService: ML Kit error - $e');
+      }
+    }
+
+    print('ImageLabelingService: No labeling method available or all methods failed');
     return [];
+  }
+
+  /// Convert ML Kit labels to more "ambient" style labels
+  List<String> _convertToAmbientLabels(List<ImageLabel> labels) {
+    // Map common ML Kit labels to more atmospheric descriptions
+    final Map<String, String> ambientMap = {
+      'sky': 'Open Sky',
+      'cloud': 'Cloudy Atmosphere',
+      'tree': 'Natural Setting',
+      'plant': 'Green Space',
+      'flower': 'Floral Moment',
+      'water': 'Waterside',
+      'sea': 'Seaside',
+      'beach': 'Beach Vibes',
+      'mountain': 'Mountain View',
+      'building': 'Urban Scene',
+      'city': 'City Life',
+      'street': 'Street Scene',
+      'road': 'On the Road',
+      'car': 'Mobile Moment',
+      'food': 'Culinary Moment',
+      'drink': 'Refreshment Time',
+      'coffee': 'Coffee Break',
+      'restaurant': 'Dining Out',
+      'cafe': 'Cafe Atmosphere',
+      'person': 'Human Presence',
+      'people': 'Social Gathering',
+      'animal': 'Animal Encounter',
+      'dog': 'Canine Company',
+      'cat': 'Feline Friend',
+      'bird': 'Avian Presence',
+      'sunrise': 'Dawn Light',
+      'sunset': 'Golden Hour',
+      'night': 'Night Scene',
+      'indoor': 'Indoor Space',
+      'outdoor': 'Outdoor Setting',
+      'park': 'Park Setting',
+      'garden': 'Garden Space',
+      'home': 'Home Comfort',
+      'office': 'Work Environment',
+      'book': 'Reading Moment',
+      'music': 'Musical Atmosphere',
+      'art': 'Artistic Scene',
+    };
+
+    final result = <String>[];
+    for (final label in labels) {
+      final text = label.label.toLowerCase();
+
+      // Check if we have an ambient mapping
+      for (final entry in ambientMap.entries) {
+        if (text.contains(entry.key)) {
+          if (!result.contains(entry.value)) {
+            result.add(entry.value);
+          }
+          break;
+        }
+      }
+
+      // If no mapping found and confidence is high, use the original label
+      if (result.length < 5 && label.confidence > 0.7) {
+        final capitalizedLabel = label.label[0].toUpperCase() + label.label.substring(1);
+        if (!result.contains(capitalizedLabel)) {
+          result.add(capitalizedLabel);
+        }
+      }
+
+      // Limit to 5 labels
+      if (result.length >= 5) break;
+    }
+
+    return result;
   }
 
   /// Dispose resources
   void dispose() {
-    // Cleanup if needed
+    _imageLabeler?.close();
+    _imageLabeler = null;
   }
 }

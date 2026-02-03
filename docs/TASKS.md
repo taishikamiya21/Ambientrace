@@ -33,8 +33,14 @@
 - [x] **Build Verification** <!-- completed: 2026-02-03 -->
   - [x] iOS build successful
   - [x] Android build successful (fixed v1 embedding issue)
-- [ ] **Real Device Testing**
-  - [ ] iOS Verification (Permissions: Cam/Loc/Mic)
-  - [ ] Android Verification
+- [x] **Real Device Testing (iOS)** <!-- completed: 2026-02-03 -->
+  - [x] ML Kit有効化（Gemini未設定時のフォールバック）
+  - [x] Share機能修正（sharePositionOrigin追加）
+  - [x] 動作確認完了
+- [ ] **Real Device Testing (Android)**
+  - [ ] Android実機での動作確認
 - [ ] **Store Assets**
   - [ ] Screenshots (Home, Capture, Detail)
+- [ ] **Store Submission**
+  - [ ] Privacy Policy URL
+  - [ ] TestFlight / Internal Testing
