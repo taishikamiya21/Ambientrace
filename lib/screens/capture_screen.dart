@@ -29,7 +29,8 @@ class CaptureScreen extends StatefulWidget {
   State<CaptureScreen> createState() => _CaptureScreenState();
 }
 
-class _CaptureScreenState extends State<CaptureScreen> {
+class _CaptureScreenState extends State<CaptureScreen>
+    with TickerProviderStateMixin {
   CameraController? _controller;
   List<CameraDescription>? _cameras;
   bool _isInitialized = false;
@@ -46,9 +47,19 @@ class _CaptureScreenState extends State<CaptureScreen> {
   final _imagePicker = ImagePicker();
   final _uuid = const Uuid();
 
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
+
   @override
   void initState() {
     super.initState();
+    _pulseController = AnimationController(
+      duration: const Duration(milliseconds: 1200),
+      vsync: this,
+    );
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.15).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
     _initCamera();
   }
 
@@ -294,14 +305,32 @@ class _CaptureScreenState extends State<CaptureScreen> {
 
   @override
   void dispose() {
+    _pulseController.dispose();
     _controller?.dispose();
     _noiseService.dispose();
     _stepService.dispose();
     super.dispose();
   }
 
+  void _startPulse() {
+    _pulseController.repeat(reverse: true);
+  }
+
+  void _stopPulse() {
+    _pulseController
+      ..stop()
+      ..reset();
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Manage pulse animation based on capturing state
+    if (_isCapturing) {
+      if (!_pulseController.isAnimating) _startPulse();
+    } else {
+      if (_pulseController.isAnimating) _stopPulse();
+    }
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
@@ -320,7 +349,53 @@ class _CaptureScreenState extends State<CaptureScreen> {
 
           // Dissolve animation overlay
           if (_showDissolve && _capturedImagePath != null)
-            DissolveAnimation(imagePath: _capturedImagePath!),
+            Positioned.fill(
+              child: DissolveAnimation(imagePath: _capturedImagePath!),
+            ),
+
+          // Top gradient overlay for readability
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 120,
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.6),
+                      Colors.black.withValues(alpha: 0.0),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // Top bar - just a subtle back arrow
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: IconButton(
+                    icon: Icon(
+                      Icons.arrow_back,
+                      color: Colors.white.withValues(alpha: 0.85),
+                    ),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ),
+              ),
+            ),
+          ),
 
           // Bottom controls
           Positioned(
@@ -328,91 +403,81 @@ class _CaptureScreenState extends State<CaptureScreen> {
             left: 0,
             right: 0,
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Gallery button
+                // Gallery button - smaller, subtle
                 GestureDetector(
                   onTap: _isCapturing ? null : _pickFromGallery,
                   child: Container(
-                    width: 56,
-                    height: 56,
+                    width: 44,
+                    height: 44,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.white.withValues(alpha: 0.2),
-                      border: Border.all(color: Colors.white38, width: 2),
+                      color: Colors.white.withValues(alpha: 0.1),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.3),
+                        width: 1.5,
+                      ),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.photo_library_outlined,
-                      color: Colors.white,
-                      size: 28,
+                      color: Colors.white.withValues(alpha: 0.7),
+                      size: 20,
                     ),
                   ),
                 ),
 
-                // Capture button
+                const SizedBox(width: 40),
+
+                // Capture button - elegant double-ring design
                 GestureDetector(
                   onTap: _isCapturing
                       ? null
-                      : (_isCameraAvailable ? _captureFromCamera : _pickFromGallery),
-                  child: Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 4),
-                      color: _isCapturing
-                          ? Colors.grey.withValues(alpha: 0.5)
-                          : Colors.white.withValues(alpha: 0.3),
-                    ),
-                    child: _isCapturing
-                        ? const Padding(
-                            padding: EdgeInsets.all(20),
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 3,
+                      : (_isCameraAvailable
+                          ? _captureFromCamera
+                          : _pickFromGallery),
+                  child: AnimatedBuilder(
+                    animation: _pulseAnimation,
+                    builder: (context, child) {
+                      final scale =
+                          _isCapturing ? _pulseAnimation.value : 1.0;
+                      return Transform.scale(
+                        scale: scale,
+                        child: Container(
+                          width: 76,
+                          height: 76,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.8),
+                              width: 2,
                             ),
-                          )
-                        : Icon(
-                            _isCameraAvailable ? Icons.lens : Icons.add_photo_alternate,
-                            color: Colors.white,
-                            size: 50,
                           ),
+                          child: Center(
+                            child: Container(
+                              width: 62,
+                              height: 62,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 4,
+                                ),
+                                color: _isCapturing
+                                    ? Colors.white.withValues(alpha: 0.15)
+                                    : Colors.transparent,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
 
-                // Placeholder for balance
-                const SizedBox(width: 56, height: 56),
+                // Offset to keep capture button visually centered
+                const SizedBox(width: 84),
               ],
-            ),
-          ),
-
-          // Top bar
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                    const Text(
-                      'Capture Trace',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(width: 48),
-                  ],
-                ),
-              ),
             ),
           ),
         ],
@@ -426,27 +491,21 @@ class _CaptureScreenState extends State<CaptureScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            Icons.photo_library_outlined,
-            size: 80,
-            color: Colors.white.withValues(alpha: 0.5),
+            Icons.blur_on,
+            size: 100,
+            color: Colors.white.withValues(alpha: 0.15),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
           Text(
-            'Camera not available',
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.7),
-              fontSize: 18,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Tap the button below to select an image',
+            'No camera found',
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.5),
-              fontSize: 14,
+              fontSize: 16,
+              fontWeight: FontWeight.w300,
+              letterSpacing: 1.2,
             ),
           ),
-          const SizedBox(height: 100),
+          const SizedBox(height: 120),
         ],
       ),
     );

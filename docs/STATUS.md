@@ -1,6 +1,6 @@
 # Ambientrace 開発ステータス
 
-**最終更新:** 2026-02-03 23:00 JST
+**最終更新:** 2026-02-04 00:00 JST
 
 ---
 
@@ -38,7 +38,8 @@
 │   │   ├── image_labeling_service.dart  # 画像ラベリング統合
 │   │   └── gemini_service.dart      # Gemini API連携 ✅ 動作確認済み
 │   └── widgets/
-│       ├── trace_card.dart          # ログカード表示
+│       ├── trace_card.dart          # トレースカード（Atmospheric Time主役）
+│       ├── shareable_trace_card.dart # SNSシェア用カード
 │       └── dissolve_animation.dart  # 写真→データ溶解アニメーション
 ├── test/
 │   ├── widget_test.dart
@@ -88,6 +89,78 @@
 | **アプリアイコン** | iOS/Android両対応のアイコン生成済み | ✅ |
 | **エラーフィードバック** | スタイル付きSnackbar | ✅ |
 | **ストアメタデータ** | 説明文・キーワード作成済み | ✅ |
+
+---
+
+### 🔄 2026-02-07 の変更履歴 (Phase 5: UI/UX Modernization)
+
+**コンセプトシフト: "ログ思考" → "アンビエント思考"**
+
+正確な時刻（21:30）を主役にすることで「データログ」感が出ていた問題を解決。代わりに「Atmospheric Time」（曖昧な時刻: "Dusk", "Morning"）を全画面で主役にし、カラーパレットをビジュアルヒーローとすることで「雰囲気の記憶」というコンセプトを強化。
+
+**1. Atmospheric Time (曖昧時刻)**
+- `TraceLog`モデルに`atmosphericTime`（英語）、`atmosphericTimeJa`（日本語）を追加
+- 8つの時間帯: Late Night / Dawn / Morning / Midday / Afternoon / Dusk / Evening / Late Night
+- 全画面で正確な時刻（21:30）を脇役に降格、Atmospheric Timeを主役に
+
+**2. Tag Localization (タグ多言語化)**
+- ML Kitフォールバックラベルの日本語マッピング追加（37エントリ）
+- デバイス言語に応じて自動切替（`PlatformDispatcher.instance.locale`）
+- 例: `sky` → EN: "Open Sky" / JA: "広がる空"
+
+**3. TraceCard リデザイン**
+- カラーグラデーションバー（8px）をトップヒーローに
+- Atmospheric Time（22px, w300）を主見出しに
+- 正確な時刻を11px角に降格
+- アンビエントラベルをピルチップで表示（3件まで）
+- メタデータ行（位置・天気・気温）をボトムに
+
+**4. Home Screen モダン化**
+- `CustomScrollView` + `Sliver`ベースに書き換え
+- ヘッダーリファイン（28px, w200, letter-spacing: 3）
+- 天気フィルターチップ（水平スクロール）
+- ダブルリングFABキャプチャーボタン
+- Atmospheric Timeを検索対象に追加
+
+**5. Detail Screen リデザイン**
+- カラーグラデーントヒーローバナー（120px）追加
+- Atmospheric Time（36px, w200）を主見出しに
+- AppBarに "Atmospheric Time + Date" 表示
+- 削除確認をダイアログからボトムシートに変更
+
+**6. Capture Screen イマーシブ化**
+- タイトル削除、フルスクリーンカメラ体験
+- トップグラデーションオーバーレイ（可読性確保）
+- ダブルリングキャプチャーボタン（76px外/62px内）
+- キャプチャー中パルスアニメーション
+- ギャラリーボタン小型化（44px）
+
+**7. Shareable Trace Card更新**
+- Atmospheric Time（36px）をヒーロー表示に
+- 正確な時刻+日付を12pxサブタイトルに
+
+**変更ファイル:**
+- `lib/models/trace_log.dart`: Atmospheric Time getters追加
+- `lib/services/image_labeling_service.dart`: 日本語ラベルマップ追加
+- `lib/widgets/trace_card.dart`: 完全リデザイン
+- `lib/screens/home_screen.dart`: CustomScrollView化
+- `lib/screens/trace_detail_screen.dart`: カラーヒーロー+Atmospheric Time
+- `lib/screens/capture_screen.dart`: イマーシブUI
+- `lib/widgets/shareable_trace_card.dart`: Atmospheric Time対応
+
+---
+
+### 🔄 2026-02-03 の変更履歴 (Phase 4: Privacy Policy実装)
+
+**Privacy Policy:**
+1. **PRIVACY_POLICY.md作成:** 日英両対応のプライバシーポリシーを作成
+2. **アプリ内表示:** Settings → Privacy Policyで全文表示可能
+3. **STORE_METADATA.md更新:** Privacy URL、Support URLを追加
+
+**変更ファイル:**
+- `docs/PRIVACY_POLICY.md`: 新規作成
+- `lib/screens/settings_screen.dart`: PrivacyPolicyScreen追加
+- `docs/STORE_METADATA.md`: URL更新
 
 ---
 
@@ -317,23 +390,27 @@ Developer App Certificate is not trusted
 
 ## 🔲 今後のタスク
 
-### 優先度: 高（Phase 4）
+### 優先度: 高（Phase 5 残り）
 
-1. **iOS/Android 実機テスト**
-   - カメラ機能の動作確認
-   - ノイズ計測（iOS/Androidのみ）の確認
-   - シェア機能（画像生成・SNS連携）の確認
-   - 位置情報・ジオコーディングの権限確認
+1. **Multi-LLM Support**
+   - ChatGPT & Claude API統合（タグ生成用）
+   - 設定画面にプロバイダー選択UIを追加
+2. **Settings Screen モダン化**
+   - プラットフォーム標準レイアウトに更新
+3. **Typography & Color リファイン**
+   - コントラスト、階層の最終調整
+4. **Micro-interactions & Haptics チューンアップ**
 
-3. **ストア公開準備**
+### 優先度: 高（Phase 4 残り）
+
+5. **Android実機テスト**
+6. **ストア公開準備**
    - スクリーンショット撮影（ホーム、キャプチャ、詳細、シェア）
-   - プライバシーポリシーURL作成
    - App Store / Google Play Console への登録
 
 ### 優先度: 中
 
-4. **macOS位置情報の問題解決**（開発環境用）
-   - デバッグして原因特定
+7. **macOS位置情報の問題解決**（開発環境用）
 
 ### ✅ 完了済み
 
@@ -343,6 +420,7 @@ Developer App Certificate is not trusted
 - ~~エラーフィードバック~~ → スタイル付きSnackbar実装済み
 - ~~ストアメタデータ~~ → STORE_METADATA.md作成済み
 - ~~アプリアイコン~~ → iOS/Android両対応のアイコン生成済み
+- ~~Phase 5 UI Modernization~~ → Atmospheric Time、Tag Localization、全画面リデザイン完了
 
 ---
 

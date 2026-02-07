@@ -24,23 +24,23 @@ class ShareableTraceCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Time
+          // Atmospheric Time (hero)
           Text(
-            trace.formattedTime,
+            trace.atmosphericTime,
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 48,
+              fontSize: 36,
               fontWeight: FontWeight.w200,
               letterSpacing: 4,
             ),
           ),
           const SizedBox(height: 4),
-          // Date
+          // Exact time + Date (secondary)
           Text(
-            trace.formattedDate,
+            '${trace.formattedTime}  ${trace.formattedDate}',
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.5),
-              fontSize: 14,
+              color: Colors.white.withValues(alpha: 0.4),
+              fontSize: 12,
               letterSpacing: 1,
             ),
           ),

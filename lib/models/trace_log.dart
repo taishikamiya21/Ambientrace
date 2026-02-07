@@ -40,6 +40,37 @@ class TraceLog {
     return '$hour:$minute';
   }
 
+  /// Get atmospheric (fuzzy) time label in English
+  String get atmosphericTime {
+    final hour = capturedAt.hour;
+    if (hour >= 0 && hour < 4) return 'Late Night';
+    if (hour >= 4 && hour < 6) return 'Dawn';
+    if (hour >= 6 && hour < 10) return 'Morning';
+    if (hour >= 10 && hour < 14) return 'Midday';
+    if (hour >= 14 && hour < 17) return 'Afternoon';
+    if (hour >= 17 && hour < 19) return 'Dusk';
+    if (hour >= 19 && hour < 22) return 'Evening';
+    return 'Late Night';
+  }
+
+  /// Get atmospheric (fuzzy) time label in Japanese
+  String get atmosphericTimeJa {
+    final hour = capturedAt.hour;
+    if (hour >= 0 && hour < 4) return '深夜';
+    if (hour >= 4 && hour < 6) return '早朝';
+    if (hour >= 6 && hour < 10) return '朝';
+    if (hour >= 10 && hour < 14) return '昼';
+    if (hour >= 14 && hour < 17) return '午後';
+    if (hour >= 17 && hour < 19) return '夕暮れ';
+    if (hour >= 19 && hour < 22) return '夜';
+    return '深夜';
+  }
+
+  /// Get atmospheric time for given language code
+  String atmosphericTimeForLanguage(String languageCode) {
+    return languageCode.startsWith('ja') ? atmosphericTimeJa : atmosphericTime;
+  }
+
   /// Format the captured date
   String get formattedDate {
     return '${capturedAt.year}/${capturedAt.month.toString().padLeft(2, '0')}/${capturedAt.day.toString().padLeft(2, '0')}';

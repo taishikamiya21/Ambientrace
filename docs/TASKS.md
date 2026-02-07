@@ -41,6 +41,30 @@
   - [ ] Android実機での動作確認
 - [ ] **Store Assets**
   - [ ] Screenshots (Home, Capture, Detail)
+- [x] **Privacy Policy** <!-- completed: 2026-02-03 -->
+  - [x] PRIVACY_POLICY.md作成（日英両対応）
+  - [x] アプリ内Privacy Policy画面実装
 - [ ] **Store Submission**
-  - [ ] Privacy Policy URL
-  - [ ] TestFlight / Internal Testing
+  - [ ] TestFlight配布
+  - [ ] TestFlight配布
+  - [ ] App Store申請
+
+## 🎨 Phase 5: UI/UX Modernization (HIG & Material 3 & OOUI)
+- [ ] **Design System Update**
+  - [ ] Adopt Material 3 (Material You) for Android
+  - [ ] Refine iOS Human Interface Guidelines (HIG) compliance (Cupertino widgets where appropriate)
+  - [x] Apply OOUI (Object-Oriented UI) principles (Navigation, Object lists) <!-- completed: 2026-02-07 -->
+- [x] **Data & Logic Modernization** <!-- completed: 2026-02-07 -->
+  - [ ] **Multi-LLM Support:** Add ChatGPT & Claude API integration for tagging.
+  - [x] **Tag Localization:** ML Kit fallback labels now match system language (JP/EN). Added 37-entry ambient label maps for both languages. <!-- completed: 2026-02-07 -->
+  - [x] **Atmospheric Time Logic:** Added `atmosphericTime`, `atmosphericTimeJa`, `atmosphericTimeForLanguage()` to TraceLog model. 8 time zones: Late Night, Dawn, Morning, Midday, Afternoon, Dusk, Evening, Late Night. <!-- completed: 2026-02-07 -->
+- [x] **Screen Refactoring** <!-- completed: 2026-02-07 -->
+  - [x] **Trace Card Redesign:** Color gradient bar as hero, atmospheric time primary (22px), exact time demoted to 11px corner, ambient label pills, metadata row. <!-- completed: 2026-02-07 -->
+  - [x] **Home Screen:** CustomScrollView+Slivers, refined header, weather filter chips, double-ring FAB, atmospheric time in search. <!-- completed: 2026-02-07 -->
+  - [x] **Capture Screen:** Immersive fullscreen, gradient overlay, double-ring capture button with pulse animation, minimal gallery button. <!-- completed: 2026-02-07 -->
+  - [x] **Detail Screen:** Color gradient hero banner (120px), atmospheric time as 36px heading, bottom sheet delete confirmation, improved layout. <!-- completed: 2026-02-07 -->
+  - [x] **Shareable Trace Card:** Atmospheric time as hero, exact time+date as subtitle. <!-- completed: 2026-02-07 -->
+  - [ ] **Settings:** Standard platform-specific layout.
+- [ ] **Visuals**
+  - [ ] Typography and Color refinement (Contrast, Hierarchy)
+  - [ ] Micro-interactions and Haptics tune-up

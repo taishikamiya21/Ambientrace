@@ -124,12 +124,14 @@ Because the best memories aren't pixel-perfect — they're felt. Ambientrace giv
 ---
 
 ## Privacy URL
-`[To be created]`
+`https://github.com/taishikamiya21/Ambientrace/blob/main/docs/PRIVACY_POLICY.md`
+
+(Also available in-app: Settings → Privacy Policy)
 
 ---
 
 ## Support URL
-`[To be created - GitHub Issues or contact email]`
+`https://github.com/taishikamiya21/Ambientrace/issues`
 
 ---
 

@@ -399,10 +399,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _showPrivacyPolicy() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Privacy Policy will be available soon.'),
-        duration: Duration(seconds: 2),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const PrivacyPolicyScreen(),
       ),
     );
   }
@@ -459,6 +459,121 @@ class _SettingsScreenState extends State<SettingsScreen> {
         fontSize: 12,
         fontWeight: FontWeight.w600,
         letterSpacing: 2,
+      ),
+    );
+  }
+}
+
+/// Privacy Policy Screen
+class PrivacyPolicyScreen extends StatelessWidget {
+  const PrivacyPolicyScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF0A0A0F),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          'Privacy Policy',
+          style: TextStyle(color: Colors.white, fontSize: 18),
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildSection(
+              'Overview',
+              'Ambientrace is designed with privacy as a core principle. '
+              'Unlike traditional photo apps, Ambientrace intentionally does not store your photos. '
+              'Instead, it extracts environmental data (the "ambient trace") from your images and then permanently deletes the original photo.',
+            ),
+            _buildSection(
+              'Data We Collect',
+              '• Color palette — The dominant colors in the image\n'
+              '• Ambient labels — Descriptive tags about the atmosphere\n'
+              '• Noise level — The ambient sound level (if microphone permission is granted)\n'
+              '• Location — GPS coordinates and place name (if location permission is granted)\n'
+              '• Weather — Temperature and weather condition',
+            ),
+            _buildSection(
+              'Data We Do NOT Collect',
+              '• Photos — Images are processed locally and immediately deleted\n'
+              '• Personal information — No names, emails, or account information\n'
+              '• Usage analytics — No tracking or analytics services\n'
+              '• Advertising data — No ad networks or identifiers',
+            ),
+            _buildSection(
+              'Third-Party Services',
+              '• Google ML Kit — On-device image labeling (no data sent to servers)\n'
+              '• Gemini API (Optional) — Enhanced labeling if you provide an API key\n'
+              '• Open-Meteo — Weather data (only GPS coordinates sent)',
+            ),
+            _buildSection(
+              'Data Storage',
+              'All ambient trace data is stored locally on your device only:\n'
+              '• Data is saved in the app\'s private storage\n'
+              '• No cloud sync or backup to external servers\n'
+              '• Deleting the app removes all data',
+            ),
+            _buildSection(
+              'Your Rights',
+              '• Delete individual traces using the delete button\n'
+              '• Delete all data by uninstalling the app\n'
+              '• Deny permissions — The app works with limited functionality',
+            ),
+            _buildSection(
+              'Contact',
+              'For questions about this Privacy Policy:\n'
+              'GitHub: github.com/taishikamiya21/Ambientrace',
+            ),
+            const SizedBox(height: 16),
+            Center(
+              child: Text(
+                'Last Updated: February 3, 2026',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.3),
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSection(String title, String content) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            content,
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.7),
+              fontSize: 14,
+              height: 1.6,
+            ),
+          ),
+        ],
       ),
     );
   }

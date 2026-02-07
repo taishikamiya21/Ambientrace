@@ -73,7 +73,7 @@ class ImageLabelingService {
         final labels = await _imageLabeler!.processImage(inputImage);
 
         // Convert to ambient-style labels
-        final ambientLabels = _convertToAmbientLabels(labels);
+        final ambientLabels = _convertToAmbientLabels(labels, languageCode: languageCode);
         print('ImageLabelingService: Got ML Kit labels: $ambientLabels');
         return ambientLabels;
       } catch (e) {
@@ -85,48 +85,11 @@ class ImageLabelingService {
     return [];
   }
 
-  /// Convert ML Kit labels to more "ambient" style labels
-  List<String> _convertToAmbientLabels(List<ImageLabel> labels) {
-    // Map common ML Kit labels to more atmospheric descriptions
-    final Map<String, String> ambientMap = {
-      'sky': 'Open Sky',
-      'cloud': 'Cloudy Atmosphere',
-      'tree': 'Natural Setting',
-      'plant': 'Green Space',
-      'flower': 'Floral Moment',
-      'water': 'Waterside',
-      'sea': 'Seaside',
-      'beach': 'Beach Vibes',
-      'mountain': 'Mountain View',
-      'building': 'Urban Scene',
-      'city': 'City Life',
-      'street': 'Street Scene',
-      'road': 'On the Road',
-      'car': 'Mobile Moment',
-      'food': 'Culinary Moment',
-      'drink': 'Refreshment Time',
-      'coffee': 'Coffee Break',
-      'restaurant': 'Dining Out',
-      'cafe': 'Cafe Atmosphere',
-      'person': 'Human Presence',
-      'people': 'Social Gathering',
-      'animal': 'Animal Encounter',
-      'dog': 'Canine Company',
-      'cat': 'Feline Friend',
-      'bird': 'Avian Presence',
-      'sunrise': 'Dawn Light',
-      'sunset': 'Golden Hour',
-      'night': 'Night Scene',
-      'indoor': 'Indoor Space',
-      'outdoor': 'Outdoor Setting',
-      'park': 'Park Setting',
-      'garden': 'Garden Space',
-      'home': 'Home Comfort',
-      'office': 'Work Environment',
-      'book': 'Reading Moment',
-      'music': 'Musical Atmosphere',
-      'art': 'Artistic Scene',
-    };
+  /// Convert ML Kit labels to more "ambient" style labels (localized)
+  List<String> _convertToAmbientLabels(List<ImageLabel> labels, {String languageCode = 'en'}) {
+    final ambientMap = languageCode.startsWith('ja')
+        ? _ambientMapJa
+        : _ambientMapEn;
 
     final result = <String>[];
     for (final label in labels) {
@@ -156,6 +119,86 @@ class ImageLabelingService {
 
     return result;
   }
+
+  static const Map<String, String> _ambientMapEn = {
+    'sky': 'Open Sky',
+    'cloud': 'Cloudy Atmosphere',
+    'tree': 'Natural Setting',
+    'plant': 'Green Space',
+    'flower': 'Floral Moment',
+    'water': 'Waterside',
+    'sea': 'Seaside',
+    'beach': 'Beach Vibes',
+    'mountain': 'Mountain View',
+    'building': 'Urban Scene',
+    'city': 'City Life',
+    'street': 'Street Scene',
+    'road': 'On the Road',
+    'car': 'Mobile Moment',
+    'food': 'Culinary Moment',
+    'drink': 'Refreshment Time',
+    'coffee': 'Coffee Break',
+    'restaurant': 'Dining Out',
+    'cafe': 'Cafe Atmosphere',
+    'person': 'Human Presence',
+    'people': 'Social Gathering',
+    'animal': 'Animal Encounter',
+    'dog': 'Canine Company',
+    'cat': 'Feline Friend',
+    'bird': 'Avian Presence',
+    'sunrise': 'Dawn Light',
+    'sunset': 'Golden Hour',
+    'night': 'Night Scene',
+    'indoor': 'Indoor Space',
+    'outdoor': 'Outdoor Setting',
+    'park': 'Park Setting',
+    'garden': 'Garden Space',
+    'home': 'Home Comfort',
+    'office': 'Work Environment',
+    'book': 'Reading Moment',
+    'music': 'Musical Atmosphere',
+    'art': 'Artistic Scene',
+  };
+
+  static const Map<String, String> _ambientMapJa = {
+    'sky': '広がる空',
+    'cloud': '曇り空',
+    'tree': '木々のそば',
+    'plant': '緑のある場所',
+    'flower': '花のある瞬間',
+    'water': '水辺',
+    'sea': '海のそば',
+    'beach': '砂浜の風',
+    'mountain': '山の景色',
+    'building': '街の風景',
+    'city': '都会の息吹',
+    'street': '通りの景色',
+    'road': '道の途中',
+    'car': '移動の途中',
+    'food': '食のひととき',
+    'drink': 'ひと休み',
+    'coffee': 'コーヒーブレイク',
+    'restaurant': '食事の時間',
+    'cafe': 'カフェの空気',
+    'person': '人の気配',
+    'people': '集いの場',
+    'animal': '動物との出会い',
+    'dog': '犬のいる場所',
+    'cat': '猫のいる場所',
+    'bird': '鳥の気配',
+    'sunrise': '朝の光',
+    'sunset': '黄金の時間',
+    'night': '夜の風景',
+    'indoor': '室内の空間',
+    'outdoor': '外の空気',
+    'park': '公園の空気',
+    'garden': '庭の緑',
+    'home': '家の温もり',
+    'office': '仕事場の空気',
+    'book': '読書の時間',
+    'music': '音楽のある空間',
+    'art': '芸術の空間',
+  };
 
   /// Dispose resources
   void dispose() {

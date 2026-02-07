@@ -46,7 +46,7 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          widget.trace.formattedDate,
+          '${widget.trace.atmosphericTime}  ${widget.trace.formattedDate}',
           style: const TextStyle(color: Colors.white70, fontSize: 16),
         ),
         actions: [
@@ -70,141 +70,203 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Time
-            Text(
-              widget.trace.formattedTime,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 64,
-                fontWeight: FontWeight.w200,
-                letterSpacing: 4,
-              ),
-            ),
-            const SizedBox(height: 32),
+            // Color gradient hero
+            if (widget.trace.colorPalette.isNotEmpty)
+              _buildColorGradientHero(),
 
-            // Color palette
-            if (widget.trace.colorPalette.isNotEmpty) ...[
-              _buildSectionTitle('Colors'),
-              const SizedBox(height: 12),
-              Row(
-                children: widget.trace.colorPalette.map((colorValue) {
-                  return Expanded(
-                    child: Container(
-                      height: 60,
-                      margin: const EdgeInsets.only(right: 8),
-                      decoration: BoxDecoration(
-                        color: Color(colorValue),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 32),
-            ],
-
-            // Location
-            if (widget.trace.placeName != null) ...[
-              _buildSectionTitle('Location'),
-              const SizedBox(height: 12),
-              _buildInfoCard(
-                icon: Icons.location_on_outlined,
-                value: widget.trace.placeName!,
-              ),
-              const SizedBox(height: 32),
-            ],
-
-            // Weather & Atmosphere
-            if (widget.trace.temperature != null || widget.trace.weatherCondition != null || widget.trace.noiseLevel != null) ...[
-              _buildSectionTitle('Atmosphere'),
-              const SizedBox(height: 12),
-              Row(
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (widget.trace.temperature != null)
-                    Expanded(
-                      child: _buildInfoCard(
-                        icon: Icons.thermostat_outlined,
-                        value: '${widget.trace.temperature!.round()}°C',
-                      ),
-                    ),
-                  if (widget.trace.temperature != null && widget.trace.weatherCondition != null)
-                    const SizedBox(width: 12),
-                  if (widget.trace.weatherCondition != null)
-                    Expanded(
-                      child: _buildInfoCard(
-                        icon: _getWeatherIcon(widget.trace.weatherCondition!),
-                        value: widget.trace.weatherCondition!,
-                      ),
-                    ),
-                ],
-              ),
-              if (widget.trace.noiseLevel != null) ...[
-                const SizedBox(height: 12),
-                _buildInfoCard(
-                  icon: Icons.volume_up_outlined,
-                  value: '${widget.trace.noiseLevel!.round()} dB',
-                ),
-              ],
-              const SizedBox(height: 32),
-            ],
+                  const SizedBox(height: 24),
 
-            // Ambient Traces (Labels)
-            _buildSectionTitle('Ambient Traces'),
-            const SizedBox(height: 12),
-            if (widget.trace.imageLabels.isNotEmpty)
-              _buildAmbientTracesList(widget.trace.imageLabels, widget.trace.colorPalette)
-            else
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.03),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.1),
-                    style: BorderStyle.solid,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.info_outline,
-                      color: Colors.white.withValues(alpha: 0.3),
-                      size: 20,
+                  // Atmospheric Time - primary heading
+                  Text(
+                    widget.trace.atmosphericTime,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 36,
+                      fontWeight: FontWeight.w200,
+                      letterSpacing: 4,
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'No ambient traces were captured for this moment.',
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.4),
-                          fontSize: 14,
-                          fontStyle: FontStyle.italic,
+                  ),
+                  const SizedBox(height: 6),
+
+                  // Exact time + date subtitle
+                  Text(
+                    '${widget.trace.formattedTime}  ${widget.trace.formattedDate}',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.4),
+                      fontSize: 12,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+
+                  // Color swatches
+                  if (widget.trace.colorPalette.isNotEmpty) ...[
+                    _buildSectionTitle('Colors'),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: widget.trace.colorPalette.map((colorValue) {
+                        return Expanded(
+                          child: Container(
+                            height: 60,
+                            margin: const EdgeInsets.only(right: 8),
+                            decoration: BoxDecoration(
+                              color: Color(colorValue),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 32),
+                  ],
+
+                  // Location
+                  if (widget.trace.placeName != null) ...[
+                    _buildSectionTitle('Location'),
+                    const SizedBox(height: 12),
+                    _buildInfoCard(
+                      icon: Icons.location_on_outlined,
+                      value: widget.trace.placeName!,
+                    ),
+                    const SizedBox(height: 32),
+                  ],
+
+                  // Weather & Atmosphere
+                  if (widget.trace.temperature != null || widget.trace.weatherCondition != null || widget.trace.noiseLevel != null) ...[
+                    _buildSectionTitle('Atmosphere'),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        if (widget.trace.temperature != null)
+                          Expanded(
+                            child: _buildInfoCard(
+                              icon: Icons.thermostat_outlined,
+                              value: '${widget.trace.temperature!.round()}\u00B0C',
+                            ),
+                          ),
+                        if (widget.trace.temperature != null && widget.trace.weatherCondition != null)
+                          const SizedBox(width: 12),
+                        if (widget.trace.weatherCondition != null)
+                          Expanded(
+                            child: _buildInfoCard(
+                              icon: _getWeatherIcon(widget.trace.weatherCondition!),
+                              value: widget.trace.weatherCondition!,
+                            ),
+                          ),
+                      ],
+                    ),
+                    if (widget.trace.noiseLevel != null) ...[
+                      const SizedBox(height: 12),
+                      _buildInfoCard(
+                        icon: Icons.volume_up_outlined,
+                        value: '${widget.trace.noiseLevel!.round()} dB',
+                      ),
+                    ],
+                    const SizedBox(height: 32),
+                  ],
+
+                  // Ambient Traces (Labels)
+                  _buildSectionTitle('Ambient Traces'),
+                  const SizedBox(height: 12),
+                  if (widget.trace.imageLabels.isNotEmpty)
+                    _buildAmbientTracesList(widget.trace.imageLabels, widget.trace.colorPalette)
+                  else
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.03),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.1),
+                          style: BorderStyle.solid,
                         ),
                       ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.info_outline,
+                            color: Colors.white.withValues(alpha: 0.3),
+                            size: 20,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              'No ambient traces were captured for this moment.',
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.4),
+                                fontSize: 14,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  const SizedBox(height: 32),
+
+                  // AI Story Generation
+                  _buildStorySection(),
+                  const SizedBox(height: 32),
+
+                  // Coordinates
+                  if (widget.trace.latitude != null && widget.trace.longitude != null) ...[
+                    _buildSectionTitle('Coordinates'),
+                    const SizedBox(height: 12),
+                    _buildInfoCard(
+                      icon: Icons.explore_outlined,
+                      value: '${widget.trace.latitude!.toStringAsFixed(4)}, ${widget.trace.longitude!.toStringAsFixed(4)}',
                     ),
                   ],
-                ),
-              ),
-            const SizedBox(height: 32),
 
-            // AI Story Generation
-            _buildStorySection(),
-            const SizedBox(height: 32),
-
-            // Coordinates
-            if (widget.trace.latitude != null && widget.trace.longitude != null) ...[
-              _buildSectionTitle('Coordinates'),
-              const SizedBox(height: 12),
-              _buildInfoCard(
-                icon: Icons.explore_outlined,
-                value: '${widget.trace.latitude!.toStringAsFixed(4)}, ${widget.trace.longitude!.toStringAsFixed(4)}',
+                  const SizedBox(height: 24),
+                ],
               ),
-            ],
+            ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildColorGradientHero() {
+    final colors = widget.trace.colorPalette.map((c) => Color(c)).toList();
+
+    // Build gradient stops from the palette
+    final List<Color> gradientColors;
+    if (colors.length == 1) {
+      gradientColors = [colors.first, colors.first.withValues(alpha: 0.6)];
+    } else {
+      gradientColors = colors;
+    }
+
+    return Container(
+      width: double.infinity,
+      height: 120,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: gradientColors,
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
+      ),
+      // Fade to background at bottom
+      foregroundDecoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.transparent,
+            const Color(0xFF0A0A0F),
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          stops: const [0.3, 1.0],
         ),
       ),
     );
@@ -433,7 +495,7 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
         colorDescriptions: colorDescriptions,
         weather: widget.trace.weatherCondition,
         temperature: widget.trace.temperature != null
-            ? '${widget.trace.temperature!.round()}°C'
+            ? '${widget.trace.temperature!.round()}\u00B0C'
             : null,
         placeName: widget.trace.placeName,
         languageCode: languageCode,
@@ -485,6 +547,8 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
 
         final file = File('${tempDir.path}/ambientrace_${widget.trace.id}.png');
         await file.writeAsBytes(imageBytes);
+
+        if (!mounted) return;
 
         // Share the image (sharePositionOrigin required for iPad)
         final box = context.findRenderObject() as RenderBox?;
@@ -755,38 +819,95 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
   }
 
   void _confirmDelete(BuildContext context) {
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1A2E),
-        title: const Text(
-          'Delete Trace?',
-          style: TextStyle(color: Colors.white),
-        ),
-        content: const Text(
-          'This trace will be permanently deleted.',
-          style: TextStyle(color: Colors.white70),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+      backgroundColor: const Color(0xFF1A1A2E),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 24),
+              const Text(
+                'Delete Trace?',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'This trace will be permanently deleted.',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.6),
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () async {
+                    await widget.storageService.deleteTrace(widget.trace.id);
+                    widget.onDelete();
+                    if (context.mounted) {
+                      Navigator.pop(context);
+                      Navigator.pop(context);
+                    }
+                  },
+                  style: TextButton.styleFrom(
+                    backgroundColor: Colors.red.withValues(alpha: 0.15),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Delete',
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'Cancel',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.6),
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () async {
-              await widget.storageService.deleteTrace(widget.trace.id);
-              widget.onDelete();
-              if (context.mounted) {
-                Navigator.pop(context);
-                Navigator.pop(context);
-              }
-            },
-            child: const Text(
-              'Delete',
-              style: TextStyle(color: Colors.red),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
