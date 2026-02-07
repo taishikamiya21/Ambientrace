@@ -222,7 +222,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => SettingsScreen(
-                                        geminiService: widget.imageLabelingService.geminiService,
+                                        imageLabelingService: widget.imageLabelingService,
                                       ),
                                     ),
                                   );

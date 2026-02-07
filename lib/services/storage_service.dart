@@ -28,7 +28,7 @@ class StorageService {
     try {
       final List<dynamic> jsonList = json.decode(jsonString);
       final traces = jsonList.map((j) => TraceLog.fromJson(j)).toList();
-      traces.sort((a, b) => b.capturedAt.compareTo(a.capturedAt));
+      traces.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       return traces;
     } catch (e) {
       print('Error loading traces: $e');

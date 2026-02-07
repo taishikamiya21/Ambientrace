@@ -55,16 +55,27 @@
   - [ ] Refine iOS Human Interface Guidelines (HIG) compliance (Cupertino widgets where appropriate)
   - [x] Apply OOUI (Object-Oriented UI) principles (Navigation, Object lists) <!-- completed: 2026-02-07 -->
 - [x] **Data & Logic Modernization** <!-- completed: 2026-02-07 -->
-  - [ ] **Multi-LLM Support:** Add ChatGPT & Claude API integration for tagging.
+  - [x] **Multi-LLM Support:** Gemini / ChatGPT / Claude の3プロバイダー対応完了。LlmService抽象基底クラス、プロバイダーセレクターUI実装済み。 <!-- completed: 2026-02-07 -->
   - [x] **Tag Localization:** ML Kit fallback labels now match system language (JP/EN). Added 37-entry ambient label maps for both languages. <!-- completed: 2026-02-07 -->
   - [x] **Atmospheric Time Logic:** Added `atmosphericTime`, `atmosphericTimeJa`, `atmosphericTimeForLanguage()` to TraceLog model. 8 time zones: Late Night, Dawn, Morning, Midday, Afternoon, Dusk, Evening, Late Night. <!-- completed: 2026-02-07 -->
 - [x] **Screen Refactoring** <!-- completed: 2026-02-07 -->
-  - [x] **Trace Card Redesign:** Color gradient bar as hero, atmospheric time primary (22px), exact time demoted to 11px corner, ambient label pills, metadata row. <!-- completed: 2026-02-07 -->
+  - [ ] **Trace Card Redesign:**
+    -   **Priority Update:** "Ambient Meaning" (Tags) should be the **Main Content** (Hero).
+    -   **Hierarchy:** Tags/Meaning > Atmospheric Time > Exact Time > Metadata.
+    -   **Visuals:** Use the most prominent extracted tag as the card title. 11px corner, ambient label pills, metadata row. <!-- completed: 2026-02-07 -->
   - [x] **Home Screen:** CustomScrollView+Slivers, refined header, weather filter chips, double-ring FAB, atmospheric time in search. <!-- completed: 2026-02-07 -->
   - [x] **Capture Screen:** Immersive fullscreen, gradient overlay, double-ring capture button with pulse animation, minimal gallery button. <!-- completed: 2026-02-07 -->
   - [x] **Detail Screen:** Color gradient hero banner (120px), atmospheric time as 36px heading, bottom sheet delete confirmation, improved layout. <!-- completed: 2026-02-07 -->
   - [x] **Shareable Trace Card:** Atmospheric time as hero, exact time+date as subtitle. <!-- completed: 2026-02-07 -->
   - [ ] **Settings:** Standard platform-specific layout.
+- [x] **Data Model拡張** <!-- completed: 2026-02-07 -->
+  - [x] タイムスタンプ分離: `capturedAt`（写真撮影日時）と `createdAt`（カード生成日時）を分離
+  - [x] Reconstructed Memoryには `capturedAt` を使用
+  - [x] ホーム画面ソートは `createdAt` で実行
+- [x] **Reconstructed Memory改善** <!-- completed: 2026-02-07 -->
+  - [x] プロンプト最適化（2文・明示的な文字数制限）
+  - [x] トークン使用量削減（Gemini: 500, OpenAI/Claude: 200）
+  - [x] 文章の途中切れ防止
 - [ ] **Visuals**
   - [ ] Typography and Color refinement (Contrast, Hierarchy)
   - [ ] Micro-interactions and Haptics tune-up

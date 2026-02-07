@@ -1,16 +1,43 @@
 import 'dart:io';
 import 'package:google_mlkit_image_labeling/google_mlkit_image_labeling.dart';
+import 'llm_service.dart';
 import 'gemini_service.dart';
+import 'openai_service.dart';
+import 'claude_service.dart';
 
 /// Unified image labeling service that uses the best available method
 class ImageLabelingService {
-  final GeminiService _geminiService = GeminiService();
+  final GeminiService geminiService = GeminiService();
+  final OpenAIService openaiService = OpenAIService();
+  final ClaudeService claudeService = ClaudeService();
+  LlmProvider _selectedProvider = LlmProvider.gemini;
   ImageLabeler? _imageLabeler;
   bool _initialized = false;
 
+  /// Get the active LLM service based on selected provider
+  LlmService get activeLlmService => switch (_selectedProvider) {
+    LlmProvider.gemini => geminiService,
+    LlmProvider.openai => openaiService,
+    LlmProvider.claude => claudeService,
+  };
+
+  /// Get/set the selected provider
+  LlmProvider get selectedProvider => _selectedProvider;
+
+  Future<void> setSelectedProvider(LlmProvider provider) async {
+    _selectedProvider = provider;
+    await LlmService.setSelectedProvider(provider);
+  }
+
   /// Initialize the service
   Future<void> init() async {
-    await _geminiService.init();
+    // Initialize all LLM services
+    await geminiService.init();
+    await openaiService.init();
+    await claudeService.init();
+
+    // Load saved provider selection
+    _selectedProvider = await LlmService.getSelectedProvider();
 
     // Initialize ML Kit on mobile platforms
     if (Platform.isIOS || Platform.isAndroid) {
@@ -30,13 +57,10 @@ class ImageLabelingService {
   /// Check if any labeling method is available
   bool get isAvailable {
     if (Platform.isIOS || Platform.isAndroid) {
-      return _imageLabeler != null || _geminiService.isConfigured;
+      return _imageLabeler != null || activeLlmService.isConfigured;
     }
-    return _geminiService.isConfigured;
+    return activeLlmService.isConfigured;
   }
-
-  /// Get the Gemini service for configuration
-  GeminiService get geminiService => _geminiService;
 
   /// Get labels from an image
   /// [languageCode] should be the device locale (e.g., 'ja', 'en', 'ja_JP')
@@ -47,21 +71,21 @@ class ImageLabelingService {
 
     print('ImageLabelingService: Getting labels for $imagePath');
     print('ImageLabelingService: Platform is iOS=${Platform.isIOS}, Android=${Platform.isAndroid}');
-    print('ImageLabelingService: Gemini configured=${_geminiService.isConfigured}');
+    print('ImageLabelingService: Active provider=${activeLlmService.providerName}, configured=${activeLlmService.isConfigured}');
     print('ImageLabelingService: ML Kit available=${_imageLabeler != null}');
     print('ImageLabelingService: Language code=$languageCode');
 
-    // Prefer Gemini API if configured (better "ambient" labels)
-    if (_geminiService.isConfigured) {
-      print('ImageLabelingService: Using Gemini API');
+    // Prefer active LLM service if configured
+    if (activeLlmService.isConfigured) {
+      print('ImageLabelingService: Using ${activeLlmService.providerName} API');
       try {
-        final labels = await _geminiService.analyzeImage(imagePath, languageCode: languageCode);
+        final labels = await activeLlmService.analyzeImage(imagePath, languageCode: languageCode);
         if (labels.isNotEmpty) {
-          print('ImageLabelingService: Got Gemini labels: $labels');
+          print('ImageLabelingService: Got ${activeLlmService.providerName} labels: $labels');
           return labels;
         }
       } catch (e) {
-        print('ImageLabelingService: Gemini failed - $e');
+        print('ImageLabelingService: ${activeLlmService.providerName} failed - $e');
       }
     }
 

@@ -14,6 +14,7 @@ import '../services/step_service.dart';
 import '../models/trace_log.dart';
 import '../widgets/dissolve_animation.dart';
 import 'package:uuid/uuid.dart';
+import 'package:native_exif/native_exif.dart';
 
 class CaptureScreen extends StatefulWidget {
   final StorageService storageService;
@@ -201,11 +202,62 @@ class _CaptureScreenState extends State<CaptureScreen>
     }
 
     // Create trace log
+    // Extract EXIF data (Date & Location)
+    DateTime capturedDate = DateTime.now();
+    double? exifLat;
+    double? exifLon;
+
+    try {
+      final exif = await Exif.fromPath(imagePath);
+      final originalDate = await exif.getOriginalDate();
+      final latLong = await exif.getLatLong();
+      await exif.close();
+
+      if (originalDate != null) {
+        capturedDate = originalDate;
+        print('Captured: Using EXIF date: $originalDate');
+      }
+
+      if (latLong != null) {
+        exifLat = latLong.latitude;
+        exifLon = latLong.longitude;
+        print('Captured: Using EXIF location: $latLong');
+      }
+    } catch (e) {
+      print('Error reading EXIF: $e');
+    }
+
+    // Use EXIF location if available, otherwise fall back to current position
+    final finalLat = exifLat ?? position?.latitude;
+    final finalLon = exifLon ?? position?.longitude;
+
+    // Refresh place name and weather if we are using EXIF location and it differs significantly
+    if (exifLat != null && exifLon != null) {
+      // Re-fetch place name and weather for the EXIF location
+      try {
+        placeName = await _locationService.getPlaceName(exifLat, exifLon);
+        // Note: Weather service might only give current weather, but for now we use what we have.
+        // Ideally we'd want historical weather, but that's a paid API feature usually.
+        // We'll proceed with current weather at that location as a best effort approximation
+        // or keep the already fetched weather if location is close.
+        // For simplicity and to avoid "London weather for Tokyo photo", we fetch for the EXIF location.
+        final weather = await _weatherService.getCurrentWeather(exifLat, exifLon);
+        if (weather != null) {
+          temperature = weather.temperature;
+          weatherCondition = weather.condition;
+        }
+      } catch (e) {
+        print('Error refreshing metadata for EXIF location: $e');
+      }
+    }
+
+    // Create trace log
     final trace = TraceLog(
       id: _uuid.v4(),
-      capturedAt: DateTime.now(),
-      latitude: position?.latitude,
-      longitude: position?.longitude,
+      capturedAt: capturedDate,
+      createdAt: DateTime.now(),
+      latitude: finalLat,
+      longitude: finalLon,
       placeName: placeName,
       colorPalette: colors,
       imageLabels: labels,

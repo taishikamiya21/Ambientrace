@@ -1,7 +1,7 @@
-# Claude Code への指示書 (Phase 4: ストア公開準備)
+# Claude Code への指示書 (Phase 5: UI Modernization & Store準備)
 
-Phase 3〜3.5（プロダクト化・UI/UX洗練）が完了しました。アプリは現在、リリース候補版（RC）の品質に近づいています。
-**目標:** 実機テストを完了し、App Store / Google Play への公開準備を整えること。
+Phase 1〜4が完了し、Phase 5（UI/UX Modernization）が進行中です。
+**目標:** UI品質の最終仕上げと、App Store / Google Play への公開準備を整えること。
 
 ## コンテキスト
 
@@ -10,11 +10,15 @@ Phase 3〜3.5（プロダクト化・UI/UX洗練）が完了しました。ア�
 - ✅ Phase 2: コンセプト鮮明化（AI Sketch削除、Step Count非表示）
 - ✅ Phase 3: プロダクト化（スプラッシュ、オンボーディング、設定画面拡充）
 - ✅ Phase 3.5: UI/UX洗練（エラーフィードバック、ストアメタデータ）
-- 🚀 **Phase 5 (New):** UI Modernization (OOUI, HIG, Material 3)
+- ✅ Phase 5（部分）: Atmospheric Time、Tag Localization、全画面リデザイン
+- ✅ Phase 5（部分）: Multi-LLM Support（Gemini / ChatGPT / Claude 3プロバイダー対応）
+- ✅ Phase 5（部分）: タイムスタンプ分離（写真撮影日時 / カード生成日時）
+- ✅ Phase 5（部分）: Reconstructed Memory改善（プロンプト最適化・トークン削減）
 
 **残りの課題:**
-- ⏳ アプリアイコン画像の作成・配置
-- ⏳ 実機（iOS/Android）でのテスト
+- ⏳ Settings Screen モダン化
+- ⏳ Typography & Color リファイン
+- ⏳ Android実機テスト
 - ⏳ スクリーンショット撮影
 - ⏳ ストア申請
 
@@ -110,24 +114,31 @@ Phase 3〜3.5（プロダクト化・UI/UX洗練）が完了しました。ア�
     - 没入感のある全画面ビューファインダー。
 - **Typography & Color:**
     - プラットフォームごとのシステムフォント（San Francisco / Roboto）を適切に使用。
-### 4. Tagging & AI (New Requirements)
-- **Multi-LLM Support:**
-    - `GeminiService` だけでなく、`OpenAIService` (ChatGPT) と `ClaudeService` (Anthropic) のAPIキーも設定可能にしてください。
-    - ユーザーがどのAIを使用するか設定画面で選択できるようにしてください。
-- **Tag Localization (No-AI Fallback):**
-    - AIキー未設定時（ML Kit使用時）のタグ生成において、ユーザーのシステム言語（日本語/英語など）に合わせて出力してください。
-    - 現在の実装 (`_convertToAmbientLabels` in `image_labeling_service.dart`) は英語固定ですが、これを多言語対応（`intl` パッケージまたはローカルマッピング）してください。
-    - google_mlkit_translation APIの利用も検討してください。
+### 4. Tagging & AI ✅ 実装済み
+- **Multi-LLM Support:** ✅ 完了
+    - `LlmService` 抽象基底クラス → `GeminiService` / `OpenAIService` / `ClaudeService`
+    - `ImageLabelingService` がプロバイダールーティングを管理（`activeLlmService`）
+    - 設定画面に3択プロバイダーセレクター + 各プロバイダーのAPIキー管理
+- **Tag Localization (No-AI Fallback):** ✅ 完了
+    - ML Kitラベルの日英自動切替（37エントリ）
+- **タイムスタンプ分離:** ✅ 完了
+    - `capturedAt`（写真撮影日時: EXIF or カメラ時刻）と `createdAt`（カード生成日時）を分離管理
+    - Reconstructed Memoryには `capturedAt` を使用
+- **Reconstructed Memory:** ✅ 改善済み
+    - プロンプト最適化（2文・文字数制限）、トークン使用量削減
 
 ### 5. Trace Card Concept Redesign
-- **脱・ログ思考:**
-    - 現在のUIは「撮影時刻（21:30）」が一番目立っていますが、これは「記録（ログ）」的であり「Ambient（雰囲気）」ではありません。
-- **"Atmospheric Time" (曖昧な時間):**
-    - 正確な時刻よりも、「深夜 (Late Night)」「早朝 (Dawn)」「夕暮れ (Dusk)」といった「時間帯の雰囲気」をメインに表示してください。
-    - 正確な時刻は、詳細情報の隅に小さく表示する程度に留めてください。
-- **Focus:**
-    - メインビジュアル: カラーパレット（色の記憶）
-    - サブ: Atmospheric Time & Ambient Labels（言葉の記憶）
+- **Hierarchy Shift (Meaning > Time):**
+    -   **Main Content (Hero):** 抽出された「意味情報（Ambient Tags）」をカードのメインタイトルとして大きく表示してください。
+    -   ユーザーにとって最も重要なのは「いつ撮ったか（Afternoon）」ではなく、「何を撮ったか/感じたか（やわらかな午後の陽射し）」です。
+    -   複数のタグがある場合、最初のタグまたは最も代表的なタグをタイトルとして使用してください。
+- **Atmospheric Time (Secondary):**
+    -   「Afternoon」や「Late Night」などの時間帯表現は、サブタイトルや補足情報として扱ってください。
+    -   正確な時刻（21:30）はさらに控えめに（metadataとして）表示してください。
+- **Visual Focus:**
+    1.  **Meaning:** Ambient Label (Title)
+    2.  **Feeling:** Color Palette (Visual bar/gradient)
+    3.  **Context:** Atmospheric Time & Location (Subtitle/Footer)
 
 ---
 

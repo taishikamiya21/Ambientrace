@@ -37,87 +37,96 @@ class TraceCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top row: color gradient bar + exact time
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Color palette gradient bar
-                Expanded(
-                  child: _buildColorBar(paletteColors),
+            // Hero: Primary tag as card title
+            if (trace.imageLabels.isNotEmpty) ...[
+              Text(
+                trace.imageLabels.first,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w300,
+                  letterSpacing: 1,
                 ),
-                const SizedBox(width: 12),
-                // Exact time - small, secondary
-                Text(
-                  trace.formattedTime,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.35),
-                    fontSize: 11,
-                    fontWeight: FontWeight.w400,
-                    letterSpacing: 1,
-                  ),
+              ),
+              if (trace.imageLabels.length > 1) ...[
+                const SizedBox(height: 12),
+                // Remaining tags as pills
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: trace.imageLabels.skip(1).take(3).map((label) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.07),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.1),
+                          width: 1,
+                        ),
+                      ),
+                      child: Text(
+                        label,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.6),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    );
+                  }).toList(),
                 ),
               ],
-            ),
-
-            const SizedBox(height: 18),
-
-            // Atmospheric Time - the hero text
-            Text(
-              trace.atmosphericTime,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 22,
-                fontWeight: FontWeight.w300,
-                letterSpacing: 3,
-              ),
-            ),
-
-            const SizedBox(height: 14),
-
-            // Ambient labels - pill chips
-            if (trace.imageLabels.isNotEmpty)
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: trace.imageLabels.take(3).map((label) {
-                  return Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 5,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.07),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.1),
-                        width: 1,
-                      ),
-                    ),
-                    child: Text(
-                      label,
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.75),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                  );
-                }).toList(),
-              )
-            else
+            ] else
               Text(
                 'No ambient traces captured',
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.25),
-                  fontSize: 12,
+                  fontSize: 13,
                   fontStyle: FontStyle.italic,
                 ),
               ),
 
-            const SizedBox(height: 14),
+            const SizedBox(height: 16),
 
-            // Bottom metadata row: location + weather + temp
-            _buildMetadataRow(),
+            // Color gradient bar + atmospheric time + exact time
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Color palette gradient bar
+                SizedBox(
+                  width: 40,
+                  child: _buildColorBar(paletteColors),
+                ),
+                const SizedBox(width: 12),
+                // Atmospheric Time
+                Text(
+                  trace.atmosphericTime,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.5),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w400,
+                    letterSpacing: 2,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                // Exact time
+                Text(
+                  trace.formattedTime,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.25),
+                    fontSize: 11,
+                    letterSpacing: 1,
+                  ),
+                ),
+                const Spacer(),
+                // Metadata inline
+                ..._buildMetaItems(),
+              ],
+            ),
           ],
         ),
       ),
@@ -151,52 +160,39 @@ class TraceCard extends StatelessWidget {
     );
   }
 
-  /// Bottom row with location, weather, temperature
-  Widget _buildMetadataRow() {
+  /// Inline metadata items for the bottom row
+  List<Widget> _buildMetaItems() {
     final items = <Widget>[];
 
-    if (trace.placeName != null) {
-      items.add(_buildMetaItem(Icons.location_on_outlined, trace.placeName!));
+    if (trace.temperature != null) {
+      items.add(Text(
+        '${trace.temperature!.round()}°',
+        style: TextStyle(
+          color: Colors.white.withValues(alpha: 0.3),
+          fontSize: 11,
+        ),
+      ));
     }
     if (trace.weatherCondition != null) {
-      items.add(_buildMetaItem(Icons.cloud_outlined, trace.weatherCondition!));
-    }
-    if (trace.temperature != null) {
-      items.add(
-          _buildMetaItem(Icons.thermostat_outlined, '${trace.temperature!.round()}°'));
-    }
-
-    if (items.isEmpty) return const SizedBox.shrink();
-
-    return Wrap(
-      spacing: 14,
-      runSpacing: 6,
-      children: items,
-    );
-  }
-
-  Widget _buildMetaItem(IconData icon, String value) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          icon,
-          size: 12,
-          color: Colors.white.withValues(alpha: 0.3),
-        ),
-        const SizedBox(width: 4),
-        Flexible(
-          child: Text(
-            value,
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.35),
-              fontSize: 11,
-            ),
-            overflow: TextOverflow.ellipsis,
+      if (items.isNotEmpty) {
+        items.add(SizedBox(
+          height: 10,
+          child: VerticalDivider(
+            color: Colors.white.withValues(alpha: 0.15),
+            width: 16,
           ),
+        ));
+      }
+      items.add(Text(
+        trace.weatherCondition!,
+        style: TextStyle(
+          color: Colors.white.withValues(alpha: 0.3),
+          fontSize: 11,
         ),
-      ],
-    );
+      ));
+    }
+
+    return items;
   }
 
   /// Takes a color and returns a very dark, low-saturation version for card background

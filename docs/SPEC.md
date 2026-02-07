@@ -97,6 +97,18 @@
 | **エラーフィードバック** | スタイル付きSnackbarでユーザーフレンドリーな表示 |
 | **ストアメタデータ** | 日英説明文、キーワード作成（STORE_METADATA.md） |
 
+### Phase 5（UI/UX Modernization & Data拡張）
+
+| 機能 | 詳細 |
+|------|------|
+| **Atmospheric Time** | 正確な時刻の代わりに「Dawn」「Dusk」等の曖昧時刻を主役に |
+| **Tag Localization** | ML Kitフォールバックラベルの日本語/英語自動切替（37エントリ） |
+| **全画面リデザイン** | Home/Capture/Detail/ShareカードをOOUI原則で刷新 |
+| **Multi-LLM Support** | Gemini / ChatGPT (OpenAI) / Claude (Anthropic) の3プロバイダー対応 |
+| **AIプロバイダー選択** | 設定画面でプロバイダー切替、各プロバイダー毎のAPIキー管理 |
+| **タイムスタンプ分離** | 写真撮影日時（EXIF/カメラ）とカード生成日時を別管理 |
+| **Reconstructed Memory改善** | プロンプト最適化でトークン使用量削減、文章の途中切れ防止 |
+
 ---
 
 ## 🎨 UX演出
@@ -123,9 +135,9 @@
 |------|------|
 | フレームワーク | Flutter (Dart) |
 | 画像解析（基本） | Google ML Kit |
-| 画像解析（応用） | Gemini API（オプション） |
+| 画像解析（応用） | Gemini / OpenAI / Claude API（オプション、ユーザー選択） |
 | センサー | flutter_sensors, geolocator, weather API |
-| ストレージ | ローカルDB（SQLite / Hive） |
+| ストレージ | SharedPreferences（ローカル） |
 
 ---
 
@@ -147,6 +159,7 @@
 | Step 12 | Phase 3: プロダクト化 | ✅ 完了 |
 | Step 13 | Phase 3.5: UI/UX洗練 | ✅ 完了 |
 | Step 14 | Phase 4: 実機テスト・ストア準備 | 🔄 進行中 |
+| Step 15 | Phase 5: UI Modernization & Multi-LLM | 🔄 進行中 |
 
 ---
 
@@ -165,7 +178,7 @@
 
 ---
 
-*最終更新: 2026-02-03*
+*最終更新: 2026-02-07*
 
 ---
 

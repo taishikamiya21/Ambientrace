@@ -53,6 +53,7 @@ dependencies:
 
   # App info (version, etc.)
   package_info_plus: ^8.0.0
+  native_exif: ^0.7.0
 
 dev_dependencies:
   flutter_test:

@@ -46,8 +46,11 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          '${widget.trace.atmosphericTime}  ${widget.trace.formattedDate}',
+          widget.trace.imageLabels.isNotEmpty
+              ? widget.trace.imageLabels.first
+              : widget.trace.atmosphericTime,
           style: const TextStyle(color: Colors.white70, fontSize: 16),
+          overflow: TextOverflow.ellipsis,
         ),
         actions: [
           IconButton(
@@ -84,30 +87,65 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
                 children: [
                   const SizedBox(height: 24),
 
-                  // Atmospheric Time - primary heading
-                  Text(
-                    widget.trace.atmosphericTime,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 36,
-                      fontWeight: FontWeight.w200,
-                      letterSpacing: 4,
+                  // 1. MEANING: Ambient Tags as hero
+                  if (widget.trace.imageLabels.isNotEmpty) ...[
+                    Text(
+                      widget.trace.imageLabels.first,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 28,
+                        fontWeight: FontWeight.w300,
+                        letterSpacing: 1,
+                        height: 1.3,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 6),
-
-                  // Exact time + date subtitle
-                  Text(
-                    '${widget.trace.formattedTime}  ${widget.trace.formattedDate}',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.4),
-                      fontSize: 12,
-                      letterSpacing: 1,
+                    if (widget.trace.imageLabels.length > 1) ...[
+                      const SizedBox(height: 16),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: widget.trace.imageLabels.skip(1).map((label) {
+                          final index = widget.trace.imageLabels.indexOf(label);
+                          final accentColor = widget.trace.colorPalette.isNotEmpty
+                              ? Color(widget.trace.colorPalette[index % widget.trace.colorPalette.length])
+                                  .withValues(alpha: 0.3)
+                              : Colors.white.withValues(alpha: 0.1);
+                          return Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: accentColor,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.15),
+                                width: 1,
+                              ),
+                            ),
+                            child: Text(
+                              label,
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.85),
+                                fontSize: 14,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                    const SizedBox(height: 28),
+                  ] else ...[
+                    Text(
+                      'No ambient traces captured',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.3),
+                        fontSize: 16,
+                        fontStyle: FontStyle.italic,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 28),
+                    const SizedBox(height: 28),
+                  ],
 
-                  // Color swatches
+                  // 2. FEELING: Color swatches
                   if (widget.trace.colorPalette.isNotEmpty) ...[
                     _buildSectionTitle('Colors'),
                     const SizedBox(height: 12),
@@ -127,6 +165,33 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
                     ),
                     const SizedBox(height: 32),
                   ],
+
+                  // 3. CONTEXT: Atmospheric Time + exact time
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Text(
+                        widget.trace.atmosphericTime,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.6),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                          letterSpacing: 2,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        '${widget.trace.formattedTime}  ${widget.trace.formattedDate}',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.3),
+                          fontSize: 12,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 28),
 
                   // Location
                   if (widget.trace.placeName != null) ...[
@@ -172,46 +237,6 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
                     ],
                     const SizedBox(height: 32),
                   ],
-
-                  // Ambient Traces (Labels)
-                  _buildSectionTitle('Ambient Traces'),
-                  const SizedBox(height: 12),
-                  if (widget.trace.imageLabels.isNotEmpty)
-                    _buildAmbientTracesList(widget.trace.imageLabels, widget.trace.colorPalette)
-                  else
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.03),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.1),
-                          style: BorderStyle.solid,
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.info_outline,
-                            color: Colors.white.withValues(alpha: 0.3),
-                            size: 20,
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              'No ambient traces were captured for this moment.',
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.4),
-                                fontSize: 14,
-                                fontStyle: FontStyle.italic,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  const SizedBox(height: 32),
-
                   // AI Story Generation
                   _buildStorySection(),
                   const SizedBox(height: 32),
@@ -273,12 +298,27 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
   }
 
   Widget _buildStorySection() {
-    final isGeminiConfigured = widget.imageLabelingService.geminiService.isConfigured;
+    final isLlmConfigured = widget.imageLabelingService.activeLlmService.isConfigured;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle('Memory'),
+        Row(
+          children: [
+            _buildSectionTitle('Reconstructed Memory'),
+            const SizedBox(width: 8),
+            Tooltip(
+              message: 'AI creates a story from the atmospheric data (Time, Color, Labels).',
+              triggerMode: TooltipTriggerMode.tap,
+              showDuration: const Duration(seconds: 3),
+              child: Icon(
+                Icons.help_outline,
+                color: Colors.white.withValues(alpha: 0.3),
+                size: 14,
+              ),
+            ),
+          ],
+        ),
         const SizedBox(height: 12),
 
         if (_generatedStory != null) ...[
@@ -431,7 +471,7 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
         ] else ...[
           // Generate button
           GestureDetector(
-            onTap: isGeminiConfigured ? _generateStory : null,
+            onTap: isLlmConfigured ? _generateStory : null,
             child: Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
@@ -447,18 +487,18 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
                 children: [
                   Icon(
                     Icons.auto_awesome,
-                    color: isGeminiConfigured
+                    color: isLlmConfigured
                         ? Colors.amber.withValues(alpha: 0.7)
                         : Colors.white.withValues(alpha: 0.3),
                     size: 20,
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    isGeminiConfigured
+                    isLlmConfigured
                         ? 'Generate Memory'
                         : 'API Key Required',
                     style: TextStyle(
-                      color: isGeminiConfigured
+                      color: isLlmConfigured
                           ? Colors.white.withValues(alpha: 0.8)
                           : Colors.white.withValues(alpha: 0.4),
                       fontSize: 14,
@@ -489,7 +529,7 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
         return _describeColor(color);
       }).toList();
 
-      final story = await widget.imageLabelingService.geminiService.generateStory(
+      final story = await widget.imageLabelingService.activeLlmService.generateStory(
         time: widget.trace.formattedTime,
         ambientTraces: widget.trace.imageLabels,
         colorDescriptions: colorDescriptions,
@@ -719,51 +759,6 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
         fontWeight: FontWeight.w600,
         letterSpacing: 2,
       ),
-    );
-  }
-
-  Widget _buildAmbientTracesList(List<String> labels, List<int> colorPalette) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: labels.asMap().entries.map((entry) {
-        final index = entry.key;
-        final label = entry.value;
-        final baseColor = colorPalette.isNotEmpty
-            ? Color(colorPalette[index % colorPalette.length])
-            : Colors.white;
-        final accentColor = baseColor.withValues(alpha: 0.3);
-
-        return Container(
-          margin: const EdgeInsets.only(bottom: 8),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                accentColor.withValues(alpha: 0.2),
-                Colors.transparent,
-              ],
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-            ),
-            borderRadius: BorderRadius.circular(12),
-            border: Border(
-              left: BorderSide(
-                color: baseColor.withValues(alpha: 0.6),
-                width: 3,
-              ),
-            ),
-          ),
-          child: Text(
-            label,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 15,
-              fontWeight: FontWeight.w300,
-              height: 1.4,
-            ),
-          ),
-        );
-      }).toList(),
     );
   }
 

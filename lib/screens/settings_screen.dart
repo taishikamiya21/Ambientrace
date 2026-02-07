@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import '../services/gemini_service.dart';
+import '../services/image_labeling_service.dart';
+import '../services/llm_service.dart';
 import 'onboarding_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
-  final GeminiService geminiService;
+  final ImageLabelingService imageLabelingService;
 
-  const SettingsScreen({super.key, required this.geminiService});
+  const SettingsScreen({super.key, required this.imageLabelingService});
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -41,15 +42,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
     super.dispose();
   }
 
+  LlmService get _activeService => widget.imageLabelingService.activeLlmService;
+
   Future<void> _saveApiKey() async {
     if (_apiKeyController.text.trim().isEmpty) return;
 
     setState(() => _isSaving = true);
 
     try {
-      await widget.geminiService.setApiKey(_apiKeyController.text.trim());
+      await _activeService.setApiKey(_apiKeyController.text.trim());
       _apiKeyController.clear();
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -78,9 +81,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1A1A2E),
         title: const Text('Clear API Key?', style: TextStyle(color: Colors.white)),
-        content: const Text(
-          'Image labeling will be disabled until you add a new key.',
-          style: TextStyle(color: Colors.white70),
+        content: Text(
+          '${_activeService.providerName} API key will be removed. Image labeling will fall back to another provider or ML Kit.',
+          style: const TextStyle(color: Colors.white70),
         ),
         actions: [
           TextButton(
@@ -96,14 +99,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
 
     if (confirmed == true) {
-      await widget.geminiService.clearApiKey();
+      await _activeService.clearApiKey();
       setState(() {});
     }
   }
 
+  String _getProviderHint(LlmProvider provider) {
+    return switch (provider) {
+      LlmProvider.gemini => 'Get a free key at ai.google.dev',
+      LlmProvider.openai => 'Get a key at platform.openai.com',
+      LlmProvider.claude => 'Get a key at console.anthropic.com',
+    };
+  }
+
+  String _getProviderDisplayName(LlmProvider provider) {
+    return switch (provider) {
+      LlmProvider.gemini => 'Gemini',
+      LlmProvider.openai => 'ChatGPT',
+      LlmProvider.claude => 'Claude',
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isConfigured = widget.geminiService.isConfigured;
+    final isConfigured = _activeService.isConfigured;
+    final selectedProvider = widget.imageLabelingService.selectedProvider;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0F),
@@ -127,7 +147,96 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // AI Image Analysis Section
             _buildSectionTitle('AI Image Analysis'),
             const SizedBox(height: 16),
-            
+
+            // Provider Selector
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.1),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'AI Provider',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: LlmProvider.values.map((provider) {
+                      final isSelected = selectedProvider == provider;
+                      final service = switch (provider) {
+                        LlmProvider.gemini => widget.imageLabelingService.geminiService,
+                        LlmProvider.openai => widget.imageLabelingService.openaiService,
+                        LlmProvider.claude => widget.imageLabelingService.claudeService,
+                      };
+                      final isProviderConfigured = service.isConfigured;
+
+                      return Expanded(
+                        child: GestureDetector(
+                          onTap: () async {
+                            await widget.imageLabelingService.setSelectedProvider(provider);
+                            setState(() {});
+                          },
+                          child: Container(
+                            margin: EdgeInsets.only(
+                              right: provider != LlmProvider.claude ? 8 : 0,
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? Colors.white.withValues(alpha: 0.12)
+                                  : Colors.white.withValues(alpha: 0.03),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: isSelected
+                                    ? Colors.white.withValues(alpha: 0.3)
+                                    : Colors.white.withValues(alpha: 0.08),
+                                width: isSelected ? 1.5 : 1,
+                              ),
+                            ),
+                            child: Column(
+                              children: [
+                                Text(
+                                  _getProviderDisplayName(provider),
+                                  style: TextStyle(
+                                    color: isSelected
+                                        ? Colors.white
+                                        : Colors.white.withValues(alpha: 0.5),
+                                    fontSize: 13,
+                                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Icon(
+                                  isProviderConfigured ? Icons.check_circle : Icons.circle_outlined,
+                                  color: isProviderConfigured
+                                      ? Colors.green.withValues(alpha: 0.8)
+                                      : Colors.white.withValues(alpha: 0.2),
+                                  size: 14,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            // API Key Configuration for selected provider
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -151,8 +260,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       Expanded(
                         child: Text(
                           isConfigured
-                              ? 'Gemini API configured'
-                              : 'Gemini API not configured',
+                              ? '${_activeService.providerName} API configured'
+                              : '${_activeService.providerName} API not configured',
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 16,
@@ -161,11 +270,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     ],
                   ),
-                  
+
                   if (isConfigured) ...[
                     const SizedBox(height: 12),
                     Text(
-                      'Key: ${widget.geminiService.maskedApiKey}',
+                      'Key: ${_activeService.maskedApiKey}',
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.5),
                         fontSize: 14,
@@ -187,8 +296,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ] else ...[
                     const SizedBox(height: 16),
                     Text(
-                      'Add your Gemini API key to enable AI-powered image labeling. '
-                      'Get a free key at ai.google.dev',
+                      'Add your ${_activeService.providerName} API key to enable AI-powered image labeling. '
+                      '${_getProviderHint(selectedProvider)}',
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.5),
                         fontSize: 14,
@@ -514,6 +623,8 @@ class PrivacyPolicyScreen extends StatelessWidget {
               'Third-Party Services',
               '• Google ML Kit — On-device image labeling (no data sent to servers)\n'
               '• Gemini API (Optional) — Enhanced labeling if you provide an API key\n'
+              '• OpenAI API (Optional) — Alternative AI labeling provider\n'
+              '• Anthropic API (Optional) — Alternative AI labeling provider\n'
               '• Open-Meteo — Weather data (only GPS coordinates sent)',
             ),
             _buildSection(
@@ -537,7 +648,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Center(
               child: Text(
-                'Last Updated: February 3, 2026',
+                'Last Updated: February 7, 2026',
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.3),
                   fontSize: 12,

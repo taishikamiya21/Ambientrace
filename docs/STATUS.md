@@ -1,6 +1,6 @@
 # Ambientrace 開発ステータス
 
-**最終更新:** 2026-02-04 00:00 JST
+**最終更新:** 2026-02-07 JST
 
 ---
 
@@ -35,8 +35,11 @@
 │   │   ├── location_service.dart    # GPS・位置情報
 │   │   ├── color_service.dart       # カラーパレット抽出
 │   │   ├── weather_service.dart     # 天気API（Open-Meteo）
-│   │   ├── image_labeling_service.dart  # 画像ラベリング統合
-│   │   └── gemini_service.dart      # Gemini API連携 ✅ 動作確認済み
+│   │   ├── image_labeling_service.dart  # 画像ラベリング統合（プロバイダールーティング）
+│   │   ├── llm_service.dart         # LLM抽象基底クラス + LlmProvider enum
+│   │   ├── gemini_service.dart      # Gemini API連携 ✅
+│   │   ├── openai_service.dart      # OpenAI (ChatGPT) API連携 ✅
+│   │   └── claude_service.dart      # Anthropic (Claude) API連携 ✅
 │   └── widgets/
 │       ├── trace_card.dart          # トレースカード（Atmospheric Time主役）
 │       ├── shareable_trace_card.dart # SNSシェア用カード
@@ -76,7 +79,9 @@
 | **溶解アニメーション** | 写真がデータに変換されるビジュアル演出 | ✅ |
 | **ログ一覧** | 日付グループ化、検索、フィルター機能 | ✅ |
 | **詳細画面** | トレースの全データ表示、削除機能 | ✅ |
-| **設定画面** | Gemini APIキー、About、Licenses、Tutorial | ✅ |
+| **設定画面** | AIプロバイダー選択、APIキー管理、About、Licenses、Tutorial | ✅ |
+| **Multi-LLM** | Gemini / ChatGPT / Claude の3プロバイダー対応 | ✅ |
+| **タイムスタンプ分離** | 写真撮影日時（capturedAt）とカード生成日時（createdAt）を別管理 | ✅ |
 | **ユニットテスト** | GeminiServiceのテスト | ✅ |
 | **感覚フィードバック** | シャッター・アニメーション・シェア時のハプティクス | ✅ |
 | **シェア機能** | "Trace Card" 画像生成とSNS共有 | ✅ |
@@ -89,6 +94,47 @@
 | **アプリアイコン** | iOS/Android両対応のアイコン生成済み | ✅ |
 | **エラーフィードバック** | スタイル付きSnackbar | ✅ |
 | **ストアメタデータ** | 説明文・キーワード作成済み | ✅ |
+
+---
+
+### 🔄 2026-02-07 の変更履歴 (Phase 5: Multi-LLM & Data拡張)
+
+**8. Multi-LLM Support（AIプロバイダー選択）**
+- `LlmService` 抽象基底クラスを新設（共通インターフェース: `analyzeImage`, `generateStory`）
+- `GeminiService` を `LlmService` のサブクラスにリファクタリング
+- `OpenAIService` 新規作成（gpt-4o-mini、Vision API対応）
+- `ClaudeService` 新規作成（claude-sonnet-4-5-20250929、Messages API対応）
+- `ImageLabelingService` にプロバイダールーティング追加（`activeLlmService`, `selectedProvider`）
+- 設定画面に3択プロバイダーセレクター追加（各プロバイダーの設定状態を表示）
+- プロバイダー選択はSharedPreferencesに永続化
+
+**9. タイムスタンプ分離（capturedAt / createdAt）**
+- `TraceLog` モデルに `createdAt`（カード生成日時）フィールドを追加
+- `capturedAt` は写真撮影日時（EXIF取得 or カメラ撮影時刻）を保持
+- `createdAt` はトレースカード作成時の `DateTime.now()` を保持
+- 既存データとの後方互換性: `createdAt` が未設定の場合 `capturedAt` にフォールバック
+- ホーム画面のソート順を `createdAt`（カード生成順）に変更
+- Reconstructed Memory（ストーリー生成）には `capturedAt`（写真撮影日時）を使用
+
+**10. Reconstructed Memory改善**
+- ストーリー生成プロンプトを最適化: 2文・明示的な文字数/単語数制限を追加
+- 日本語: 「2文、100文字以内」 / 英語: 「2 sentences, under 50 words」
+- Gemini: maxOutputTokens 800→500 (thinking tokenのオーバーヘッド考慮)
+- OpenAI/Claude: max_tokens 800→200 (2文の出力に適切なバジェット)
+- 文章の途中切れを防止しつつ、トークン使用量を削減
+
+**変更ファイル:**
+- `lib/services/llm_service.dart`: 新規（抽象基底クラス）
+- `lib/services/openai_service.dart`: 新規
+- `lib/services/claude_service.dart`: 新規
+- `lib/services/gemini_service.dart`: LlmService継承にリファクタリング
+- `lib/services/image_labeling_service.dart`: マルチプロバイダールーティング
+- `lib/models/trace_log.dart`: `createdAt` フィールド追加
+- `lib/screens/settings_screen.dart`: プロバイダーセレクターUI
+- `lib/screens/home_screen.dart`: SettingsScreen引数変更
+- `lib/screens/trace_detail_screen.dart`: activeLlmService使用
+- `lib/screens/capture_screen.dart`: createdAt明示的指定
+- `lib/services/storage_service.dart`: createdAtでソート
 
 ---
 
@@ -392,9 +438,7 @@ Developer App Certificate is not trusted
 
 ### 優先度: 高（Phase 5 残り）
 
-1. **Multi-LLM Support**
-   - ChatGPT & Claude API統合（タグ生成用）
-   - 設定画面にプロバイダー選択UIを追加
+1. ~~**Multi-LLM Support**~~ ✅ 完了
 2. **Settings Screen モダン化**
    - プラットフォーム標準レイアウトに更新
 3. **Typography & Color リファイン**
@@ -421,6 +465,9 @@ Developer App Certificate is not trusted
 - ~~ストアメタデータ~~ → STORE_METADATA.md作成済み
 - ~~アプリアイコン~~ → iOS/Android両対応のアイコン生成済み
 - ~~Phase 5 UI Modernization~~ → Atmospheric Time、Tag Localization、全画面リデザイン完了
+- ~~Multi-LLM Support~~ → Gemini/ChatGPT/Claude 3プロバイダー対応完了
+- ~~タイムスタンプ分離~~ → capturedAt（撮影日時）/ createdAt（カード生成日時）分離完了
+- ~~Reconstructed Memory改善~~ → プロンプト最適化・トークン削減完了
 
 ---
 
@@ -465,11 +512,24 @@ flutter clean && flutter pub get && flutter run -d macos
 
 ## 💡 技術メモ
 
-### Gemini API
+### AI API（Multi-LLM対応）
 
-- **使用モデル:** `gemini-2.5-flash`（2026年2月時点で最新の高速マルチモーダルモデル）
+**Gemini（デフォルト）:**
+- **使用モデル:** `gemini-2.5-flash`（画像解析・ストーリー生成）
 - **無料枠:** 1分あたり15リクエスト、1日あたり1500リクエスト程度
-- **クォータ超過時:** 新しいAPIキーを別プロジェクトで生成すると無料枠がリセット
+
+**OpenAI (ChatGPT):**
+- **使用モデル:** `gpt-4o-mini`（Vision対応・コスト効率良）
+- **認証:** `Authorization: Bearer <API_KEY>`
+
+**Anthropic (Claude):**
+- **使用モデル:** `claude-sonnet-4-5-20250929`
+- **認証:** `x-api-key: <API_KEY>`, `anthropic-version: 2023-06-01`
+
+**共通アーキテクチャ:**
+- `LlmService` 抽象基底クラス → `GeminiService` / `OpenAIService` / `ClaudeService`
+- `ImageLabelingService` がプロバイダールーティングを管理
+- 選択プロバイダーはSharedPreferencesに永続化
 - **利用可能モデル確認コマンド:**
   ```bash
   curl "https://generativelanguage.googleapis.com/v1beta/models?key=YOUR_API_KEY" | jq '.models[] | select(.supportedGenerationMethods[] | contains("generateContent")) | .name'
@@ -483,6 +543,8 @@ flutter clean && flutter pub get && flutter run -d macos
 | 位置情報 | ⚠️ パーミッション問題 | ✅ | ✅ |
 | ジオコーディング | ❌ 非対応（スキップ） | ✅ | ✅ |
 | Gemini API | ✅ | ✅ | ✅ |
+| OpenAI API | ✅ | ✅ | ✅ |
+| Claude API | ✅ | ✅ | ✅ |
 | 天気API | ✅ | ✅ | ✅ |
 | カラーパレット | ✅ | ✅ | ✅ |
 

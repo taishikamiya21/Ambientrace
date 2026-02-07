@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 /// A single "trace" - the ambient data captured at a moment
 class TraceLog {
   final String id;
+  /// When the photo was originally taken (from EXIF or capture time)
   final DateTime capturedAt;
+  /// When this trace card was created in the app
+  final DateTime createdAt;
   final double? latitude;
   final double? longitude;
   final String? placeName;
@@ -18,6 +21,7 @@ class TraceLog {
   TraceLog({
     required this.id,
     required this.capturedAt,
+    DateTime? createdAt,
     this.latitude,
     this.longitude,
     this.placeName,
@@ -28,7 +32,7 @@ class TraceLog {
     this.imageLabels = const [],
     this.colorPalette = const [],
     this.aiDescription,
-  });
+  }) : createdAt = createdAt ?? capturedAt;
 
   /// Get colors as Color objects
   List<Color> get colors => colorPalette.map((c) => Color(c)).toList();
@@ -80,6 +84,7 @@ class TraceLog {
   Map<String, dynamic> toJson() => {
         'id': id,
         'capturedAt': capturedAt.toIso8601String(),
+        'createdAt': createdAt.toIso8601String(),
         'latitude': latitude,
         'longitude': longitude,
         'placeName': placeName,
@@ -96,6 +101,9 @@ class TraceLog {
   factory TraceLog.fromJson(Map<String, dynamic> json) => TraceLog(
         id: json['id'] as String,
         capturedAt: DateTime.parse(json['capturedAt'] as String),
+        createdAt: json['createdAt'] != null
+            ? DateTime.parse(json['createdAt'] as String)
+            : null,
         latitude: json['latitude'] as double?,
         longitude: json['longitude'] as double?,
         placeName: json['placeName'] as String?,
