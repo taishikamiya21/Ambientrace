@@ -89,11 +89,11 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "bot.clawd" "\0"
+            VALUE "CompanyName", "foo-studio" "\0"
             VALUE "FileDescription", "ambientrace" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "ambientrace" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 bot.clawd. All rights reserved." "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 foo-studio. All rights reserved." "\0"
             VALUE "OriginalFilename", "ambientrace.exe" "\0"
             VALUE "ProductName", "ambientrace" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
