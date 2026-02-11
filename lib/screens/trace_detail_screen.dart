@@ -8,6 +8,7 @@ import 'package:share_plus/share_plus.dart';
 import '../models/trace_log.dart';
 import '../services/storage_service.dart';
 import '../services/image_labeling_service.dart';
+import '../theme/app_theme.dart';
 import '../widgets/shareable_trace_card.dart';
 
 class TraceDetailScreen extends StatefulWidget {
@@ -37,37 +38,41 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0F),
+      backgroundColor: AppColors.canvasPrimary,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back,
+              color: Colors.white.withValues(alpha: AppOpacity.textHigh)),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           widget.trace.imageLabels.isNotEmpty
               ? widget.trace.imageLabels.first
               : widget.trace.atmosphericTime,
-          style: const TextStyle(color: Colors.white70, fontSize: 16),
+          style: AppTypography.body(opacity: AppOpacity.textBody),
           overflow: TextOverflow.ellipsis,
         ),
         actions: [
           IconButton(
             icon: _isSharing
-                ? const SizedBox(
+                ? SizedBox(
                     width: 20,
                     height: 20,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: Colors.white54,
+                      color: Colors.white
+                          .withValues(alpha: AppOpacity.textTertiary),
                     ),
                   )
-                : const Icon(Icons.share_outlined, color: Colors.white70),
+                : Icon(Icons.share_outlined,
+                    color: Colors.white
+                        .withValues(alpha: AppOpacity.textBody)),
             onPressed: _isSharing ? null : _shareTrace,
           ),
           IconButton(
-            icon: const Icon(Icons.delete_outline, color: Colors.red),
+            icon: Icon(Icons.delete_outline, color: AppColors.error),
             onPressed: () => _confirmDelete(context),
           ),
         ],
@@ -81,89 +86,90 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
               _buildColorGradientHero(),
 
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.xl),
 
                   // 1. MEANING: Ambient Tags as hero
                   if (widget.trace.imageLabels.isNotEmpty) ...[
                     Text(
                       widget.trace.imageLabels.first,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 28,
-                        fontWeight: FontWeight.w300,
-                        letterSpacing: 1,
-                        height: 1.3,
-                      ),
+                      style: AppTypography.headline(),
                     ),
                     if (widget.trace.imageLabels.length > 1) ...[
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppSpacing.md),
                       Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: widget.trace.imageLabels.skip(1).map((label) {
-                          final index = widget.trace.imageLabels.indexOf(label);
-                          final accentColor = widget.trace.colorPalette.isNotEmpty
-                              ? Color(widget.trace.colorPalette[index % widget.trace.colorPalette.length])
+                        spacing: AppSpacing.xs,
+                        runSpacing: AppSpacing.xs,
+                        children:
+                            widget.trace.imageLabels.skip(1).map((label) {
+                          final index =
+                              widget.trace.imageLabels.indexOf(label);
+                          final accentColor = widget
+                                  .trace.colorPalette.isNotEmpty
+                              ? Color(widget.trace.colorPalette[index %
+                                      widget.trace.colorPalette.length])
                                   .withValues(alpha: 0.3)
-                              : Colors.white.withValues(alpha: 0.1);
+                              : Colors.white.withValues(
+                                  alpha: AppOpacity.surfaceElevated);
                           return Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: AppSpacing.xs),
                             decoration: BoxDecoration(
                               color: accentColor,
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(
+                                  AppRadius.pill),
                               border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.15),
+                                color: Colors.white.withValues(
+                                    alpha: AppOpacity.borderDefault),
                                 width: 1,
                               ),
                             ),
                             child: Text(
                               label,
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.85),
-                                fontSize: 14,
-                                fontWeight: FontWeight.w400,
-                              ),
+                              style: AppTypography.label(
+                                  opacity: AppOpacity.textHigh),
                             ),
                           );
                         }).toList(),
                       ),
                     ],
-                    const SizedBox(height: 28),
+                    const SizedBox(height: AppSpacing.xxl),
                   ] else ...[
                     Text(
                       'No ambient traces captured',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.3),
-                        fontSize: 16,
-                        fontStyle: FontStyle.italic,
-                      ),
+                      style: AppTypography.body(
+                              opacity: AppOpacity.textMuted)
+                          .copyWith(fontStyle: FontStyle.italic),
                     ),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: AppSpacing.xxl),
                   ],
 
                   // 2. FEELING: Color swatches
                   if (widget.trace.colorPalette.isNotEmpty) ...[
                     _buildSectionTitle('Colors'),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppSpacing.sm),
                     Row(
-                      children: widget.trace.colorPalette.map((colorValue) {
+                      children:
+                          widget.trace.colorPalette.map((colorValue) {
                         return Expanded(
                           child: Container(
                             height: 60,
-                            margin: const EdgeInsets.only(right: 8),
+                            margin: const EdgeInsets.only(
+                                right: AppSpacing.xs),
                             decoration: BoxDecoration(
                               color: Color(colorValue),
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(
+                                  AppRadius.container),
                             ),
                           ),
                         );
                       }).toList(),
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: AppSpacing.xxl),
                   ],
 
                   // 3. CONTEXT: Atmospheric Time + exact time
@@ -173,85 +179,86 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
                     children: [
                       Text(
                         widget.trace.atmosphericTime,
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.6),
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400,
-                          letterSpacing: 2,
-                        ),
+                        style: AppTypography.body(
+                            opacity: AppOpacity.textSecondary),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: AppSpacing.sm),
                       Text(
                         '${widget.trace.formattedTime}  ${widget.trace.formattedDate}',
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.3),
-                          fontSize: 12,
-                          letterSpacing: 1,
-                        ),
+                        style: AppTypography.mono(
+                            opacity: AppOpacity.textMuted),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: AppSpacing.xxl),
 
                   // Location
                   if (widget.trace.placeName != null) ...[
                     _buildSectionTitle('Location'),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppSpacing.sm),
                     _buildInfoCard(
                       icon: Icons.location_on_outlined,
                       value: widget.trace.placeName!,
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: AppSpacing.xxl),
                   ],
 
                   // Weather & Atmosphere
-                  if (widget.trace.temperature != null || widget.trace.weatherCondition != null || widget.trace.noiseLevel != null) ...[
+                  if (widget.trace.temperature != null ||
+                      widget.trace.weatherCondition != null ||
+                      widget.trace.noiseLevel != null) ...[
                     _buildSectionTitle('Atmosphere'),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppSpacing.sm),
                     Row(
                       children: [
                         if (widget.trace.temperature != null)
                           Expanded(
                             child: _buildInfoCard(
                               icon: Icons.thermostat_outlined,
-                              value: '${widget.trace.temperature!.round()}\u00B0C',
+                              value:
+                                  '${widget.trace.temperature!.round()}\u00B0C',
                             ),
                           ),
-                        if (widget.trace.temperature != null && widget.trace.weatherCondition != null)
-                          const SizedBox(width: 12),
+                        if (widget.trace.temperature != null &&
+                            widget.trace.weatherCondition != null)
+                          const SizedBox(width: AppSpacing.sm),
                         if (widget.trace.weatherCondition != null)
                           Expanded(
                             child: _buildInfoCard(
-                              icon: _getWeatherIcon(widget.trace.weatherCondition!),
+                              icon: _getWeatherIcon(
+                                  widget.trace.weatherCondition!),
                               value: widget.trace.weatherCondition!,
                             ),
                           ),
                       ],
                     ),
                     if (widget.trace.noiseLevel != null) ...[
-                      const SizedBox(height: 12),
+                      const SizedBox(height: AppSpacing.sm),
                       _buildInfoCard(
                         icon: Icons.volume_up_outlined,
-                        value: '${widget.trace.noiseLevel!.round()} dB',
+                        value:
+                            '${widget.trace.noiseLevel!.round()} dB',
                       ),
                     ],
-                    const SizedBox(height: 32),
+                    const SizedBox(height: AppSpacing.xxl),
                   ],
                   // AI Story Generation
                   _buildStorySection(),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: AppSpacing.xxl),
 
                   // Coordinates
-                  if (widget.trace.latitude != null && widget.trace.longitude != null) ...[
+                  if (widget.trace.latitude != null &&
+                      widget.trace.longitude != null) ...[
                     _buildSectionTitle('Coordinates'),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppSpacing.sm),
                     _buildInfoCard(
                       icon: Icons.explore_outlined,
-                      value: '${widget.trace.latitude!.toStringAsFixed(4)}, ${widget.trace.longitude!.toStringAsFixed(4)}',
+                      value:
+                          '${widget.trace.latitude!.toStringAsFixed(4)}, ${widget.trace.longitude!.toStringAsFixed(4)}',
                     ),
                   ],
 
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.xl),
                 ],
               ),
             ),
@@ -262,12 +269,16 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
   }
 
   Widget _buildColorGradientHero() {
-    final colors = widget.trace.colorPalette.map((c) => Color(c)).toList();
+    final colors =
+        widget.trace.colorPalette.map((c) => Color(c)).toList();
 
     // Build gradient stops from the palette
     final List<Color> gradientColors;
     if (colors.length == 1) {
-      gradientColors = [colors.first, colors.first.withValues(alpha: 0.6)];
+      gradientColors = [
+        colors.first,
+        colors.first.withValues(alpha: 0.6)
+      ];
     } else {
       gradientColors = colors;
     }
@@ -287,7 +298,7 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
         gradient: LinearGradient(
           colors: [
             Colors.transparent,
-            const Color(0xFF0A0A0F),
+            AppColors.canvasPrimary,
           ],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
@@ -298,7 +309,8 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
   }
 
   Widget _buildStorySection() {
-    final isLlmConfigured = widget.imageLabelingService.activeLlmService.isConfigured;
+    final isLlmConfigured =
+        widget.imageLabelingService.activeLlmService.isConfigured;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -306,38 +318,47 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
         Row(
           children: [
             _buildSectionTitle('Reconstructed Memory'),
-            const SizedBox(width: 8),
+            const SizedBox(width: AppSpacing.xs),
             Tooltip(
-              message: 'AI creates a story from the atmospheric data (Time, Color, Labels).',
+              message: ui.PlatformDispatcher.instance.locale
+                          .languageCode ==
+                      'ja'
+                  ? 'AIが環境データ（時間・色・ラベル）からストーリーを生成します。'
+                  : 'AI creates a story from the atmospheric data (Time, Color, Labels).',
               triggerMode: TooltipTriggerMode.tap,
               showDuration: const Duration(seconds: 3),
               child: Icon(
                 Icons.help_outline,
-                color: Colors.white.withValues(alpha: 0.3),
+                color: Colors.white
+                    .withValues(alpha: AppOpacity.textMuted),
                 size: 14,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.sm),
 
         if (_generatedStory != null) ...[
           // Display generated story
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(AppSpacing.lg),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Colors.white.withValues(alpha: 0.08),
-                  Colors.white.withValues(alpha: 0.03),
+                  Colors.white
+                      .withValues(alpha: AppOpacity.surfaceContainer),
+                  Colors.white
+                      .withValues(alpha: AppOpacity.surfaceFaint),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius:
+                  BorderRadius.circular(AppRadius.surface),
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.15),
+                color: Colors.white
+                    .withValues(alpha: AppOpacity.borderDefault),
               ),
             ),
             child: Column(
@@ -347,51 +368,43 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
                   children: [
                     Icon(
                       Icons.auto_awesome,
-                      color: Colors.amber.withValues(alpha: 0.7),
+                      color: AppColors.warning.withValues(alpha: 0.7),
                       size: 16,
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: AppSpacing.xs),
                     Text(
-                      'AI Generated',
-                      style: TextStyle(
-                        color: Colors.amber.withValues(alpha: 0.7),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 1,
-                      ),
+                      'AI GENERATED',
+                      style: AppTypography.section()
+                          .copyWith(color: AppColors.warning.withValues(alpha: 0.7)),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.md),
                 Text(
                   _generatedStory!,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.9),
-                    fontSize: 15,
-                    fontWeight: FontWeight.w300,
-                    height: 1.6,
-                    fontStyle: FontStyle.italic,
-                  ),
+                  style: AppTypography.body(
+                          opacity: AppOpacity.textHigh)
+                      .copyWith(fontStyle: FontStyle.italic),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.sm),
           // Regenerate button
           Center(
             child: TextButton.icon(
-              onPressed: _isGeneratingStory ? null : _generateStory,
+              onPressed:
+                  _isGeneratingStory ? null : _generateStory,
               icon: Icon(
                 Icons.refresh,
                 size: 16,
-                color: Colors.white.withValues(alpha: 0.5),
+                color: Colors.white
+                    .withValues(alpha: AppOpacity.textTertiary),
               ),
               label: Text(
                 'Regenerate',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.5),
-                  fontSize: 12,
-                ),
+                style: AppTypography.mono(
+                    opacity: AppOpacity.textTertiary),
               ),
             ),
           ),
@@ -399,12 +412,15 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
           // Loading state
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(32),
+            padding: const EdgeInsets.all(AppSpacing.xxl),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(16),
+              color: Colors.white
+                  .withValues(alpha: AppOpacity.surfaceSubtle),
+              borderRadius:
+                  BorderRadius.circular(AppRadius.surface),
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.1),
+                color: Colors.white
+                    .withValues(alpha: AppOpacity.borderSubtle),
               ),
             ),
             child: Column(
@@ -414,16 +430,15 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
                   height: 24,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: Colors.amber.withValues(alpha: 0.7),
+                    color:
+                        AppColors.warning.withValues(alpha: 0.7),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.md),
                 Text(
                   'Generating memory...',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.5),
-                    fontSize: 13,
-                  ),
+                  style: AppTypography.mono(
+                      opacity: AppOpacity.textTertiary),
                 ),
               ],
             ),
@@ -432,35 +447,36 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
           // Error state
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
-              color: Colors.red.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
+              color: AppColors.error.withValues(alpha: 0.1),
+              borderRadius:
+                  BorderRadius.circular(AppRadius.container),
               border: Border.all(
-                color: Colors.red.withValues(alpha: 0.3),
+                color: AppColors.error.withValues(alpha: 0.3),
               ),
             ),
             child: Row(
               children: [
                 Icon(
                   Icons.error_outline,
-                  color: Colors.red.withValues(alpha: 0.7),
+                  color: AppColors.error.withValues(alpha: 0.7),
                   size: 20,
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Text(
                     _storyError!,
-                    style: TextStyle(
-                      color: Colors.red.withValues(alpha: 0.8),
-                      fontSize: 13,
+                    style: AppTypography.mono().copyWith(
+                      color:
+                          AppColors.error.withValues(alpha: 0.8),
                     ),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.sm),
           Center(
             child: TextButton.icon(
               onPressed: _generateStory,
@@ -469,17 +485,20 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
             ),
           ),
         ] else ...[
-          // Generate button
+          // Generate button — pill style
           GestureDetector(
             onTap: isLlmConfigured ? _generateStory : null,
             child: Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(AppSpacing.lg),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(16),
+                color: Colors.white
+                    .withValues(alpha: AppOpacity.surfaceSubtle),
+                borderRadius:
+                    BorderRadius.circular(AppRadius.surface),
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.1),
+                  color: Colors.white
+                      .withValues(alpha: AppOpacity.borderSubtle),
                 ),
               ),
               child: Row(
@@ -488,21 +507,21 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
                   Icon(
                     Icons.auto_awesome,
                     color: isLlmConfigured
-                        ? Colors.amber.withValues(alpha: 0.7)
-                        : Colors.white.withValues(alpha: 0.3),
+                        ? AppColors.warning
+                            .withValues(alpha: 0.7)
+                        : Colors.white.withValues(
+                            alpha: AppOpacity.textMuted),
                     size: 20,
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: AppSpacing.sm),
                   Text(
                     isLlmConfigured
                         ? 'Generate Memory'
                         : 'API Key Required',
-                    style: TextStyle(
-                      color: isLlmConfigured
-                          ? Colors.white.withValues(alpha: 0.8)
-                          : Colors.white.withValues(alpha: 0.4),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
+                    style: AppTypography.label(
+                      opacity: isLlmConfigured
+                          ? AppOpacity.textHigh
+                          : AppOpacity.textCaption,
                     ),
                   ),
                 ],
@@ -521,15 +540,19 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
     });
 
     try {
-      final languageCode = ui.PlatformDispatcher.instance.locale.languageCode;
+      final languageCode =
+          ui.PlatformDispatcher.instance.locale.languageCode;
 
       // Convert color palette to descriptions
-      final colorDescriptions = widget.trace.colorPalette.map((colorValue) {
+      final colorDescriptions =
+          widget.trace.colorPalette.map((colorValue) {
         final color = Color(colorValue);
         return _describeColor(color);
       }).toList();
 
-      final story = await widget.imageLabelingService.activeLlmService.generateStory(
+      final story = await widget
+          .imageLabelingService.activeLlmService
+          .generateStory(
         time: widget.trace.formattedTime,
         ambientTraces: widget.trace.imageLabels,
         colorDescriptions: colorDescriptions,
@@ -546,7 +569,8 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
           _generatedStory = story;
           _isGeneratingStory = false;
           if (story == null) {
-            _storyError = 'Failed to generate memory. Please try again.';
+            _storyError =
+                'Failed to generate memory. Please try again.';
           }
         });
       }
@@ -585,7 +609,8 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
           await tempDir.create(recursive: true);
         }
 
-        final file = File('${tempDir.path}/ambientrace_${widget.trace.id}.png');
+        final file = File(
+            '${tempDir.path}/ambientrace_${widget.trace.id}.png');
         await file.writeAsBytes(imageBytes);
 
         if (!mounted) return;
@@ -613,12 +638,12 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
           SnackBar(
             content: Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.error_outline,
-                  color: Colors.redAccent,
+                  color: AppColors.error,
                   size: 20,
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Text(
                     'Failed to share: ${e.toString().length > 50 ? e.toString().substring(0, 50) : e.toString()}',
@@ -627,9 +652,11 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
                 ),
               ],
             ),
-            backgroundColor: Colors.black87,
+            backgroundColor: AppColors.canvasSecondary,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+                borderRadius:
+                    BorderRadius.circular(AppRadius.container)),
           ),
         );
       }
@@ -675,7 +702,8 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
 
     try {
       // Capture the image
-      final boundary = repaintKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+      final boundary = repaintKey.currentContext?.findRenderObject()
+          as RenderRepaintBoundary?;
       if (boundary == null) {
         print('Share error: RenderRepaintBoundary is null');
         return null;
@@ -686,16 +714,19 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
         return null;
       }
 
-      print('Share: Capturing image with size ${boundary.size}');
+      print(
+          'Share: Capturing image with size ${boundary.size}');
       final image = await boundary.toImage(pixelRatio: 3.0);
-      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      final byteData =
+          await image.toByteData(format: ui.ImageByteFormat.png);
 
       if (byteData == null) {
         print('Share error: byteData is null');
         return null;
       }
 
-      print('Share: Image captured successfully, size: ${byteData.lengthInBytes} bytes');
+      print(
+          'Share: Image captured successfully, size: ${byteData.lengthInBytes} bytes');
       return byteData.buffer.asUint8List();
     } catch (e) {
       print('Share error in _captureWidgetAsImage: $e');
@@ -752,37 +783,36 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
 
   Widget _buildSectionTitle(String title) {
     return Text(
-      title,
-      style: TextStyle(
-        color: Colors.white.withValues(alpha: 0.5),
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
-        letterSpacing: 2,
-      ),
+      title.toUpperCase(),
+      style: AppTypography.section(),
     );
   }
 
-  Widget _buildInfoCard({required IconData icon, required String value}) {
+  Widget _buildInfoCard(
+      {required IconData icon, required String value}) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white
+            .withValues(alpha: AppOpacity.surfaceSubtle),
+        borderRadius:
+            BorderRadius.circular(AppRadius.container),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
+          color: Colors.white
+              .withValues(alpha: AppOpacity.borderSubtle),
         ),
       ),
       child: Row(
         children: [
-          Icon(icon, color: Colors.white54, size: 24),
-          const SizedBox(width: 12),
+          Icon(icon,
+              color: Colors.white
+                  .withValues(alpha: AppOpacity.textTertiary),
+              size: 24),
+          const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-              ),
+              style: AppTypography.body(),
             ),
           ),
         ],
@@ -816,13 +846,15 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
   void _confirmDelete(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF1A1A2E),
+      backgroundColor: AppColors.canvasSecondary,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppRadius.surface)),
       ),
       builder: (context) => SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+          padding: const EdgeInsets.fromLTRB(
+              AppSpacing.xl, AppSpacing.xl, AppSpacing.xl, AppSpacing.md),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -830,33 +862,31 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: Colors.white
+                      .withValues(alpha: AppOpacity.textGhost),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              const SizedBox(height: 24),
-              const Text(
+              const SizedBox(height: AppSpacing.xl),
+              Text(
                 'Delete Trace?',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: AppTypography.subtitle(
+                    opacity: AppOpacity.textHero),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.xs),
               Text(
                 'This trace will be permanently deleted.',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.6),
-                  fontSize: 14,
-                ),
+                style: AppTypography.body(
+                    opacity: AppOpacity.textSecondary),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.xl),
+              // Delete button — pill shape
               SizedBox(
                 width: double.infinity,
                 child: TextButton(
                   onPressed: () async {
-                    await widget.storageService.deleteTrace(widget.trace.id);
+                    await widget.storageService
+                        .deleteTrace(widget.trace.id);
                     widget.onDelete();
                     if (context.mounted) {
                       Navigator.pop(context);
@@ -864,39 +894,47 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
                     }
                   },
                   style: TextButton.styleFrom(
-                    backgroundColor: Colors.red.withValues(alpha: 0.15),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    backgroundColor:
+                        AppColors.error.withValues(alpha: 0.15),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 14),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(
+                          AppRadius.pill),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Delete',
-                    style: TextStyle(
-                      color: Colors.red,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                    style: AppTypography.label().copyWith(
+                      color: AppColors.error,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.xs),
+              // Cancel button — pill shape
               SizedBox(
                 width: double.infinity,
                 child: TextButton(
                   onPressed: () => Navigator.pop(context),
                   style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    backgroundColor: Colors.white
+                        .withValues(alpha: AppOpacity.surfaceSubtle),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 14),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(
+                          AppRadius.pill),
+                      side: BorderSide(
+                        color: Colors.white.withValues(
+                            alpha: AppOpacity.borderDefault),
+                      ),
                     ),
                   ),
                   child: Text(
                     'Cancel',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.6),
-                      fontSize: 16,
-                    ),
+                    style: AppTypography.label(
+                        opacity: AppOpacity.textSecondary),
                   ),
                 ),
               ),

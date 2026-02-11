@@ -124,7 +124,7 @@ class ClaudeService extends LlmService {
 
       final body = {
         'model': 'claude-sonnet-4-5-20250929',
-        'max_tokens': 200,
+        'max_tokens': 400,
         'messages': [
           {
             'role': 'user',

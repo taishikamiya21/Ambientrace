@@ -1,6 +1,6 @@
 # Ambientrace 開発ステータス
 
-**最終更新:** 2026-02-07 JST
+**最終更新:** 2026-02-11 JST
 
 ---
 
@@ -434,27 +434,23 @@ Developer App Certificate is not trusted
 
 ---
 
-## 🔲 今後のタスク
+## 🔲 今後のタスク — Phase 6: リリース準備
 
-### 優先度: 高（Phase 5 残り）
+> **バックログ:** [BACKLOG.md](./BACKLOG.md) — TestFlightテスト修正項目
+> **デザインシステム:** [FOOSTUDIO_DESIGN_SYSTEM_JP.md](./FOOSTUDIO_DESIGN_SYSTEM_JP.md)
+> **タスク詳細:** [TASKS.md](./TASKS.md) — Phase 6A〜6E
 
-1. ~~**Multi-LLM Support**~~ ✅ 完了
-2. **Settings Screen モダン化**
-   - プラットフォーム標準レイアウトに更新
-3. **Typography & Color リファイン**
-   - コントラスト、階層の最終調整
-4. **Micro-interactions & Haptics チューンアップ**
-
-### 優先度: 高（Phase 4 残り）
-
-5. **Android実機テスト**
-6. **ストア公開準備**
-   - スクリーンショット撮影（ホーム、キャプチャ、詳細、シェア）
-   - App Store / Google Play Console への登録
+| フェーズ | 内容 | ステータス |
+|:--|:--|:--|
+| 6A | バグ修正・品質改善（TestFlight Backlog） | ⏳ 準備中 |
+| 6B | f∞studio デザインシステム適用 | ⏳ 未着手 |
+| 6C | UI/UX 最終仕上げ（Settings, Trace Card, Typography） | ⏳ 未着手 |
+| 6D | ストア申請準備（Screenshots, Metadata） | ⏳ 未着手 |
+| 6E | 最終検証 & App Store / Google Play 申請 | ⏳ 未着手 |
 
 ### 優先度: 中
 
-7. **macOS位置情報の問題解決**（開発環境用）
+- **macOS位置情報の問題解決**（開発環境用、リリースには影響なし）
 
 ### ✅ 完了済み
 
@@ -468,6 +464,7 @@ Developer App Certificate is not trusted
 - ~~Multi-LLM Support~~ → Gemini/ChatGPT/Claude 3プロバイダー対応完了
 - ~~タイムスタンプ分離~~ → capturedAt（撮影日時）/ createdAt（カード生成日時）分離完了
 - ~~Reconstructed Memory改善~~ → プロンプト最適化・トークン削減完了
+- ~~TestFlightアップロード~~ → 初回ビルド配布済み
 
 ---
 
@@ -506,6 +503,8 @@ flutter clean && flutter pub get && flutter run -d macos
 
 - **企画書:** `/Users/tai/Documents/development/App/Ambientrace/docs/SPEC.md`
 - **Claude Code指示書:** `/Users/tai/Documents/development/App/Ambientrace/docs/INSTRUCTIONS_FOR_CLAUDE.md`
+- **バックログ:** `/Users/tai/Documents/development/App/Ambientrace/docs/BACKLOG.md`
+- **デザインシステム:** `/Users/tai/Documents/development/App/Ambientrace/docs/FOOSTUDIO_DESIGN_SYSTEM_JP.md`
 - **f∞studio企画書:** `/Users/tai/Documents/development/App/Reference/foostudio_KG+企画書_20251230.pdf`
 
 ---

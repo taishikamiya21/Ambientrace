@@ -1,7 +1,9 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../services/image_labeling_service.dart';
 import '../services/llm_service.dart';
+import '../theme/app_theme.dart';
 import 'onboarding_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -55,9 +57,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('API Key saved successfully'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success.withValues(alpha: 0.9),
           ),
         );
         setState(() {});
@@ -75,24 +77,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  bool get _isJapanese => ui.PlatformDispatcher.instance.locale.languageCode == 'ja';
+
   Future<void> _clearApiKey() async {
+    final isJa = _isJapanese;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1A2E),
-        title: const Text('Clear API Key?', style: TextStyle(color: Colors.white)),
+        backgroundColor: AppColors.canvasSecondary,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.surface),
+        ),
+        title: Text(
+          isJa ? 'APIキーを削除しますか？' : 'Clear API Key?',
+          style: AppTypography.subtitle(opacity: AppOpacity.textHero),
+        ),
         content: Text(
-          '${_activeService.providerName} API key will be removed. Image labeling will fall back to another provider or ML Kit.',
-          style: const TextStyle(color: Colors.white70),
+          isJa
+              ? '${_activeService.providerName}のAPIキーが削除されます。画像ラベリングは他のプロバイダーまたはML Kitにフォールバックします。'
+              : '${_activeService.providerName} API key will be removed. Image labeling will fall back to another provider or ML Kit.',
+          style: AppTypography.body(opacity: AppOpacity.textBody),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(
+              isJa ? 'キャンセル' : 'Cancel',
+              style: AppTypography.label(opacity: AppOpacity.textSecondary),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Clear', style: TextStyle(color: Colors.red)),
+            child: Text(
+              isJa ? '削除' : 'Clear',
+              style: AppTypography.label().copyWith(color: AppColors.error),
+            ),
           ),
         ],
       ),
@@ -105,6 +124,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   String _getProviderHint(LlmProvider provider) {
+    if (_isJapanese) {
+      return switch (provider) {
+        LlmProvider.gemini => '無料キーはai.google.devで取得できます',
+        LlmProvider.openai => 'キーはplatform.openai.comで取得できます',
+        LlmProvider.claude => 'キーはconsole.anthropic.comで取得できます',
+      };
+    }
     return switch (provider) {
       LlmProvider.gemini => 'Get a free key at ai.google.dev',
       LlmProvider.openai => 'Get a key at platform.openai.com',
@@ -126,50 +152,47 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final selectedProvider = widget.imageLabelingService.selectedProvider;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0F),
+      backgroundColor: AppColors.canvasPrimary,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back,
+              color: Colors.white.withValues(alpha: AppOpacity.textHigh)),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Settings',
-          style: TextStyle(color: Colors.white),
+        title: Text(
+          _isJapanese ? '設定' : 'Settings',
+          style: AppTypography.subtitle(opacity: AppOpacity.textHigh),
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(AppSpacing.xl),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // AI Image Analysis Section
-            _buildSectionTitle('AI Image Analysis'),
-            const SizedBox(height: 16),
+            _buildSectionTitle(_isJapanese ? 'AI画像解析' : 'AI Image Analysis'),
+            const SizedBox(height: AppSpacing.md),
 
             // Provider Selector
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(AppSpacing.lg),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(16),
+                color: Colors.white.withValues(alpha: AppOpacity.surfaceSubtle),
+                borderRadius: BorderRadius.circular(AppRadius.container),
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.1),
+                  color: Colors.white.withValues(alpha: AppOpacity.borderSubtle),
                 ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'AI Provider',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.7),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
+                    _isJapanese ? 'AIプロバイダー' : 'AI Provider',
+                    style: AppTypography.label(opacity: AppOpacity.textBody),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.sm),
                   Row(
                     children: LlmProvider.values.map((provider) {
                       final isSelected = selectedProvider == provider;
@@ -188,18 +211,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           },
                           child: Container(
                             margin: EdgeInsets.only(
-                              right: provider != LlmProvider.claude ? 8 : 0,
+                              right: provider != LlmProvider.claude ? AppSpacing.xs : 0,
                             ),
-                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
                             decoration: BoxDecoration(
                               color: isSelected
-                                  ? Colors.white.withValues(alpha: 0.12)
-                                  : Colors.white.withValues(alpha: 0.03),
-                              borderRadius: BorderRadius.circular(12),
+                                  ? Colors.white.withValues(alpha: AppOpacity.surfaceElevated)
+                                  : Colors.white.withValues(alpha: AppOpacity.surfaceFaint),
+                              borderRadius: BorderRadius.circular(AppRadius.container),
                               border: Border.all(
                                 color: isSelected
-                                    ? Colors.white.withValues(alpha: 0.3)
-                                    : Colors.white.withValues(alpha: 0.08),
+                                    ? Colors.white.withValues(alpha: AppOpacity.borderStrong)
+                                    : Colors.white.withValues(alpha: AppOpacity.borderSubtle),
                                 width: isSelected ? 1.5 : 1,
                               ),
                             ),
@@ -207,20 +230,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               children: [
                                 Text(
                                   _getProviderDisplayName(provider),
-                                  style: TextStyle(
-                                    color: isSelected
-                                        ? Colors.white
-                                        : Colors.white.withValues(alpha: 0.5),
-                                    fontSize: 13,
-                                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                                  ),
+                                  style: isSelected
+                                      ? AppTypography.label(opacity: AppOpacity.textHero)
+                                      : AppTypography.label(opacity: AppOpacity.textTertiary),
                                 ),
-                                const SizedBox(height: 4),
+                                const SizedBox(height: AppSpacing.xxs),
                                 Icon(
                                   isProviderConfigured ? Icons.check_circle : Icons.circle_outlined,
                                   color: isProviderConfigured
-                                      ? Colors.green.withValues(alpha: 0.8)
-                                      : Colors.white.withValues(alpha: 0.2),
+                                      ? AppColors.success.withValues(alpha: 0.8)
+                                      : Colors.white.withValues(alpha: AppOpacity.textGhost),
                                   size: 14,
                                 ),
                               ],
@@ -234,16 +253,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
 
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.sm),
 
             // API Key Configuration for selected provider
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(AppSpacing.lg),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(16),
+                color: Colors.white.withValues(alpha: AppOpacity.surfaceSubtle),
+                borderRadius: BorderRadius.circular(AppRadius.container),
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.1),
+                  color: Colors.white.withValues(alpha: AppOpacity.borderSubtle),
                 ),
               ),
               child: Column(
@@ -253,76 +272,78 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     children: [
                       Icon(
                         isConfigured ? Icons.check_circle : Icons.info_outline,
-                        color: isConfigured ? Colors.green : Colors.orange,
+                        color: isConfigured ? AppColors.success : AppColors.warning,
                         size: 20,
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: AppSpacing.sm),
                       Expanded(
                         child: Text(
                           isConfigured
-                              ? '${_activeService.providerName} API configured'
-                              : '${_activeService.providerName} API not configured',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                          ),
+                              ? (_isJapanese
+                                  ? '${_activeService.providerName} API設定済み'
+                                  : '${_activeService.providerName} API configured')
+                              : (_isJapanese
+                                  ? '${_activeService.providerName} API未設定'
+                                  : '${_activeService.providerName} API not configured'),
+                          style: AppTypography.body(opacity: AppOpacity.textHigh),
                         ),
                       ),
                     ],
                   ),
 
                   if (isConfigured) ...[
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppSpacing.sm),
                     Text(
                       'Key: ${_activeService.maskedApiKey}',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.5),
-                        fontSize: 14,
-                        fontFamily: 'monospace',
-                      ),
+                      style: AppTypography.mono(opacity: AppOpacity.textTertiary),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppSpacing.md),
+                    // Clear API key — pill button
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton(
                         onPressed: _clearApiKey,
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.red,
-                          side: const BorderSide(color: Colors.red),
+                          foregroundColor: AppColors.error,
+                          side: BorderSide(color: AppColors.error),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(AppRadius.pill),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
-                        child: const Text('Clear API Key'),
+                        child: Text(
+                          _isJapanese ? 'APIキーを削除' : 'Clear API Key',
+                          style: AppTypography.label().copyWith(color: AppColors.error),
+                        ),
                       ),
                     ),
                   ] else ...[
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppSpacing.md),
                     Text(
-                      'Add your ${_activeService.providerName} API key to enable AI-powered image labeling. '
-                      '${_getProviderHint(selectedProvider)}',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.5),
-                        fontSize: 14,
-                      ),
+                      _isJapanese
+                          ? '${_activeService.providerName}のAPIキーを追加してAI画像ラベリングを有効にしましょう。${_getProviderHint(selectedProvider)}'
+                          : 'Add your ${_activeService.providerName} API key to enable AI-powered image labeling. '
+                            '${_getProviderHint(selectedProvider)}',
+                      style: AppTypography.body(opacity: AppOpacity.textTertiary),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppSpacing.md),
                     TextField(
                       controller: _apiKeyController,
                       obscureText: _isObscured,
-                      style: const TextStyle(color: Colors.white),
+                      style: AppTypography.body(opacity: AppOpacity.textHigh),
                       decoration: InputDecoration(
-                        hintText: 'Enter API Key',
-                        hintStyle: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.3),
-                        ),
+                        hintText: _isJapanese ? 'APIキーを入力' : 'Enter API Key',
+                        hintStyle: AppTypography.body(opacity: AppOpacity.textMuted),
                         filled: true,
-                        fillColor: Colors.white.withValues(alpha: 0.05),
+                        fillColor: Colors.white.withValues(alpha: AppOpacity.surfaceSubtle),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(AppRadius.container),
                           borderSide: BorderSide.none,
                         ),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _isObscured ? Icons.visibility : Icons.visibility_off,
-                            color: Colors.white54,
+                            color: Colors.white.withValues(alpha: AppOpacity.textTertiary),
                           ),
                           onPressed: () {
                             setState(() => _isObscured = !_isObscured);
@@ -330,29 +351,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppSpacing.md),
+                    // Save button — pill shape
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: _isSaving ? null : _saveApiKey,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white.withValues(alpha: 0.1),
+                          backgroundColor: Colors.white.withValues(alpha: AppOpacity.surfaceElevated),
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(AppRadius.pill),
+                            side: BorderSide(
+                              color: Colors.white.withValues(alpha: AppOpacity.borderDefault),
+                            ),
                           ),
                         ),
                         child: _isSaving
-                            ? const SizedBox(
+                            ? SizedBox(
                                 width: 20,
                                 height: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  color: Colors.white,
+                                  color: Colors.white.withValues(alpha: AppOpacity.textHigh),
                                 ),
                               )
-                            : const Text('Save API Key'),
+                            : Text(
+                                _isJapanese ? 'APIキーを保存' : 'Save API Key',
+                                style: AppTypography.label(opacity: AppOpacity.textHigh),
+                              ),
                       ),
                     ),
                   ],
@@ -360,18 +388,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
 
-            const SizedBox(height: 32),
+            const SizedBox(height: AppSpacing.xxl),
 
             // General Section
-            _buildSectionTitle('General'),
-            const SizedBox(height: 16),
+            _buildSectionTitle(_isJapanese ? '一般' : 'General'),
+            const SizedBox(height: AppSpacing.md),
 
             Container(
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(16),
+                color: Colors.white.withValues(alpha: AppOpacity.surfaceSubtle),
+                borderRadius: BorderRadius.circular(AppRadius.container),
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.1),
+                  color: Colors.white.withValues(alpha: AppOpacity.borderSubtle),
                 ),
               ),
               child: Column(
@@ -379,67 +407,59 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   // About
                   _buildListTile(
                     icon: Icons.info_outline,
-                    title: 'About',
+                    title: _isJapanese ? 'アプリについて' : 'About',
                     subtitle: _appVersion.isNotEmpty
-                        ? 'Version $_appVersion ($_buildNumber)'
-                        : 'Loading...',
+                        ? (_isJapanese ? 'バージョン $_appVersion ($_buildNumber)' : 'Version $_appVersion ($_buildNumber)')
+                        : (_isJapanese ? '読み込み中...' : 'Loading...'),
                     onTap: _showAboutDialog,
                   ),
                   _buildDivider(),
                   // Licenses
                   _buildListTile(
                     icon: Icons.description_outlined,
-                    title: 'Open Source Licenses',
+                    title: _isJapanese ? 'オープンソースライセンス' : 'Open Source Licenses',
                     onTap: () => _showLicenses(context),
                   ),
                   _buildDivider(),
                   // Privacy Policy
                   _buildListTile(
                     icon: Icons.privacy_tip_outlined,
-                    title: 'Privacy Policy',
+                    title: _isJapanese ? 'プライバシーポリシー' : 'Privacy Policy',
                     onTap: _showPrivacyPolicy,
                   ),
                   _buildDivider(),
                   // View Tutorial
                   _buildListTile(
                     icon: Icons.play_circle_outline,
-                    title: 'View Tutorial',
-                    subtitle: 'See the introduction again',
+                    title: _isJapanese ? 'チュートリアルを見る' : 'View Tutorial',
+                    subtitle: _isJapanese ? 'イントロダクションをもう一度見る' : 'See the introduction again',
                     onTap: _showTutorial,
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(height: 32),
+            const SizedBox(height: AppSpacing.xxl),
 
             // App Info
             Center(
               child: Column(
                 children: [
                   Text(
-                    'Ambientrace',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.3),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      letterSpacing: 2,
-                    ),
+                    'AMBIENTRACE',
+                    style: AppTypography.section(opacity: AppOpacity.textMuted),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: AppSpacing.xxs),
                   Text(
-                    'Capture the feeling, not the photo.',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      fontSize: 12,
-                      fontStyle: FontStyle.italic,
-                    ),
+                    _isJapanese ? '写真ではなく、感覚を記録する。' : 'Capture the feeling, not the photo.',
+                    style: AppTypography.mono(opacity: AppOpacity.textGhost)
+                        .copyWith(fontStyle: FontStyle.italic),
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.xl),
           ],
         ),
       ),
@@ -447,39 +467,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _showAboutDialog() {
+    final isJa = _isJapanese;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1A2E),
-        title: const Text(
+        backgroundColor: AppColors.canvasSecondary,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.surface),
+        ),
+        title: Text(
           'Ambientrace',
-          style: TextStyle(color: Colors.white),
+          style: AppTypography.title(opacity: AppOpacity.textHero),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Capture the ambient trace of your moments - not the photo, just the feeling.',
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.7),
-                fontSize: 14,
-              ),
+              isJa
+                  ? '写真ではなく、その瞬間の雰囲気を記録するアプリです。'
+                  : 'Capture the ambient trace of your moments - not the photo, just the feeling.',
+              style: AppTypography.body(opacity: AppOpacity.textBody),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.md),
             Text(
-              'Version $_appVersion (Build $_buildNumber)',
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.5),
-                fontSize: 12,
-              ),
+              isJa
+                  ? 'バージョン $_appVersion (ビルド $_buildNumber)'
+                  : 'Version $_appVersion (Build $_buildNumber)',
+              style: AppTypography.mono(opacity: AppOpacity.textTertiary),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+            child: Text(
+              'OK',
+              style: AppTypography.label(opacity: AppOpacity.textHigh),
+            ),
           ),
         ],
       ),
@@ -525,28 +550,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return ListTile(
       leading: Icon(
         icon,
-        color: Colors.white.withValues(alpha: 0.6),
+        color: Colors.white.withValues(alpha: AppOpacity.textSecondary),
         size: 22,
       ),
       title: Text(
         title,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 16,
-        ),
+        style: AppTypography.body(opacity: AppOpacity.textHigh),
       ),
       subtitle: subtitle != null
           ? Text(
               subtitle,
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.4),
-                fontSize: 12,
-              ),
+              style: AppTypography.mono(opacity: AppOpacity.textCaption),
             )
           : null,
       trailing: Icon(
         Icons.chevron_right,
-        color: Colors.white.withValues(alpha: 0.3),
+        color: Colors.white.withValues(alpha: AppOpacity.textMuted),
       ),
       onTap: onTap,
     );
@@ -556,19 +575,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Divider(
       height: 1,
       indent: 56,
-      color: Colors.white.withValues(alpha: 0.1),
+      color: Colors.white.withValues(alpha: AppOpacity.borderSubtle),
     );
   }
 
   Widget _buildSectionTitle(String title) {
     return Text(
       title.toUpperCase(),
-      style: TextStyle(
-        color: Colors.white.withValues(alpha: 0.4),
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
-        letterSpacing: 2,
-      ),
+      style: AppTypography.section(),
     );
   }
 }
@@ -580,21 +594,22 @@ class PrivacyPolicyScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0F),
+      backgroundColor: AppColors.canvasPrimary,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back,
+              color: Colors.white.withValues(alpha: AppOpacity.textHigh)),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Privacy Policy',
-          style: TextStyle(color: Colors.white, fontSize: 18),
+        title: Text(
+          ui.PlatformDispatcher.instance.locale.languageCode == 'ja' ? 'プライバシーポリシー' : 'Privacy Policy',
+          style: AppTypography.subtitle(opacity: AppOpacity.textHigh),
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(AppSpacing.xl),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -645,14 +660,11 @@ class PrivacyPolicyScreen extends StatelessWidget {
               'For questions about this Privacy Policy:\n'
               'GitHub: github.com/taishikamiya21/Ambientrace',
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.md),
             Center(
               child: Text(
                 'Last Updated: February 7, 2026',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.3),
-                  fontSize: 12,
-                ),
+                style: AppTypography.mono(opacity: AppOpacity.textMuted),
               ),
             ),
           ],
@@ -663,26 +675,18 @@ class PrivacyPolicyScreen extends StatelessWidget {
 
   Widget _buildSection(String title, String content) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.only(bottom: AppSpacing.xl),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
+            title.toUpperCase(),
+            style: AppTypography.section(opacity: AppOpacity.textHigh),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.sm),
           Text(
             content,
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.7),
-              fontSize: 14,
-              height: 1.6,
-            ),
+            style: AppTypography.body(opacity: AppOpacity.textBody),
           ),
         ],
       ),

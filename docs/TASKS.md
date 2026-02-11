@@ -79,3 +79,35 @@
 - [ ] **Visuals**
   - [ ] Typography and Color refinement (Contrast, Hierarchy)
   - [ ] Micro-interactions and Haptics tune-up
+
+## 🚀 Phase 6: リリース準備（実行順序順）
+
+> **参照:** 修正項目の詳細 → [BACKLOG.md](./BACKLOG.md)
+> **参照:** デザインシステム → [FOOSTUDIO_DESIGN_SYSTEM_JP.md](./FOOSTUDIO_DESIGN_SYSTEM_JP.md)
+
+### Phase 6A: バグ修正・品質改善（TestFlight Backlog） ✅ <!-- completed: 2026-02-11 -->
+- [x] TestFlightテストで発見された修正項目の対応（[BACKLOG.md](./BACKLOG.md) 参照）
+- [x] Critical / High 優先度の項目をすべて完了（BL-002〜BL-005）
+
+### Phase 6B: f∞studio デザインシステム適用 ✅ <!-- completed: 2026-02-11 -->
+- [x] カラーシステムの適用（Canvas: #0A0A0F, Accent: #DFFF4F, 不透明度スケール）
+- [x] タイポグラフィの適用（Inter w200-w800, JetBrains Mono for metadata）
+- [x] コンポーネントスタイルの統一（カード、チップ、ボタン）
+- [x] `lib/theme/app_theme.dart` 新規作成（全デザイントークン集約）
+
+### Phase 6C: UI/UX 最終仕上げ（Phase 5 残タスク統合） ✅ <!-- completed: 2026-02-11 -->
+- [x] Settings Screen モダン化（デザインシステム適用、多言語対応済み）
+- [x] Trace Card Redesign（Meaning > Time 階層シフト）
+- [x] Typography & Color リファイン（コントラスト、階層）
+- [ ] Micro-interactions & Haptics チューンアップ（次回対応）
+
+### Phase 6D: ストア申請準備
+- [ ] iOS / Android スクリーンショット撮影（Home, Capture, Dissolve, Detail, Share）
+- [ ] ストアメタデータ最終確認（STORE_METADATA.md）
+- [ ] プライバシーポリシーURL公開確認
+
+### Phase 6E: 最終検証 & 申請
+- [ ] Android実機テスト
+- [ ] TestFlight再配布（修正版）& 最終テスト
+- [ ] App Store 申請
+- [ ] Google Play 申請

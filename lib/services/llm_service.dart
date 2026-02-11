@@ -139,7 +139,8 @@ Return ONLY comma-separated phrases.''';
 - 2文の短い散文（合計100文字以内）
 - 感覚的・詩的な表現を使用
 - 過去形または現在進行形
-- 必ず完結した文で終わること''';
+- 必ず完結した文で終わること。文の途中で切れないこと
+- スペースが足りない場合は、新しい文を始めず、完結した文で終えること''';
     }
 
     return '''Write a short, poetic narrative from this ambient data. Imagine the scene.
@@ -150,7 +151,8 @@ Rules:
 - Exactly 2 sentences, under 50 words total
 - Sensory and poetic, not descriptive
 - Past tense or present continuous
-- Must end with a complete sentence''';
+- Complete your sentences. Do not truncate
+- If running out of space, end with a complete sentence rather than starting a new one''';
   }
 
   /// Parse comma-separated response text into label list

@@ -5,6 +5,7 @@ import 'services/storage_service.dart';
 import 'services/image_labeling_service.dart';
 import 'screens/home_screen.dart';
 import 'screens/onboarding_screen.dart';
+import 'theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,7 +15,7 @@ void main() async {
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.light,
-      systemNavigationBarColor: Color(0xFF0A0A0F),
+      systemNavigationBarColor: AppColors.canvasPrimary,
       systemNavigationBarIconBrightness: Brightness.light,
     ),
   );
@@ -73,16 +74,7 @@ class _AmbientraleAppState extends State<AmbientraleApp> {
     return MaterialApp(
       title: 'Ambientrace',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        brightness: Brightness.dark,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF6B5CE7),
-          brightness: Brightness.dark,
-        ),
-        scaffoldBackgroundColor: const Color(0xFF0A0A0F),
-        fontFamily: 'SF Pro Display',
-      ),
+      theme: AppTheme.dark(),
       home: _showOnboarding
           ? OnboardingScreen(onComplete: _onOnboardingComplete)
           : HomeScreen(

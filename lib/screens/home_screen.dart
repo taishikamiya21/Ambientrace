@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../models/trace_log.dart';
 import '../services/storage_service.dart';
 import '../services/image_labeling_service.dart';
+import '../theme/app_theme.dart';
 import 'capture_screen.dart';
 import 'trace_detail_screen.dart';
 import 'settings_screen.dart';
@@ -96,15 +97,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Map<String, List<TraceLog>> _groupByDate(List<TraceLog> traces) {
     final grouped = <String, List<TraceLog>>{};
+    final groupOrder = <String, DateTime>{};
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final yesterday = today.subtract(const Duration(days: 1));
 
     for (final trace in traces) {
       final traceDate = DateTime(
-        trace.capturedAt.year,
-        trace.capturedAt.month,
-        trace.capturedAt.day,
+        trace.createdAt.year,
+        trace.createdAt.month,
+        trace.createdAt.day,
       );
 
       String dateKey;
@@ -113,16 +115,26 @@ class _HomeScreenState extends State<HomeScreen> {
       } else if (traceDate == yesterday) {
         dateKey = 'Yesterday';
       } else if (now.difference(traceDate).inDays < 7) {
-        dateKey = DateFormat('EEEE').format(trace.capturedAt);
+        dateKey = DateFormat('EEEE').format(trace.createdAt);
       } else {
-        dateKey = DateFormat('MMM d, yyyy').format(trace.capturedAt);
+        dateKey = DateFormat('MMM d, yyyy').format(trace.createdAt);
       }
 
       grouped.putIfAbsent(dateKey, () => []);
       grouped[dateKey]!.add(trace);
+      // Track the newest createdAt per group for sorting
+      if (!groupOrder.containsKey(dateKey) || trace.createdAt.isAfter(groupOrder[dateKey]!)) {
+        groupOrder[dateKey] = trace.createdAt;
+      }
     }
 
-    return grouped;
+    // Sort groups by newest trace date descending
+    final sortedKeys = grouped.keys.toList()
+      ..sort((a, b) => groupOrder[b]!.compareTo(groupOrder[a]!));
+
+    return Map.fromEntries(
+      sortedKeys.map((key) => MapEntry(key, grouped[key]!)),
+    );
   }
 
   List<String> _getUniqueWeatherConditions() {
@@ -139,14 +151,15 @@ class _HomeScreenState extends State<HomeScreen> {
     final weatherConditions = _getUniqueWeatherConditions();
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0F),
+      backgroundColor: AppColors.canvasPrimary,
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
             // Header
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                padding: EdgeInsets.fromLTRB(
+                    AppSpacing.xl, AppSpacing.xl, AppSpacing.xl, 0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -154,32 +167,21 @@ class _HomeScreenState extends State<HomeScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         if (!_isSearching)
-                          const Expanded(
+                          Expanded(
                             child: Text(
                               'Ambientrace',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 28,
-                                fontWeight: FontWeight.w200,
-                                letterSpacing: 3,
-                              ),
+                              style: AppTypography.headline(),
                             ),
                           )
                         else
                           Expanded(
                             child: TextField(
                               autofocus: true,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                              ),
+                              style: AppTypography.body(),
                               decoration: InputDecoration(
                                 hintText: 'Search atmosphere, places...',
-                                hintStyle: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.3),
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w300,
-                                ),
+                                hintStyle: AppTypography.body(
+                                    opacity: AppOpacity.textMuted),
                                 border: InputBorder.none,
                                 contentPadding: EdgeInsets.zero,
                               ),
@@ -197,7 +199,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             IconButton(
                               icon: Icon(
                                 _isSearching ? Icons.close : Icons.search,
-                                color: Colors.white.withValues(alpha: 0.5),
+                                color: Colors.white
+                                    .withValues(alpha: AppOpacity.textTertiary),
                                 size: 22,
                               ),
                               onPressed: () {
@@ -214,7 +217,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               IconButton(
                                 icon: Icon(
                                   Icons.settings_outlined,
-                                  color: Colors.white.withValues(alpha: 0.5),
+                                  color: Colors.white.withValues(
+                                      alpha: AppOpacity.textTertiary),
                                   size: 22,
                                 ),
                                 onPressed: () {
@@ -222,7 +226,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => SettingsScreen(
-                                        imageLabelingService: widget.imageLabelingService,
+                                        imageLabelingService:
+                                            widget.imageLabelingService,
                                       ),
                                     ),
                                   );
@@ -232,7 +237,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: AppSpacing.xxs),
                     if (!_isSearching)
                       Row(
                         children: [
@@ -240,15 +245,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             _filteredTraces.isEmpty
                                 ? 'No traces yet'
                                 : '${_filteredTraces.length} ${_filteredTraces.length == 1 ? 'trace' : 'traces'}',
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.3),
-                              fontSize: 13,
-                              fontWeight: FontWeight.w300,
-                              letterSpacing: 0.5,
-                            ),
+                            style: AppTypography.mono(
+                                opacity: AppOpacity.textMuted),
                           ),
                           if (_weatherFilter != null) ...[
-                            const SizedBox(width: 12),
+                            SizedBox(width: AppSpacing.sm),
                             GestureDetector(
                               onTap: () {
                                 setState(() {
@@ -257,29 +258,30 @@ class _HomeScreenState extends State<HomeScreen> {
                                 });
                               },
                               child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 4,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.xs + 2,
+                                  vertical: AppSpacing.xxs,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.08),
-                                  borderRadius: BorderRadius.circular(12),
+                                  color: Colors.white.withValues(
+                                      alpha: AppOpacity.surfaceContainer),
+                                  borderRadius:
+                                      BorderRadius.circular(AppRadius.container),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Text(
                                       _weatherFilter!,
-                                      style: TextStyle(
-                                        color: Colors.white.withValues(alpha: 0.6),
-                                        fontSize: 12,
-                                      ),
+                                      style: AppTypography.mono(
+                                          opacity: AppOpacity.textSecondary),
                                     ),
-                                    const SizedBox(width: 4),
+                                    SizedBox(width: AppSpacing.xxs),
                                     Icon(
                                       Icons.close,
                                       size: 12,
-                                      color: Colors.white.withValues(alpha: 0.4),
+                                      color: Colors.white.withValues(
+                                          alpha: AppOpacity.textCaption),
                                     ),
                                   ],
                                 ),
@@ -297,49 +299,55 @@ class _HomeScreenState extends State<HomeScreen> {
             if (weatherConditions.isNotEmpty && !_isSearching)
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.only(top: 16),
+                  padding: EdgeInsets.only(top: AppSpacing.md),
                   child: SizedBox(
                     height: 36,
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: AppSpacing.xl),
                       itemCount: weatherConditions.length,
                       itemBuilder: (context, index) {
                         final condition = weatherConditions[index];
                         final isSelected = _weatherFilter == condition;
                         return Padding(
-                          padding: const EdgeInsets.only(right: 8),
+                          padding: EdgeInsets.only(right: AppSpacing.xs),
                           child: GestureDetector(
                             onTap: () {
                               setState(() {
-                                _weatherFilter = isSelected ? null : condition;
+                                _weatherFilter =
+                                    isSelected ? null : condition;
                                 _applyFilters();
                               });
                             },
                             child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 8,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: AppSpacing.sm + 2,
+                                vertical: AppSpacing.xs,
                               ),
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? Colors.white.withValues(alpha: 0.15)
-                                    : Colors.white.withValues(alpha: 0.05),
-                                borderRadius: BorderRadius.circular(18),
+                                    ? AppColors.accentNeon
+                                        .withValues(alpha: 0.1)
+                                    : Colors.transparent,
+                                borderRadius:
+                                    BorderRadius.circular(AppRadius.pill),
                                 border: Border.all(
                                   color: isSelected
-                                      ? Colors.white.withValues(alpha: 0.25)
-                                      : Colors.white.withValues(alpha: 0.08),
+                                      ? AppColors.accentNeon
+                                          .withValues(alpha: 0.3)
+                                      : Colors.white.withValues(
+                                          alpha: AppOpacity.borderDefault),
                                 ),
                               ),
                               child: Text(
-                                condition,
-                                style: TextStyle(
+                                condition.toUpperCase(),
+                                style: AppTypography.mono(
+                                  opacity: AppOpacity.textSecondary,
+                                ).copyWith(
                                   color: isSelected
-                                      ? Colors.white.withValues(alpha: 0.9)
-                                      : Colors.white.withValues(alpha: 0.5),
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w400,
+                                      ? AppColors.accentNeon
+                                      : null,
                                 ),
                               ),
                             ),
@@ -351,7 +359,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
-            const SliverToBoxAdapter(child: SizedBox(height: 20)),
+            SliverToBoxAdapter(child: SizedBox(height: AppSpacing.lg)),
 
             // Content
             if (_filteredTraces.isEmpty)
@@ -367,28 +375,25 @@ class _HomeScreenState extends State<HomeScreen> {
                     final tracesForDate = groupedTraces[dateKey]!;
 
                     return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: AppSpacing.md),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // Date header
                           Padding(
-                            padding: const EdgeInsets.fromLTRB(8, 16, 8, 8),
+                            padding: EdgeInsets.fromLTRB(AppSpacing.xs,
+                                AppSpacing.md, AppSpacing.xs, AppSpacing.xs),
                             child: Text(
                               dateKey.toUpperCase(),
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.3),
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: 2,
-                              ),
+                              style: AppTypography.section(),
                             ),
                           ),
                           // Traces for this date
                           ...tracesForDate.map((trace) => GestureDetector(
-                            onTap: () => _openDetail(trace),
-                            child: TraceCard(trace: trace),
-                          )),
+                                onTap: () => _openDetail(trace),
+                                child: TraceCard(trace: trace),
+                              )),
                         ],
                       ),
                     );
@@ -405,7 +410,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       // Capture button
       floatingActionButton: Container(
-        margin: const EdgeInsets.only(bottom: 16),
+        margin: EdgeInsets.only(bottom: AppSpacing.md),
         child: GestureDetector(
           onTap: _openCapture,
           child: Container(
@@ -414,10 +419,12 @@ class _HomeScreenState extends State<HomeScreen> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.2),
+                color: Colors.white
+                    .withValues(alpha: AppOpacity.borderMedium),
                 width: 1.5,
               ),
-              color: Colors.white.withValues(alpha: 0.08),
+              color: Colors.white
+                  .withValues(alpha: AppOpacity.surfaceContainer),
             ),
             child: Center(
               child: Container(
@@ -426,13 +433,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.3),
+                    color: Colors.white
+                        .withValues(alpha: AppOpacity.borderStrong),
                     width: 2,
                   ),
                 ),
                 child: Icon(
                   Icons.add,
-                  color: Colors.white.withValues(alpha: 0.7),
+                  color: Colors.white
+                      .withValues(alpha: AppOpacity.textBody),
                   size: 24,
                 ),
               ),
@@ -456,28 +465,19 @@ class _HomeScreenState extends State<HomeScreen> {
             Icon(
               isFiltered ? Icons.search_off : Icons.air,
               size: 48,
-              color: Colors.white.withValues(alpha: 0.15),
+              color: Colors.white.withValues(alpha: AppOpacity.borderDefault),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: AppSpacing.lg),
             Text(
               isFiltered ? 'No traces found' : 'No traces yet',
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.4),
-                fontSize: 16,
-                fontWeight: FontWeight.w300,
-                letterSpacing: 1,
-              ),
+              style: AppTypography.subtitle(opacity: AppOpacity.textCaption),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: AppSpacing.xs),
             Text(
               isFiltered
                   ? 'Try a different search'
                   : 'Capture the atmosphere of your moment',
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.2),
-                fontSize: 13,
-                fontWeight: FontWeight.w300,
-              ),
+              style: AppTypography.body(opacity: AppOpacity.textGhost),
             ),
           ],
         ),

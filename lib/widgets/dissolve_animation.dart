@@ -23,6 +23,7 @@ class _DissolveAnimationState extends State<DissolveAnimation>
   late Animation<double> _fadeAnimation;
   late Animation<double> _blurAnimation;
   late Animation<double> _particleAnimation;
+  late Animation<double> _backgroundAnimation;
 
   @override
   void initState() {
@@ -53,6 +54,13 @@ class _DissolveAnimationState extends State<DissolveAnimation>
       ),
     );
 
+    _backgroundAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.1, 0.8, curve: Curves.easeIn),
+      ),
+    );
+
     _controller.forward();
   }
 
@@ -69,6 +77,14 @@ class _DissolveAnimationState extends State<DissolveAnimation>
       builder: (context, child) {
         return Stack(
           children: [
+            // Background transition from camera preview to app background
+            Positioned.fill(
+              child: ColoredBox(
+                color: const Color(0xFF0A0A0F)
+                    .withValues(alpha: _backgroundAnimation.value),
+              ),
+            ),
+
             // Blurred and fading image
             Positioned.fill(
               child: Opacity(

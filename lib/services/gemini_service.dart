@@ -139,7 +139,7 @@ class GeminiService extends LlmService {
         ],
         'generationConfig': {
           'temperature': 0.8,
-          'maxOutputTokens': 500,
+          'maxOutputTokens': 800,
         }
       };
 

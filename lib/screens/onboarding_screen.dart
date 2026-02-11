@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../theme/app_theme.dart';
 
 class OnboardingScreen extends StatefulWidget {
   final VoidCallback onComplete;
@@ -116,7 +117,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0F),
+      backgroundColor: AppColors.canvasPrimary,
       body: Stack(
         children: [
           // Onboarding content (fades in after splash)
@@ -133,7 +134,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               animation: _splashController,
               builder: (context, child) {
                 return Container(
-                  color: const Color(0xFF0A0A0F),
+                  color: AppColors.canvasPrimary,
                   child: Center(
                     child: ImageFiltered(
                       imageFilter: ImageFilter.blur(
@@ -147,22 +148,14 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                           children: [
                             Text(
                               'Ambientrace',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 32,
-                                fontWeight: FontWeight.w200,
-                                letterSpacing: 8,
-                              ),
+                              style: AppTypography.headline(
+                                  opacity: AppOpacity.textHero),
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: AppSpacing.md),
                             Text(
                               'trace the atmosphere',
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.4),
-                                fontSize: 14,
-                                fontWeight: FontWeight.w300,
-                                letterSpacing: 4,
-                              ),
+                              style: AppTypography.mono(
+                                  opacity: AppOpacity.textCaption),
                             ),
                           ],
                         ),
@@ -183,8 +176,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
         // Top spacer with skip button
         Padding(
           padding: EdgeInsets.only(
-            top: MediaQuery.of(context).padding.top + 16,
-            right: 16,
+            top: MediaQuery.of(context).padding.top + AppSpacing.md,
+            right: AppSpacing.md,
           ),
           child: Align(
             alignment: Alignment.topRight,
@@ -192,11 +185,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               onPressed: _completeOnboarding,
               child: Text(
                 'Skip',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.4),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w300,
-                ),
+                style: AppTypography.label(opacity: AppOpacity.textCaption),
               ),
             ),
           ),
@@ -218,7 +207,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
         // Page indicator (subtle dots)
         Padding(
-          padding: const EdgeInsets.symmetric(vertical: 24),
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(
@@ -228,13 +217,13 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           ),
         ),
 
-        // Bottom button
+        // Bottom button — pill style per design system
         Padding(
           padding: EdgeInsets.fromLTRB(
-            48,
+            AppSpacing.xxxl,
             0,
-            48,
-            MediaQuery.of(context).padding.bottom + 48,
+            AppSpacing.xxxl,
+            MediaQuery.of(context).padding.bottom + AppSpacing.xxxl,
           ),
           child: GestureDetector(
             onTap: () {
@@ -252,20 +241,15 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               padding: const EdgeInsets.symmetric(vertical: 18),
               decoration: BoxDecoration(
                 color: Colors.transparent,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppRadius.pill),
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.15),
+                  color: Colors.white.withValues(alpha: AppOpacity.borderDefault),
                 ),
               ),
               child: Center(
                 child: Text(
-                  _currentPage < _pages.length - 1 ? 'Next' : 'Begin',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.8),
-                    fontSize: 15,
-                    fontWeight: FontWeight.w400,
-                    letterSpacing: 2,
-                  ),
+                  _currentPage < _pages.length - 1 ? 'NEXT' : 'BEGIN',
+                  style: AppTypography.label(opacity: AppOpacity.textHigh),
                 ),
               ),
             ),
@@ -277,7 +261,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   Widget _buildPage(OnboardingPage page) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 48),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxxl),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -285,30 +269,21 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           Icon(
             page.icon,
             size: 48,
-            color: Colors.white.withValues(alpha: 0.6),
+            color: Colors.white.withValues(alpha: AppOpacity.textSecondary),
           ),
-          const SizedBox(height: 48),
+          const SizedBox(height: AppSpacing.xxxl),
 
           // Title
           Text(
             page.title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 32,
-              fontWeight: FontWeight.w200,
-              letterSpacing: 6,
-            ),
+            style: AppTypography.headline(opacity: AppOpacity.textHero),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.xs),
 
           // Subtitle (Japanese)
           Text(
             page.subtitle,
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.4),
-              fontSize: 14,
-              fontWeight: FontWeight.w300,
-            ),
+            style: AppTypography.mono(opacity: AppOpacity.textCaption),
           ),
           const SizedBox(height: 40),
 
@@ -316,25 +291,15 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           Text(
             page.description,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.6),
-              fontSize: 15,
-              fontWeight: FontWeight.w300,
-              height: 1.8,
-            ),
+            style: AppTypography.body(opacity: AppOpacity.textSecondary),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.sm),
 
           // Japanese description
           Text(
             page.descriptionJa,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.3),
-              fontSize: 13,
-              fontWeight: FontWeight.w300,
-              height: 1.8,
-            ),
+            style: AppTypography.body(opacity: AppOpacity.textMuted),
           ),
         ],
       ),
@@ -345,14 +310,14 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     final isActive = index == _currentPage;
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
-      margin: const EdgeInsets.symmetric(horizontal: 4),
+      margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
       width: isActive ? 20 : 6,
       height: 6,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(3),
         color: isActive
-            ? Colors.white.withValues(alpha: 0.6)
-            : Colors.white.withValues(alpha: 0.15),
+            ? Colors.white.withValues(alpha: AppOpacity.textSecondary)
+            : Colors.white.withValues(alpha: AppOpacity.textWhisper),
       ),
     );
   }

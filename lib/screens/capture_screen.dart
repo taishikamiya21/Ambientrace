@@ -12,6 +12,7 @@ import '../services/weather_service.dart';
 import '../services/noise_service.dart';
 import '../services/step_service.dart';
 import '../models/trace_log.dart';
+import '../theme/app_theme.dart';
 import '../widgets/dissolve_animation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:native_exif/native_exif.dart';
@@ -180,7 +181,7 @@ class _CaptureScreenState extends State<CaptureScreen>
     String? placeName;
     double? temperature;
     String? weatherCondition;
-    
+
     if (position != null) {
       // Fetch place name and weather in parallel
       final placeNameFuture = _locationService.getPlaceName(
@@ -191,10 +192,10 @@ class _CaptureScreenState extends State<CaptureScreen>
         position.latitude,
         position.longitude,
       );
-      
+
       placeName = await placeNameFuture;
       final weather = await weatherFuture;
-      
+
       if (weather != null) {
         temperature = weather.temperature;
         weatherCondition = weather.condition;
@@ -236,11 +237,6 @@ class _CaptureScreenState extends State<CaptureScreen>
       // Re-fetch place name and weather for the EXIF location
       try {
         placeName = await _locationService.getPlaceName(exifLat, exifLon);
-        // Note: Weather service might only give current weather, but for now we use what we have.
-        // Ideally we'd want historical weather, but that's a paid API feature usually.
-        // We'll proceed with current weather at that location as a best effort approximation
-        // or keep the already fetched weather if location is close.
-        // For simplicity and to avoid "London weather for Tokyo photo", we fetch for the EXIF location.
         final weather = await _weatherService.getCurrentWeather(exifLat, exifLon);
         if (weather != null) {
           temperature = weather.temperature;
@@ -302,10 +298,10 @@ class _CaptureScreenState extends State<CaptureScreen>
             children: [
               Icon(
                 labels.isEmpty ? Icons.warning_amber_rounded : Icons.check_circle_outline,
-                color: labels.isEmpty ? Colors.amber : Colors.greenAccent,
+                color: labels.isEmpty ? AppColors.warning : AppColors.success,
                 size: 20,
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
                   message,
@@ -314,9 +310,10 @@ class _CaptureScreenState extends State<CaptureScreen>
               ),
             ],
           ),
-          backgroundColor: Colors.black87,
+          backgroundColor: AppColors.canvasSecondary,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.container)),
           duration: const Duration(seconds: 3),
         ),
       );
@@ -332,12 +329,12 @@ class _CaptureScreenState extends State<CaptureScreen>
         SnackBar(
           content: Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.error_outline,
-                color: Colors.redAccent,
+                color: AppColors.error,
                 size: 20,
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
                   message,
@@ -346,9 +343,10 @@ class _CaptureScreenState extends State<CaptureScreen>
               ),
             ],
           ),
-          backgroundColor: Colors.black87,
+          backgroundColor: AppColors.canvasSecondary,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.container)),
           duration: const Duration(seconds: 3),
         ),
       );
@@ -384,7 +382,7 @@ class _CaptureScreenState extends State<CaptureScreen>
     }
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.canvasPrimary,
       body: Stack(
         children: [
           // Camera preview or placeholder
@@ -395,8 +393,10 @@ class _CaptureScreenState extends State<CaptureScreen>
                   )
                 : _buildNoCameraUI()
           else
-            const Center(
-              child: CircularProgressIndicator(color: Colors.white),
+            Center(
+              child: CircularProgressIndicator(
+                color: Colors.white.withValues(alpha: AppOpacity.textHigh),
+              ),
             ),
 
           // Dissolve animation overlay
@@ -434,13 +434,15 @@ class _CaptureScreenState extends State<CaptureScreen>
             right: 0,
             child: SafeArea(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.xs, vertical: AppSpacing.xxs),
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: IconButton(
                     icon: Icon(
                       Icons.arrow_back,
-                      color: Colors.white.withValues(alpha: 0.85),
+                      color: Colors.white
+                          .withValues(alpha: AppOpacity.textHigh),
                     ),
                     onPressed: () => Navigator.pop(context),
                   ),
@@ -465,15 +467,18 @@ class _CaptureScreenState extends State<CaptureScreen>
                     height: 44,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.white.withValues(alpha: 0.1),
+                      color: Colors.white
+                          .withValues(alpha: AppOpacity.surfaceElevated),
                       border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.3),
+                        color: Colors.white
+                            .withValues(alpha: AppOpacity.borderStrong),
                         width: 1.5,
                       ),
                     ),
                     child: Icon(
                       Icons.photo_library_outlined,
-                      color: Colors.white.withValues(alpha: 0.7),
+                      color: Colors.white
+                          .withValues(alpha: AppOpacity.textBody),
                       size: 20,
                     ),
                   ),
@@ -501,7 +506,8 @@ class _CaptureScreenState extends State<CaptureScreen>
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.8),
+                              color: Colors.white
+                                  .withValues(alpha: AppOpacity.textHigh),
                               width: 2,
                             ),
                           ),
@@ -516,7 +522,8 @@ class _CaptureScreenState extends State<CaptureScreen>
                                   width: 4,
                                 ),
                                 color: _isCapturing
-                                    ? Colors.white.withValues(alpha: 0.15)
+                                    ? Colors.white.withValues(
+                                        alpha: AppOpacity.surfaceElevated)
                                     : Colors.transparent,
                               ),
                             ),
@@ -545,17 +552,13 @@ class _CaptureScreenState extends State<CaptureScreen>
           Icon(
             Icons.blur_on,
             size: 100,
-            color: Colors.white.withValues(alpha: 0.15),
+            color:
+                Colors.white.withValues(alpha: AppOpacity.textWhisper),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: AppSpacing.lg),
           Text(
             'No camera found',
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.5),
-              fontSize: 16,
-              fontWeight: FontWeight.w300,
-              letterSpacing: 1.2,
-            ),
+            style: AppTypography.body(opacity: AppOpacity.textTertiary),
           ),
           const SizedBox(height: 120),
         ],
