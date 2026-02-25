@@ -1,169 +1,256 @@
-# Ambientrace - Store Metadata
+# Ambientrace — Store Metadata
 
-## App Name
-**Ambientrace** (アンビエントレース)
+> ストア申請用の掲載情報。iOS (App Store Connect) / Android (Google Play Console) 共通。
 
 ---
 
-## Subtitle / Short Description
+## App Name / アプリ名
+
+**Ambientrace**
+
+---
+
+## Subtitle (iOS) / Short Description (Android)
+
 **EN:** Capture the feeling, not the photo.
 **JP:** 写真ではなく、空気を残す。
 
 ---
 
-## Description
+## Description / 説明文
 
-### English
+### English (4000 chars max)
 
-**Ambientrace transforms how you capture memories.**
+What if you could remember a moment without a single photo?
 
-Instead of saving photos, Ambientrace extracts the *atmosphere* of your moment — colors, weather, sounds, and context — then dissolves the image forever.
+Ambientrace is a camera app that captures — then erases — your photos. Instead of keeping the image, it extracts the ambient data hidden within that moment: the colors of the scene, the weather, the sounds around you, and the atmosphere you were in. That's all that remains. A trace.
 
 **How it works:**
-1. **Capture** — Take a photo of any moment
-2. **Dissolve** — Watch as the photo transforms into data
-3. **Remain** — Only the ambient trace stays: colors, atmosphere, context
 
-**What you keep:**
-- Color palette extracted from the scene
-- Ambient labels describing the atmosphere ("Quiet Morning", "Busy Cafe")
-- Weather and temperature at that moment
-- Location context
-- Sound level of your surroundings
+1. Take a photo — of anything, anywhere
+2. Watch it dissolve — the image breaks apart into colors and data
+3. Keep the trace — what remains is a color palette, atmospheric labels, weather, location, and sound level
 
-**What you don't keep:**
-- The actual photo (it's deleted after processing)
+The photo is gone. But something more interesting stays.
 
-**Why?**
-Because the best memories aren't pixel-perfect — they're felt. Ambientrace gives you just enough data to *imagine* the moment again, making your memories more vivid through imagination.
+Later, when you look back at your traces, you'll find that a handful of colors and the words "Quiet Afternoon, Warm Sunlight, 18°C" bring back the scene more vividly than any photo could. Your imagination fills in the rest — and that's the point.
+
+**What Ambientrace records:**
+
+- Color palette — the dominant colors extracted from your photo
+- Atmospheric labels — AI-detected context like "Rainy Commute" or "Sunday Morning Coffee"
+- Weather & temperature — conditions at that exact moment
+- Location — where you were
+- Ambient sound level — how loud or quiet it was around you
+- Atmospheric Time — not "14:32" but "Afternoon" — because that's how you actually remember it
+
+**What Ambientrace doesn't keep:**
+
+- Your photos — deleted immediately after processing, never stored, never uploaded
 
 **Features:**
-- AI-powered atmosphere detection (Gemini API)
-- Beautiful dissolve animation
-- Share your "Trace Cards" on social media
-- Minimalist, distraction-free design
-- Privacy-first: photos are never stored
+
+- Dissolve animation — watch your photo transform into ambient data in real time
+- AI atmosphere detection — supports Gemini, ChatGPT, and Claude (bring your own API key)
+- Trace Cards — shareable cards designed for social media
+- ML Kit fallback — works without an API key using on-device image analysis
+- Atmospheric Time — times of day expressed as Dawn, Morning, Dusk, Late Night
+- Bilingual — full Japanese and English support
+- Privacy-first — all data stored locally on your device
 
 **Perfect for:**
-- Mindful journaling
-- Privacy-conscious memory keeping
-- Those who believe less is more
 
-*Capture the atmosphere. Imagine the rest.*
+- People who take too many photos but rarely look back at them
+- Anyone who wants to record life without the pressure of "the perfect shot"
+- Minimalists, journalers, and anyone curious about a different way to remember
 
----
+Ambientrace is made by f∞ studio — an experimental collective exploring the boundaries of photography. We build tools that ask: what happens when you remove the image from the experience? What's left? Ambientrace is our first answer.
 
-### Japanese (日本語)
-
-**Ambientraleは、記憶の残し方を変えます。**
-
-写真を保存する代わりに、その瞬間の「空気」を抽出します — 色、天気、音、コンテキスト — そして画像は永遠に消えます。
-
-**使い方:**
-1. **撮る** — 何気ない瞬間を撮影
-2. **溶ける** — 写真がデータに変換されていく
-3. **残る** — 色と空気感だけが残る
-
-**残るもの:**
-- シーンから抽出されたカラーパレット
-- 雰囲気を表すラベル（「静かな朝」「賑やかなカフェ」）
-- その瞬間の天気と気温
-- 場所のコンテキスト
-- 周囲の音のレベル
-
-**残らないもの:**
-- 写真そのもの（処理後に削除されます）
-
-**なぜ?**
-最高の記憶は、ピクセル単位で完璧なものではありません。感じるものです。Ambientraleは、その瞬間を再び「想像する」ためのデータだけを残し、想像力によって記憶をより鮮明にします。
-
-**機能:**
-- AI搭載の雰囲気検出（Gemini API）
-- 美しい溶解アニメーション
-- 「トレースカード」をSNSでシェア
-- ミニマルなデザイン
-- プライバシー重視：写真は保存されません
-
-*空気を残す。あとは、想像する。*
+Capture the atmosphere. Imagine the rest.
 
 ---
 
-## Keywords / Tags
+### Japanese / 日本語 (4000 chars max)
 
-### Primary Keywords
-- ambient
-- memory
-- journal
-- mindful
-- minimal
-- atmosphere
-- trace
-- feeling
-- imagination
-- privacy
+写真がなくても、あの日のことを思い出せるとしたら？
 
-### App Store Keywords (100 chars max)
-`ambient,memory,journal,minimal,atmosphere,trace,photo,feeling,imagination,mindful,privacy,diary`
+Ambientraceは、写真を撮って、そのまま消すカメラアプリです。画像を保存する代わりに、その瞬間に隠れていた「空気のデータ」を抽出します。色、天気、音、場所、雰囲気。残るのは、それだけ。痕跡（トレース）だけ。
+
+**使い方はシンプル：**
+
+1. 撮る — いつでも、どこでも、何でも
+2. 溶ける — 写真が色とデータに分解されていく
+3. 残る — カラーパレット、雰囲気ラベル、天気、場所、音の記録だけが残る
+
+写真は消えます。でも、もっと面白いものが残ります。
+
+後から見返すと気づくはずです。数色のカラーパレットと「静かな午後、暖かい日差し、18°C」という言葉だけで、あの日の景色が鮮明に蘇ること。足りない部分は、あなたの想像力が埋めてくれます。それがこのアプリの狙いです。
+
+**Ambientraceが記録するもの：**
+
+- カラーパレット — 写真から抽出された色の組み合わせ
+- 雰囲気ラベル — AIが検出した文脈（「雨の通勤」「日曜の朝のコーヒー」など）
+- 天気・気温 — その瞬間の空模様
+- 場所 — あなたがいた地名
+- 環境音レベル — 周囲がどれくらい静かだったか、賑やかだったか
+- Atmospheric Time — 「14:32」ではなく「午後」。実際の記憶に近い曖昧な時刻表現
+
+**Ambientraceが保存しないもの：**
+
+- 写真 — 処理後すぐに削除。保存もアップロードもされません
+
+**特徴：**
+
+- 溶解アニメーション — 写真がリアルタイムでデータに変わる演出
+- AI雰囲気検出 — Gemini、ChatGPT、Claudeに対応（APIキーを設定して利用）
+- トレースカード — SNSでシェアできるデザインカード
+- ML Kitフォールバック — APIキーなしでもデバイス上の画像解析で動作
+- Atmospheric Time — Dawn、Morning、Duskなど、記憶に寄り添う時刻表現
+- 日本語・英語対応 — ラベルもUIも自動切替
+- プライバシー重視 — すべてのデータはデバイス内にローカル保存
+
+**こんな人に：**
+
+- 写真をたくさん撮るのに、あとで見返すことが少ない人
+- 「いい写真を撮らなきゃ」というプレッシャーなく、日常を記録したい人
+- ミニマリスト、日記をつけたい人、記憶の残し方に興味がある人
+
+Ambientraceは、f∞ studio（フースタジオ）が開発しています。f∞ studioは写真の「境界」を探求するアートコレクティブです。写真から画像を取り除いたら、何が残るのか？ Ambientraceは、その問いに対する最初の答えです。
+
+空気を残す。あとは、想像する。
+
+---
+
+## Keywords / キーワード
+
+### App Store Keywords (100 chars max, comma-separated)
+
+```
+ambient,memory,trace,journal,atmosphere,feeling,minimal,photo,imagination,mindful,privacy,diary
+```
 
 ### Google Play Tags
+
 - Photography
 - Lifestyle
 - Productivity
 
 ---
 
-## Category
-- **Primary:** Photo & Video
-- **Secondary:** Lifestyle
+## Category / カテゴリ
+
+| Store | Primary | Secondary |
+|---|---|---|
+| App Store | Photo & Video | Lifestyle |
+| Google Play | Photography | Lifestyle |
 
 ---
 
-## Age Rating
-- 4+ (No objectionable content)
+## Age Rating / 年齢レーティング
+
+- **iOS:** 4+
+- **Android:** Everyone（全ユーザー対象）
 
 ---
 
 ## Privacy URL
-`https://github.com/taishikamiya21/Ambientrace/blob/main/docs/PRIVACY_POLICY.md`
+
+```
+https://github.com/taishikamiya21/Ambientrace/blob/main/docs/PRIVACY_POLICY.md
+```
 
 (Also available in-app: Settings → Privacy Policy)
 
 ---
 
 ## Support URL
-`https://github.com/taishikamiya21/Ambientrace/issues`
+
+```
+https://github.com/taishikamiya21/Ambientrace/issues
+```
 
 ---
 
-## Screenshots Descriptions
+## Developer Name
+
+**f∞ studio**
+
+---
+
+## Screenshots Descriptions / スクリーンショット説明
 
 ### Screenshot 1: Home
+
 **EN:** Your memory traces at a glance
 **JP:** 記憶の痕跡を一覧で
 
 ### Screenshot 2: Capture
+
 **EN:** Capture any moment
 **JP:** 瞬間を捉える
 
 ### Screenshot 3: Dissolve
+
 **EN:** Watch it dissolve into data
 **JP:** データに溶けていく
 
-### Screenshot 4: Detail
-**EN:** Colors, atmosphere, context
-**JP:** 色、雰囲気、コンテキスト
+### Screenshot 4: Detail — Color & Atmosphere
 
-### Screenshot 5: Share
+**EN:** Colors, atmosphere, context — that's all you need
+**JP:** 色、雰囲気、コンテキスト — それだけで思い出せる
+
+### Screenshot 5: Detail — Environmental Data
+
+**EN:** Weather, sound, location — the air you were breathing
+**JP:** 天気、音、場所 — あなたがいた空気
+
+### Screenshot 6: Share
+
 **EN:** Share your trace card
 **JP:** トレースカードをシェア
 
 ---
 
-## What's New (Version 1.0.0)
-Initial release of Ambientrace.
+## What's New / リリースノート (Version 1.0.0)
 
-- Capture moments and extract their atmosphere
-- AI-powered ambient labeling
+### English
+
+Ambientrace 1.0 — the first release from f∞ studio.
+
+- Capture moments and dissolve them into ambient data
+- AI-powered atmosphere detection (Gemini, ChatGPT, Claude)
+- Color palette extraction from your photos
+- Atmospheric Time — remember moments as "Morning" or "Dusk", not timestamps
+- Weather, sound level, and location recording
 - Beautiful dissolve animation
-- Weather and location context
-- Share trace cards on social media
+- Share Trace Cards on social media
+- Full Japanese and English support
+- Privacy-first: photos are never stored
+
+### Japanese
+
+Ambientrace 1.0 — f∞ studio 初のアプリリリース。
+
+- 瞬間を撮影し、環境データに溶解
+- AI雰囲気検出（Gemini、ChatGPT、Claude対応）
+- 写真からカラーパレットを抽出
+- Atmospheric Time — 時刻を「朝」「夕暮れ」で記憶する
+- 天気・環境音・位置情報を記録
+- 美しい溶解アニメーション
+- トレースカードをSNSでシェア
+- 日本語・英語完全対応
+- プライバシー重視：写真は一切保存されません
+
+---
+
+## Feature Graphic (Google Play) — Description
+
+1024 x 500px banner.
+Dark background (#0A0A0F) with subtle color orbs. App name "Ambientrace" and tagline "Capture the feeling, not the photo."
+
+---
+
+## Promotional Text (iOS, 170 chars max)
+
+**EN:** Your photos dissolve. Colors, weather, sounds remain. Remember moments through imagination, not images. From f∞ studio.
+**JP:** 写真は溶けて消える。残るのは色、天気、音だけ。画像ではなく、想像力で思い出す。f∞ studioより。

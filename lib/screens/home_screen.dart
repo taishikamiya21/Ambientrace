@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import '../models/trace_log.dart';
 import '../services/storage_service.dart';
@@ -69,6 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _openCapture() async {
+    HapticFeedback.lightImpact();
     await Navigator.push(
       context,
       MaterialPageRoute(
@@ -390,9 +392,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                           // Traces for this date
-                          ...tracesForDate.map((trace) => GestureDetector(
+                          ...tracesForDate.map((trace) => TraceCard(
+                                trace: trace,
                                 onTap: () => _openDetail(trace),
-                                child: TraceCard(trace: trace),
                               )),
                         ],
                       ),

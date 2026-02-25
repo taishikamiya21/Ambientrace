@@ -59,15 +59,15 @@
   - [x] **Tag Localization:** ML Kit fallback labels now match system language (JP/EN). Added 37-entry ambient label maps for both languages. <!-- completed: 2026-02-07 -->
   - [x] **Atmospheric Time Logic:** Added `atmosphericTime`, `atmosphericTimeJa`, `atmosphericTimeForLanguage()` to TraceLog model. 8 time zones: Late Night, Dawn, Morning, Midday, Afternoon, Dusk, Evening, Late Night. <!-- completed: 2026-02-07 -->
 - [x] **Screen Refactoring** <!-- completed: 2026-02-07 -->
-  - [ ] **Trace Card Redesign:**
+  - [x] **Trace Card Redesign:** <!-- completed: 2026-02-07 -->
     -   **Priority Update:** "Ambient Meaning" (Tags) should be the **Main Content** (Hero).
     -   **Hierarchy:** Tags/Meaning > Atmospheric Time > Exact Time > Metadata.
-    -   **Visuals:** Use the most prominent extracted tag as the card title. 11px corner, ambient label pills, metadata row. <!-- completed: 2026-02-07 -->
+    -   **Visuals:** Use the most prominent extracted tag as the card title. 11px corner, ambient label pills, metadata row.
   - [x] **Home Screen:** CustomScrollView+Slivers, refined header, weather filter chips, double-ring FAB, atmospheric time in search. <!-- completed: 2026-02-07 -->
   - [x] **Capture Screen:** Immersive fullscreen, gradient overlay, double-ring capture button with pulse animation, minimal gallery button. <!-- completed: 2026-02-07 -->
   - [x] **Detail Screen:** Color gradient hero banner (120px), atmospheric time as 36px heading, bottom sheet delete confirmation, improved layout. <!-- completed: 2026-02-07 -->
   - [x] **Shareable Trace Card:** Atmospheric time as hero, exact time+date as subtitle. <!-- completed: 2026-02-07 -->
-  - [ ] **Settings:** Standard platform-specific layout.
+  - [x] **Settings:** Standard platform-specific layout. <!-- completed: 2026-02-11, Phase 6C -->
 - [x] **Data Model拡張** <!-- completed: 2026-02-07 -->
   - [x] タイムスタンプ分離: `capturedAt`（写真撮影日時）と `createdAt`（カード生成日時）を分離
   - [x] Reconstructed Memoryには `capturedAt` を使用
@@ -76,9 +76,9 @@
   - [x] プロンプト最適化（2文・明示的な文字数制限）
   - [x] トークン使用量削減（Gemini: 500, OpenAI/Claude: 200）
   - [x] 文章の途中切れ防止
-- [ ] **Visuals**
-  - [ ] Typography and Color refinement (Contrast, Hierarchy)
-  - [ ] Micro-interactions and Haptics tune-up
+- [x] **Visuals** <!-- completed: 2026-02-12 -->
+  - [x] Typography and Color refinement (Contrast, Hierarchy) <!-- completed: 2026-02-11, Phase 6B/6C -->
+  - [x] Micro-interactions and Haptics tune-up <!-- completed: 2026-02-12 -->
 
 ## 🚀 Phase 6: リリース準備（実行順序順）
 
@@ -87,7 +87,7 @@
 
 ### Phase 6A: バグ修正・品質改善（TestFlight Backlog） ✅ <!-- completed: 2026-02-11 -->
 - [x] TestFlightテストで発見された修正項目の対応（[BACKLOG.md](./BACKLOG.md) 参照）
-- [x] Critical / High 優先度の項目をすべて完了（BL-002〜BL-005）
+- [x] Critical / High 優先度の項目をすべて完了（BL-002〜BL-007）
 
 ### Phase 6B: f∞studio デザインシステム適用 ✅ <!-- completed: 2026-02-11 -->
 - [x] カラーシステムの適用（Canvas: #0A0A0F, Accent: #DFFF4F, 不透明度スケール）
@@ -99,7 +99,7 @@
 - [x] Settings Screen モダン化（デザインシステム適用、多言語対応済み）
 - [x] Trace Card Redesign（Meaning > Time 階層シフト）
 - [x] Typography & Color リファイン（コントラスト、階層）
-- [ ] Micro-interactions & Haptics チューンアップ（次回対応）
+- [x] Micro-interactions & Haptics チューンアップ <!-- completed: 2026-02-12 -->
 
 ### Phase 6D: ストア申請準備
 - [ ] iOS / Android スクリーンショット撮影（Home, Capture, Dissolve, Detail, Share）

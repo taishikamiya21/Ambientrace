@@ -136,11 +136,11 @@ Return ONLY comma-separated phrases.''';
 時刻: $time / 雰囲気: $tracesText / 色彩: $colorsText / 天気: $weatherText / 場所: $placeText
 
 条件:
-- 2文の短い散文（合計100文字以内）
+- 1〜2文の短い散文（合計80文字以内）
 - 感覚的・詩的な表現を使用
 - 過去形または現在進行形
-- 必ず完結した文で終わること。文の途中で切れないこと
-- スペースが足りない場合は、新しい文を始めず、完結した文で終えること''';
+- 【最重要】必ず句点（。）、感嘆符（！）、または疑問符（？）で文を終えること
+- 文の途中で絶対に終わらないこと。短くても完結した文にすること''';
     }
 
     return '''Write a short, poetic narrative from this ambient data. Imagine the scene.
@@ -148,11 +148,11 @@ Return ONLY comma-separated phrases.''';
 Time: $time / Atmosphere: $tracesText / Colors: $colorsText / Weather: $weatherText / Place: $placeText
 
 Rules:
-- Exactly 2 sentences, under 50 words total
+- 1-2 sentences, under 40 words total
 - Sensory and poetic, not descriptive
 - Past tense or present continuous
-- Complete your sentences. Do not truncate
-- If running out of space, end with a complete sentence rather than starting a new one''';
+- CRITICAL: Every sentence MUST end with a period (.), exclamation mark (!), or question mark (?)
+- Keep it short. A single complete sentence is better than two broken ones''';
   }
 
   /// Parse comma-separated response text into label list

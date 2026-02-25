@@ -566,7 +566,7 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
 
       if (mounted) {
         setState(() {
-          _generatedStory = story;
+          _generatedStory = story != null ? _sanitizeStory(story) : null;
           _isGeneratingStory = false;
           if (story == null) {
             _storyError =
@@ -582,6 +582,34 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
         });
       }
     }
+  }
+
+  /// Truncate story to the last complete sentence to prevent mid-sentence cutoff
+  String _sanitizeStory(String story) {
+    final trimmed = story.trim();
+    // Check if already ends with sentence-ending punctuation
+    if (trimmed.endsWith('.') ||
+        trimmed.endsWith('!') ||
+        trimmed.endsWith('?') ||
+        trimmed.endsWith('。') ||
+        trimmed.endsWith('！') ||
+        trimmed.endsWith('？')) {
+      return trimmed;
+    }
+
+    // Find the last sentence-ending punctuation
+    int lastEnd = -1;
+    for (final punct in ['.', '!', '?', '。', '！', '？']) {
+      final idx = trimmed.lastIndexOf(punct);
+      if (idx > lastEnd) lastEnd = idx;
+    }
+
+    if (lastEnd > 0) {
+      return trimmed.substring(0, lastEnd + 1);
+    }
+
+    // No sentence-ending punctuation found at all — return as-is
+    return trimmed;
   }
 
   Future<void> _shareTrace() async {
