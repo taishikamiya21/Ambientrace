@@ -1,0 +1,15 @@
+# Android リリース署名設定
+# このファイルをコピーして key.properties を作成し、実際の値を入力してください。
+# key.properties は .gitignore に追加されているため Git にコミットされません。
+#
+# Keystore の作成コマンド:
+#   mkdir -p ~/keystores
+#   keytool -genkey -v \
+#     -keystore ~/keystores/ambientrace-release.jks \
+#     -keyalg RSA -keysize 2048 -validity 10000 \
+#     -alias ambientrace
+
+storePassword=YOUR_STORE_PASSWORD
+keyPassword=YOUR_KEY_PASSWORD
+keyAlias=ambientrace
+storeFile=/Users/YOUR_USERNAME/keystores/ambientrace-release.jks
