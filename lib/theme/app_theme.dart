@@ -8,13 +8,18 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  // Canvas
+  // Dark canvas
   static const canvasPrimary = Color(0xFF0A0A0F);
   static const canvasSecondary = Color(0xFF1A1A2E);
 
+  // Light canvas
+  static const canvasLight = Color(0xFFF5F3EE);
+  static const canvasLightSecondary = Color(0xFFECEAE4);
+  static const onLight = Color(0xFF1A1819);
+
   // Accent
   static const accentNeon = Color(0xFFDFFF4F);
-  static const accentNeonMuted = Color(0x26DFFF4F); // 15% opacity
+  static const accentNeonMuted = Color(0x26DFFF4F);
 
   // Functional
   static const error = Color(0xFFFF4F4F);
@@ -26,7 +31,6 @@ class AppColors {
 class AppOpacity {
   AppOpacity._();
 
-  // Text (white-based on dark canvas)
   static const textHero = 1.0;
   static const textHigh = 0.85;
   static const textBody = 0.7;
@@ -37,13 +41,11 @@ class AppOpacity {
   static const textGhost = 0.2;
   static const textWhisper = 0.1;
 
-  // Surface (white-based)
   static const surfaceElevated = 0.12;
   static const surfaceContainer = 0.08;
   static const surfaceSubtle = 0.05;
   static const surfaceFaint = 0.03;
 
-  // Border (white-based)
   static const borderStrong = 0.3;
   static const borderMedium = 0.2;
   static const borderDefault = 0.12;
@@ -52,97 +54,91 @@ class AppOpacity {
 }
 
 /// Typography styles following the f∞ studio type scale.
+/// [color] を省略した場合は Colors.white を使用 (ダークモード互換)。
 class AppTypography {
   AppTypography._();
 
   static const _fontFamily = 'Inter';
   static const _monoFontFamily = 'JetBrains Mono';
 
-  // display: 48px, w200, -0.02em, lineHeight 1.1
-  static TextStyle display({double opacity = AppOpacity.textHero}) => TextStyle(
+  static TextStyle display({Color? color, double opacity = AppOpacity.textHero}) =>
+      TextStyle(
         fontFamily: _fontFamily,
         fontSize: 48,
         fontWeight: FontWeight.w200,
-        letterSpacing: -0.02 * 48, // -0.02em
+        letterSpacing: -0.02 * 48,
         height: 1.1,
-        color: Colors.white.withValues(alpha: opacity),
+        color: (color ?? Colors.white).withValues(alpha: opacity),
       );
 
-  // headline: 32px, w300, -0.01em, lineHeight 1.2
-  static TextStyle headline({double opacity = AppOpacity.textHigh}) =>
+  static TextStyle headline({Color? color, double opacity = AppOpacity.textHigh}) =>
       TextStyle(
         fontFamily: _fontFamily,
         fontSize: 32,
         fontWeight: FontWeight.w300,
-        letterSpacing: -0.01 * 32, // -0.01em
+        letterSpacing: -0.01 * 32,
         height: 1.2,
-        color: Colors.white.withValues(alpha: opacity),
+        color: (color ?? Colors.white).withValues(alpha: opacity),
       );
 
-  // title: 24px, w500, 0, lineHeight 1.3
-  static TextStyle title({double opacity = AppOpacity.textHigh}) => TextStyle(
+  static TextStyle title({Color? color, double opacity = AppOpacity.textHigh}) => TextStyle(
         fontFamily: _fontFamily,
         fontSize: 24,
         fontWeight: FontWeight.w500,
         letterSpacing: 0,
         height: 1.3,
-        color: Colors.white.withValues(alpha: opacity),
+        color: (color ?? Colors.white).withValues(alpha: opacity),
       );
 
-  // subtitle: 18px, w300, 0, lineHeight 1.4
-  static TextStyle subtitle({double opacity = AppOpacity.textBody}) =>
+  static TextStyle subtitle({Color? color, double opacity = AppOpacity.textBody}) =>
       TextStyle(
         fontFamily: _fontFamily,
         fontSize: 18,
         fontWeight: FontWeight.w300,
         letterSpacing: 0,
         height: 1.4,
-        color: Colors.white.withValues(alpha: opacity),
+        color: (color ?? Colors.white).withValues(alpha: opacity),
       );
 
-  // body: 16px, w300, 0, lineHeight 1.6
-  static TextStyle body({double opacity = AppOpacity.textBody}) => TextStyle(
+  static TextStyle body({Color? color, double opacity = AppOpacity.textBody}) => TextStyle(
         fontFamily: _fontFamily,
         fontSize: 16,
         fontWeight: FontWeight.w300,
         letterSpacing: 0,
         height: 1.6,
-        color: Colors.white.withValues(alpha: opacity),
+        color: (color ?? Colors.white).withValues(alpha: opacity),
       );
 
-  // label: 14px, w500, 0.05em, lineHeight 1.0 (UPPERCASE usage)
-  static TextStyle label({double opacity = AppOpacity.textHigh}) => TextStyle(
+  static TextStyle label({Color? color, double opacity = AppOpacity.textHigh}) => TextStyle(
         fontFamily: _fontFamily,
         fontSize: 14,
         fontWeight: FontWeight.w500,
-        letterSpacing: 0.05 * 14, // 0.05em
+        letterSpacing: 0.05 * 14,
         height: 1.0,
-        color: Colors.white.withValues(alpha: opacity),
+        color: (color ?? Colors.white).withValues(alpha: opacity),
       );
 
-  // section: 12px, w600, 0.15em, lineHeight 1.0 (UPPERCASE)
-  static TextStyle section({double opacity = AppOpacity.textSecondary}) =>
+  static TextStyle section({Color? color, double opacity = AppOpacity.textSecondary}) =>
       TextStyle(
         fontFamily: _fontFamily,
         fontSize: 12,
         fontWeight: FontWeight.w600,
-        letterSpacing: 0.15 * 12, // 0.15em
+        letterSpacing: 0.15 * 12,
         height: 1.0,
-        color: Colors.white.withValues(alpha: opacity),
+        color: (color ?? Colors.white).withValues(alpha: opacity),
       );
 
-  // mono: 12px, w400, 0.05em, lineHeight 1.4 (monospace)
-  static TextStyle mono({double opacity = AppOpacity.textMuted}) => TextStyle(
+  static TextStyle mono({Color? color, double opacity = AppOpacity.textMuted}) => TextStyle(
         fontFamily: _monoFontFamily,
         fontSize: 12,
         fontWeight: FontWeight.w400,
-        letterSpacing: 0.05 * 12, // 0.05em
+        letterSpacing: 0.05 * 12,
         height: 1.4,
-        color: Colors.white.withValues(alpha: opacity),
+        color: (color ?? Colors.white).withValues(alpha: opacity),
       );
 }
 
-/// Border radius tokens — 5 levels from sharp to pill.
+/// Border radius tokens
 class AppRadius {
   AppRadius._();
 
@@ -212,4 +208,65 @@ class AppTheme {
       ),
     );
   }
+
+  static ThemeData light() {
+    const base = AppColors.onLight;
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.light,
+      fontFamily: 'Inter',
+      scaffoldBackgroundColor: AppColors.canvasLight,
+      colorScheme: ColorScheme.light(
+        surface: AppColors.canvasLight,
+        primary: const Color(0xFF5A5418),
+        secondary: AppColors.canvasLightSecondary,
+        error: AppColors.error,
+        onSurface: AppColors.onLight,
+        onPrimary: Colors.white,
+      ),
+      appBarTheme: AppBarTheme(
+        backgroundColor: AppColors.canvasLight,
+        foregroundColor: base.withValues(alpha: AppOpacity.textHigh),
+        elevation: 0,
+        scrolledUnderElevation: 0,
+      ),
+      cardTheme: CardThemeData(
+        color: base.withValues(alpha: AppOpacity.surfaceContainer),
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.container),
+          side: BorderSide(
+            color: base.withValues(alpha: AppOpacity.borderDefault),
+          ),
+        ),
+      ),
+      dividerTheme: DividerThemeData(
+        color: base.withValues(alpha: AppOpacity.borderDefault),
+        thickness: 1,
+      ),
+      iconTheme: IconThemeData(
+        color: base.withValues(alpha: AppOpacity.textTertiary),
+      ),
+    );
+  }
+}
+
+/// BuildContext extension — テーマに応じたセマンティックカラーを提供
+extension AppThemeX on BuildContext {
+  bool get isDark => Theme.of(this).brightness == Brightness.dark;
+
+  /// 背景色
+  Color get canvasColor =>
+      isDark ? AppColors.canvasPrimary : AppColors.canvasLight;
+
+  /// セカンダリ背景色
+  Color get canvasSecondaryColor =>
+      isDark ? AppColors.canvasSecondary : AppColors.canvasLightSecondary;
+
+  /// テキストのベース色 (ダーク: white, ライト: near-black)
+  Color get onCanvasColor => isDark ? Colors.white : AppColors.onLight;
+
+  /// サーフェス/ボーダー用の半透明色
+  Color onCanvasWithOpacity(double opacity) =>
+      onCanvasColor.withValues(alpha: opacity);
 }

@@ -32,7 +32,7 @@ class ClaudeService extends LlmService {
       final url = Uri.parse('https://api.anthropic.com/v1/messages');
 
       final body = {
-        'model': 'claude-sonnet-4-5-20250929',
+        'model': 'claude-sonnet-4-5',
         'max_tokens': 300,
         'messages': [
           {
@@ -123,7 +123,7 @@ class ClaudeService extends LlmService {
       print('Claude: Generating story...');
 
       final body = {
-        'model': 'claude-sonnet-4-5-20250929',
+        'model': 'claude-sonnet-4-5',
         'max_tokens': 400,
         'messages': [
           {

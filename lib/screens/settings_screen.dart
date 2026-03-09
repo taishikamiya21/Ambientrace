@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../services/image_labeling_service.dart';
 import '../services/llm_service.dart';
+import '../services/theme_service.dart';
 import '../theme/app_theme.dart';
 import 'onboarding_screen.dart';
 
@@ -84,26 +85,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.canvasSecondary,
+        backgroundColor: context.canvasSecondaryColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.surface),
         ),
         title: Text(
           isJa ? 'APIキーを削除しますか？' : 'Clear API Key?',
-          style: AppTypography.subtitle(opacity: AppOpacity.textHero),
+          style: AppTypography.subtitle(
+              color: context.onCanvasColor, opacity: AppOpacity.textHero),
         ),
         content: Text(
           isJa
               ? '${_activeService.providerName}のAPIキーが削除されます。画像ラベリングは他のプロバイダーまたはML Kitにフォールバックします。'
               : '${_activeService.providerName} API key will be removed. Image labeling will fall back to another provider or ML Kit.',
-          style: AppTypography.body(opacity: AppOpacity.textBody),
+          style: AppTypography.body(
+              color: context.onCanvasColor, opacity: AppOpacity.textBody),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
             child: Text(
               isJa ? 'キャンセル' : 'Cancel',
-              style: AppTypography.label(opacity: AppOpacity.textSecondary),
+              style: AppTypography.label(
+                  color: context.onCanvasColor,
+                  opacity: AppOpacity.textSecondary),
             ),
           ),
           TextButton(
@@ -150,20 +155,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     final isConfigured = _activeService.isConfigured;
     final selectedProvider = widget.imageLabelingService.selectedProvider;
+    final tc = context.onCanvasColor;
 
     return Scaffold(
-      backgroundColor: AppColors.canvasPrimary,
+      backgroundColor: context.canvasColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back,
-              color: Colors.white.withValues(alpha: AppOpacity.textHigh)),
+              color: tc.withValues(alpha: AppOpacity.textHigh)),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           _isJapanese ? '設定' : 'Settings',
-          style: AppTypography.subtitle(opacity: AppOpacity.textHigh),
+          style: AppTypography.subtitle(
+              color: tc, opacity: AppOpacity.textHigh),
         ),
       ),
       body: SingleChildScrollView(
@@ -171,6 +178,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // ── 外観セクション ──────────────────────────
+            _buildSectionTitle(_isJapanese ? '外観' : 'Appearance'),
+            const SizedBox(height: AppSpacing.md),
+            _buildAppearanceSection(),
+            const SizedBox(height: AppSpacing.xxl),
+
             // AI Image Analysis Section
             _buildSectionTitle(_isJapanese ? 'AI画像解析' : 'AI Image Analysis'),
             const SizedBox(height: AppSpacing.md),
@@ -179,10 +192,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Container(
               padding: const EdgeInsets.all(AppSpacing.lg),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: AppOpacity.surfaceSubtle),
+                color: tc.withValues(alpha: AppOpacity.surfaceSubtle),
                 borderRadius: BorderRadius.circular(AppRadius.container),
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: AppOpacity.borderSubtle),
+                  color: tc.withValues(alpha: AppOpacity.borderSubtle),
                 ),
               ),
               child: Column(
@@ -190,7 +203,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   Text(
                     _isJapanese ? 'AIプロバイダー' : 'AI Provider',
-                    style: AppTypography.label(opacity: AppOpacity.textBody),
+                    style: AppTypography.label(
+                        color: tc, opacity: AppOpacity.textBody),
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   Row(
@@ -216,13 +230,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
                             decoration: BoxDecoration(
                               color: isSelected
-                                  ? Colors.white.withValues(alpha: AppOpacity.surfaceElevated)
-                                  : Colors.white.withValues(alpha: AppOpacity.surfaceFaint),
+                                  ? tc.withValues(alpha: AppOpacity.surfaceElevated)
+                                  : tc.withValues(alpha: AppOpacity.surfaceFaint),
                               borderRadius: BorderRadius.circular(AppRadius.container),
                               border: Border.all(
                                 color: isSelected
-                                    ? Colors.white.withValues(alpha: AppOpacity.borderStrong)
-                                    : Colors.white.withValues(alpha: AppOpacity.borderSubtle),
+                                    ? tc.withValues(alpha: AppOpacity.borderStrong)
+                                    : tc.withValues(alpha: AppOpacity.borderSubtle),
                                 width: isSelected ? 1.5 : 1,
                               ),
                             ),
@@ -231,15 +245,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 Text(
                                   _getProviderDisplayName(provider),
                                   style: isSelected
-                                      ? AppTypography.label(opacity: AppOpacity.textHero)
-                                      : AppTypography.label(opacity: AppOpacity.textTertiary),
+                                      ? AppTypography.label(
+                                          color: tc,
+                                          opacity: AppOpacity.textHero)
+                                      : AppTypography.label(
+                                          color: tc,
+                                          opacity: AppOpacity.textTertiary),
                                 ),
                                 const SizedBox(height: AppSpacing.xxs),
                                 Icon(
                                   isProviderConfigured ? Icons.check_circle : Icons.circle_outlined,
                                   color: isProviderConfigured
                                       ? AppColors.success.withValues(alpha: 0.8)
-                                      : Colors.white.withValues(alpha: AppOpacity.textGhost),
+                                      : tc.withValues(alpha: AppOpacity.textGhost),
                                   size: 14,
                                 ),
                               ],
@@ -259,10 +277,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Container(
               padding: const EdgeInsets.all(AppSpacing.lg),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: AppOpacity.surfaceSubtle),
+                color: tc.withValues(alpha: AppOpacity.surfaceSubtle),
                 borderRadius: BorderRadius.circular(AppRadius.container),
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: AppOpacity.borderSubtle),
+                  color: tc.withValues(alpha: AppOpacity.borderSubtle),
                 ),
               ),
               child: Column(
@@ -285,7 +303,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               : (_isJapanese
                                   ? '${_activeService.providerName} API未設定'
                                   : '${_activeService.providerName} API not configured'),
-                          style: AppTypography.body(opacity: AppOpacity.textHigh),
+                          style: AppTypography.body(
+                              color: tc, opacity: AppOpacity.textHigh),
                         ),
                       ),
                     ],
@@ -295,7 +314,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     const SizedBox(height: AppSpacing.sm),
                     Text(
                       'Key: ${_activeService.maskedApiKey}',
-                      style: AppTypography.mono(opacity: AppOpacity.textTertiary),
+                      style: AppTypography.mono(
+                          color: tc, opacity: AppOpacity.textTertiary),
                     ),
                     const SizedBox(height: AppSpacing.md),
                     // Clear API key — pill button
@@ -324,18 +344,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ? '${_activeService.providerName}のAPIキーを追加してAI画像ラベリングを有効にしましょう。${_getProviderHint(selectedProvider)}'
                           : 'Add your ${_activeService.providerName} API key to enable AI-powered image labeling. '
                             '${_getProviderHint(selectedProvider)}',
-                      style: AppTypography.body(opacity: AppOpacity.textTertiary),
+                      style: AppTypography.body(
+                          color: tc, opacity: AppOpacity.textTertiary),
                     ),
                     const SizedBox(height: AppSpacing.md),
                     TextField(
                       controller: _apiKeyController,
                       obscureText: _isObscured,
-                      style: AppTypography.body(opacity: AppOpacity.textHigh),
+                      style: AppTypography.body(
+                          color: tc, opacity: AppOpacity.textHigh),
                       decoration: InputDecoration(
                         hintText: _isJapanese ? 'APIキーを入力' : 'Enter API Key',
-                        hintStyle: AppTypography.body(opacity: AppOpacity.textMuted),
+                        hintStyle: AppTypography.body(
+                            color: tc, opacity: AppOpacity.textMuted),
                         filled: true,
-                        fillColor: Colors.white.withValues(alpha: AppOpacity.surfaceSubtle),
+                        fillColor: tc.withValues(alpha: AppOpacity.surfaceSubtle),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(AppRadius.container),
                           borderSide: BorderSide.none,
@@ -343,7 +366,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         suffixIcon: IconButton(
                           icon: Icon(
                             _isObscured ? Icons.visibility : Icons.visibility_off,
-                            color: Colors.white.withValues(alpha: AppOpacity.textTertiary),
+                            color: tc.withValues(alpha: AppOpacity.textTertiary),
                           ),
                           onPressed: () {
                             setState(() => _isObscured = !_isObscured);
@@ -358,13 +381,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       child: ElevatedButton(
                         onPressed: _isSaving ? null : _saveApiKey,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white.withValues(alpha: AppOpacity.surfaceElevated),
-                          foregroundColor: Colors.white,
+                          backgroundColor: tc.withValues(alpha: AppOpacity.surfaceElevated),
+                          foregroundColor: tc,
                           padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(AppRadius.pill),
                             side: BorderSide(
-                              color: Colors.white.withValues(alpha: AppOpacity.borderDefault),
+                              color: tc.withValues(alpha: AppOpacity.borderDefault),
                             ),
                           ),
                         ),
@@ -374,12 +397,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 height: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  color: Colors.white.withValues(alpha: AppOpacity.textHigh),
+                                  color: tc.withValues(alpha: AppOpacity.textHigh),
                                 ),
                               )
                             : Text(
                                 _isJapanese ? 'APIキーを保存' : 'Save API Key',
-                                style: AppTypography.label(opacity: AppOpacity.textHigh),
+                                style: AppTypography.label(
+                                    color: tc, opacity: AppOpacity.textHigh),
                               ),
                       ),
                     ),
@@ -396,10 +420,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             Container(
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: AppOpacity.surfaceSubtle),
+                color: tc.withValues(alpha: AppOpacity.surfaceSubtle),
                 borderRadius: BorderRadius.circular(AppRadius.container),
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: AppOpacity.borderSubtle),
+                  color: tc.withValues(alpha: AppOpacity.borderSubtle),
                 ),
               ),
               child: Column(
@@ -447,12 +471,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   Text(
                     'AMBIENTRACE',
-                    style: AppTypography.section(opacity: AppOpacity.textMuted),
+                    style: AppTypography.section(
+                        color: tc, opacity: AppOpacity.textMuted),
                   ),
                   const SizedBox(height: AppSpacing.xxs),
                   Text(
                     _isJapanese ? '写真ではなく、感覚を記録する。' : 'Capture the feeling, not the photo.',
-                    style: AppTypography.mono(opacity: AppOpacity.textGhost)
+                    style: AppTypography.mono(color: tc, opacity: AppOpacity.textGhost)
                         .copyWith(fontStyle: FontStyle.italic),
                   ),
                 ],
@@ -466,18 +491,130 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  Widget _buildAppearanceSection() {
+    final tc = context.onCanvasColor;
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: tc.withValues(alpha: AppOpacity.surfaceSubtle),
+        borderRadius: BorderRadius.circular(AppRadius.container),
+        border: Border.all(
+          color: tc.withValues(alpha: AppOpacity.borderSubtle),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            _isJapanese ? 'テーマ' : 'Theme',
+            style: AppTypography.label(
+                color: tc, opacity: AppOpacity.textBody),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          ValueListenableBuilder<ThemeMode>(
+            valueListenable: ThemeService.instance.themeNotifier,
+            builder: (context, currentMode, _) {
+              return Row(
+                children: [
+                  _buildThemeOption(
+                    label: _isJapanese ? 'ダーク' : 'Dark',
+                    icon: Icons.dark_mode_outlined,
+                    mode: ThemeMode.dark,
+                    currentMode: currentMode,
+                    tc: tc,
+                  ),
+                  const SizedBox(width: AppSpacing.xs),
+                  _buildThemeOption(
+                    label: _isJapanese ? 'ライト' : 'Light',
+                    icon: Icons.light_mode_outlined,
+                    mode: ThemeMode.light,
+                    currentMode: currentMode,
+                    tc: tc,
+                  ),
+                  const SizedBox(width: AppSpacing.xs),
+                  _buildThemeOption(
+                    label: _isJapanese ? '自動' : 'System',
+                    icon: Icons.brightness_auto_outlined,
+                    mode: ThemeMode.system,
+                    currentMode: currentMode,
+                    tc: tc,
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildThemeOption({
+    required String label,
+    required IconData icon,
+    required ThemeMode mode,
+    required ThemeMode currentMode,
+    required Color tc,
+  }) {
+    final isSelected = currentMode == mode;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => ThemeService.instance.setMode(mode),
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+              vertical: AppSpacing.sm, horizontal: AppSpacing.xs),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? tc.withValues(alpha: AppOpacity.surfaceElevated)
+                : tc.withValues(alpha: AppOpacity.surfaceFaint),
+            borderRadius: BorderRadius.circular(AppRadius.container),
+            border: Border.all(
+              color: isSelected
+                  ? tc.withValues(alpha: AppOpacity.borderStrong)
+                  : tc.withValues(alpha: AppOpacity.borderSubtle),
+              width: isSelected ? 1.5 : 1,
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                color: tc.withValues(
+                    alpha: isSelected
+                        ? AppOpacity.textHigh
+                        : AppOpacity.textTertiary),
+                size: 20,
+              ),
+              const SizedBox(height: AppSpacing.xxs),
+              Text(
+                label,
+                style: AppTypography.mono(
+                  color: tc,
+                  opacity: isSelected
+                      ? AppOpacity.textHigh
+                      : AppOpacity.textTertiary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   void _showAboutDialog() {
     final isJa = _isJapanese;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.canvasSecondary,
+        backgroundColor: context.canvasSecondaryColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.surface),
         ),
         title: Text(
           'Ambientrace',
-          style: AppTypography.title(opacity: AppOpacity.textHero),
+          style: AppTypography.title(
+              color: context.onCanvasColor, opacity: AppOpacity.textHero),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -487,14 +624,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
               isJa
                   ? '写真ではなく、その瞬間の雰囲気を記録するアプリです。'
                   : 'Capture the ambient trace of your moments - not the photo, just the feeling.',
-              style: AppTypography.body(opacity: AppOpacity.textBody),
+              style: AppTypography.body(
+                  color: context.onCanvasColor, opacity: AppOpacity.textBody),
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
               isJa
                   ? 'バージョン $_appVersion (ビルド $_buildNumber)'
                   : 'Version $_appVersion (Build $_buildNumber)',
-              style: AppTypography.mono(opacity: AppOpacity.textTertiary),
+              style: AppTypography.mono(
+                  color: context.onCanvasColor, opacity: AppOpacity.textTertiary),
             ),
           ],
         ),
@@ -503,7 +642,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onPressed: () => Navigator.pop(context),
             child: Text(
               'OK',
-              style: AppTypography.label(opacity: AppOpacity.textHigh),
+              style: AppTypography.label(
+                  color: context.onCanvasColor, opacity: AppOpacity.textHigh),
             ),
           ),
         ],
@@ -547,42 +687,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
     String? subtitle,
     required VoidCallback onTap,
   }) {
+    final tc = context.onCanvasColor;
     return ListTile(
       leading: Icon(
         icon,
-        color: Colors.white.withValues(alpha: AppOpacity.textSecondary),
+        color: tc.withValues(alpha: AppOpacity.textSecondary),
         size: 22,
       ),
       title: Text(
         title,
-        style: AppTypography.body(opacity: AppOpacity.textHigh),
+        style: AppTypography.body(color: tc, opacity: AppOpacity.textHigh),
       ),
       subtitle: subtitle != null
           ? Text(
               subtitle,
-              style: AppTypography.mono(opacity: AppOpacity.textCaption),
+              style: AppTypography.mono(
+                  color: tc, opacity: AppOpacity.textCaption),
             )
           : null,
       trailing: Icon(
         Icons.chevron_right,
-        color: Colors.white.withValues(alpha: AppOpacity.textMuted),
+        color: tc.withValues(alpha: AppOpacity.textMuted),
       ),
       onTap: onTap,
     );
   }
 
   Widget _buildDivider() {
+    final tc = context.onCanvasColor;
     return Divider(
       height: 1,
       indent: 56,
-      color: Colors.white.withValues(alpha: AppOpacity.borderSubtle),
+      color: tc.withValues(alpha: AppOpacity.borderSubtle),
     );
   }
 
   Widget _buildSectionTitle(String title) {
+    final tc = context.onCanvasColor;
     return Text(
       title.toUpperCase(),
-      style: AppTypography.section(),
+      style: AppTypography.section(color: tc),
     );
   }
 }
@@ -593,19 +737,21 @@ class PrivacyPolicyScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tc = context.onCanvasColor;
     return Scaffold(
-      backgroundColor: AppColors.canvasPrimary,
+      backgroundColor: context.canvasColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back,
-              color: Colors.white.withValues(alpha: AppOpacity.textHigh)),
+              color: tc.withValues(alpha: AppOpacity.textHigh)),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           ui.PlatformDispatcher.instance.locale.languageCode == 'ja' ? 'プライバシーポリシー' : 'Privacy Policy',
-          style: AppTypography.subtitle(opacity: AppOpacity.textHigh),
+          style: AppTypography.subtitle(
+              color: tc, opacity: AppOpacity.textHigh),
         ),
       ),
       body: SingleChildScrollView(
@@ -614,12 +760,14 @@ class PrivacyPolicyScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildSection(
+              context,
               'Overview',
               'Ambientrace is designed with privacy as a core principle. '
               'Unlike traditional photo apps, Ambientrace intentionally does not store your photos. '
               'Instead, it extracts environmental data (the "ambient trace") from your images and then permanently deletes the original photo.',
             ),
             _buildSection(
+              context,
               'Data We Collect',
               '• Color palette — The dominant colors in the image\n'
               '• Ambient labels — Descriptive tags about the atmosphere\n'
@@ -628,6 +776,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
               '• Weather — Temperature and weather condition',
             ),
             _buildSection(
+              context,
               'Data We Do NOT Collect',
               '• Photos — Images are processed locally and immediately deleted\n'
               '• Personal information — No names, emails, or account information\n'
@@ -635,6 +784,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
               '• Advertising data — No ad networks or identifiers',
             ),
             _buildSection(
+              context,
               'Third-Party Services',
               '• Google ML Kit — On-device image labeling (no data sent to servers)\n'
               '• Gemini API (Optional) — Enhanced labeling if you provide an API key\n'
@@ -643,6 +793,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
               '• Open-Meteo — Weather data (only GPS coordinates sent)',
             ),
             _buildSection(
+              context,
               'Data Storage',
               'All ambient trace data is stored locally on your device only:\n'
               '• Data is saved in the app\'s private storage\n'
@@ -650,12 +801,14 @@ class PrivacyPolicyScreen extends StatelessWidget {
               '• Deleting the app removes all data',
             ),
             _buildSection(
+              context,
               'Your Rights',
               '• Delete individual traces using the delete button\n'
               '• Delete all data by uninstalling the app\n'
               '• Deny permissions — The app works with limited functionality',
             ),
             _buildSection(
+              context,
               'Contact',
               'For questions about this Privacy Policy:\n'
               'GitHub: github.com/taishikamiya21/Ambientrace',
@@ -664,7 +817,8 @@ class PrivacyPolicyScreen extends StatelessWidget {
             Center(
               child: Text(
                 'Last Updated: February 7, 2026',
-                style: AppTypography.mono(opacity: AppOpacity.textMuted),
+                style: AppTypography.mono(
+                    color: tc, opacity: AppOpacity.textMuted),
               ),
             ),
           ],
@@ -673,7 +827,8 @@ class PrivacyPolicyScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSection(String title, String content) {
+  Widget _buildSection(BuildContext context, String title, String content) {
+    final tc = context.onCanvasColor;
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.xl),
       child: Column(
@@ -681,12 +836,13 @@ class PrivacyPolicyScreen extends StatelessWidget {
         children: [
           Text(
             title.toUpperCase(),
-            style: AppTypography.section(opacity: AppOpacity.textHigh),
+            style: AppTypography.section(
+                color: tc, opacity: AppOpacity.textHigh),
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
             content,
-            style: AppTypography.body(opacity: AppOpacity.textBody),
+            style: AppTypography.body(color: tc, opacity: AppOpacity.textBody),
           ),
         ],
       ),

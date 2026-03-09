@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'services/storage_service.dart';
 import 'services/image_labeling_service.dart';
+import 'services/theme_service.dart';
 import 'screens/home_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'theme/app_theme.dart';
@@ -10,7 +11,9 @@ import 'theme/app_theme.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Set system UI style
+  // Initialize theme service
+  await ThemeService.instance.init();
+
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -20,11 +23,9 @@ void main() async {
     ),
   );
 
-  // Check if onboarding is complete
   final prefs = await SharedPreferences.getInstance();
   final onboardingComplete = prefs.getBool('onboarding_complete') ?? false;
 
-  // Initialize services
   final storageService = StorageService();
   await storageService.init();
 
@@ -61,20 +62,27 @@ class _AmbientraleAppState extends State<AmbientraleApp> {
   void initState() {
     super.initState();
     _showOnboarding = widget.showOnboarding;
+    ThemeService.instance.themeNotifier.addListener(_onThemeChanged);
   }
 
-  void _onOnboardingComplete() {
-    setState(() {
-      _showOnboarding = false;
-    });
+  @override
+  void dispose() {
+    ThemeService.instance.themeNotifier.removeListener(_onThemeChanged);
+    super.dispose();
   }
+
+  void _onThemeChanged() => setState(() {});
+
+  void _onOnboardingComplete() => setState(() => _showOnboarding = false);
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Ambientrace',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.dark(),
+      theme: AppTheme.light(),
+      darkTheme: AppTheme.dark(),
+      themeMode: ThemeService.instance.themeNotifier.value,
       home: _showOnboarding
           ? OnboardingScreen(onComplete: _onOnboardingComplete)
           : HomeScreen(
