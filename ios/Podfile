@@ -39,5 +39,10 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+    target.build_configurations.each do |config|
+      # objective_c.framework など CocoaPod 由来フレームワークの dSYM を生成
+      # dSYM UUID 不一致警告を防ぐ
+      config.build_settings['DEBUG_INFORMATION_FORMAT'] = 'dwarf-with-dsym'
+    end
   end
 end
