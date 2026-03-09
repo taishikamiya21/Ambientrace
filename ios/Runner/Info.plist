@@ -34,8 +34,10 @@
 	<string>Ambientrace records your location as part of the ambient trace.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Ambientrace measures ambient noise levels as part of the trace.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Ambientrace では、写真ライブラリから画像を選択するために使用します。</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Ambientirace のカードを写真ライブラリに保存します。</string>
+	<string>Ambientrace のカードを写真ライブラリに保存します。</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Required for Flutter development debugging over WiFi.</string>
 	<key>NSBonjourServices</key>
