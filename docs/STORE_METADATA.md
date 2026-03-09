@@ -243,6 +243,30 @@ Ambientrace 1.0 — f∞ studio 初のアプリリリース。
 
 ---
 
+## What's New / リリースノート (Version 1.1.0)
+
+### English
+
+Light Mode, redesigned cards, and a new way to relive your traces.
+
+- **Light Mode** — switch between Dark, Light, and System appearance in Settings
+- **Redesigned Trace Cards** — polaroid-style cards with vivid color gradient hero and white paper strip, with ambient palette glow
+- **Long-press to Save or Share** — press and hold a trace card to save to your photo library or share
+- **Generate Memory fade-in** — AI-generated stories now appear with a gentle fade animation
+- **Bug fixes** — improved stability on iOS 26 and updated AI model IDs
+
+### Japanese
+
+ライトモード追加・カードデザイン刷新・記憶を呼び覚ます新機能。
+
+- **ライトモード対応** — 設定画面でダーク／ライト／システムに合わせて切り替え可能
+- **トレースカードのデザインを刷新** — ポラロイド風デザイン。鮮やかなグラデーションヒーローとホワイトペーパーストリップ、パレットグロー効果
+- **長押しで保存・共有** — カードを長押しするとフォトライブラリへの保存または共有が選択できるアクションシートが開く
+- **Generate Memory のフェードイン** — AIが生成した記憶の文章がふわりとフェードインするように改善
+- **バグ修正** — iOS 26 での動作安定性向上、AIモデルIDの更新
+
+---
+
 ## Feature Graphic (Google Play) — Description
 
 1024 x 500px banner.
