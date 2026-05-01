@@ -1,6 +1,6 @@
 # Ambientrace 開発ステータス
 
-**最終更新:** 2026-05-01 JST (v1.2 Phase B 完了)
+**最終更新:** 2026-05-02 JST (v1.2.0 リリースビルド準備 — version 1.2.0+4 / TestFlight 配布)
 
 ---
 
@@ -96,6 +96,24 @@
 | **ストアメタデータ** | 説明文・キーワード作成済み | ✅ |
 
 ---
+
+### 🚀 v1.2.0 リリースビルド — 2026-05-02
+
+- **バージョン:** `1.2.0+4`（pre-release alpha 表記を外し、TestFlight 内部テスト向け正式版へ）
+- **品質ゲート:** `flutter analyze` errors=0 / warnings=2（step_service の vestigial フィールド、UI 影響なし）、`flutter test` 45/45 pass。
+- **配布方式:** Xcode Organizer 経由で App Store Connect → TestFlight 内部テストグループへ配信。
+
+#### v1.2 What's New（リリースノート抜粋）
+
+**Phase A — Data Stewardship & AI UX**
+- データエクスポート（JSON / CSV）と復元可能インポート（dry-run / apply / 衝突方針）。
+- フォルダによるトレース分類、AI Provider 解説 / プリセット選択（Minimal / Poetic / Documentary / Exhibition）。
+- API キーを Secure Storage に移行、schemaVersion 付きデータモデル拡張。
+- LAB k-means++ ベースのカラー抽出に統一、iPhone 実画像の白飛びを修正。
+
+**Phase B — Bulk Workflows**
+- 既存写真の一括カード化（EXIF 撮影日時 / GPS 反映、進捗・キャンセル・失敗可視化）。
+- カード ZIP 出力（PNG + index.csv + manifest.json、A4/A3 高解像度プリセット）。
 
 ### ✅ v1.2 Phase A — 2026-05-01 完了
 
