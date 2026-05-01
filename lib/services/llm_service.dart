@@ -65,7 +65,7 @@ abstract class LlmService {
   });
 
   Future<String?> generateStory({
-    required String time,
+    required String? time,
     required List<String> ambientTraces,
     required List<String> colorDescriptions,
     String? weather,
@@ -132,7 +132,7 @@ abstract class LlmService {
 
   /// Build prompt for story generation based on language
   String buildStoryPrompt({
-    required String time,
+    required String? time,
     required List<String> ambientTraces,
     required List<String> colorDescriptions,
     String? weather,

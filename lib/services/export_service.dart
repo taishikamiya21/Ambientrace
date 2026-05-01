@@ -81,7 +81,7 @@ class ExportService {
       rows.add([
         t.id,
         schemaVersion,
-        t.capturedAt.toIso8601String(),
+        t.capturedAt?.toIso8601String() ?? '',
         t.createdAt.toIso8601String(),
         t.originalFileName ?? '',
         t.latitude ?? '',
@@ -91,7 +91,7 @@ class ExportService {
         t.temperature ?? '',
         t.noiseLevel ?? '',
         t.stepCount ?? '',
-        t.atmosphericTimeForLanguage(languageCode),
+        t.atmosphericTimeForLanguage(languageCode) ?? '',
         t.imageLabels.join(';'),
         t.colorPalette
             .map(

@@ -37,6 +37,12 @@ import 'bulk_progress_screen.dart';
 /// limit the print size.
 enum CardExportFormat { businessCard, standard, postcard, a4, a3 }
 
+/// v1.2.1: image import now offers a choice between the iOS Photo Library
+/// (native `image_picker`) and the iOS Files app (`file_picker`). Files
+/// covers iCloud Drive and other Files-app providers that are not exposed
+/// via the Photo Library API.
+enum _ImportSource { photoLibrary, files }
+
 class _CardFormatSpec {
   final double logicalWidth;
   final double logicalHeight;
@@ -354,8 +360,9 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
 
   // ── 画像インポート ─────────────────────────────────────
 
-  /// C-3 一括カード化: pick photos, prompt for target folder, launch the
-  /// progress screen which drives `BulkCaptureService` end-to-end.
+  /// C-3 一括カード化: pick photos (from Photo Library or Files), prompt for
+  /// target folder, launch the progress screen which drives
+  /// `BulkCaptureService` end-to-end.
   Future<void> _importImage() async {
     if (widget.imageLabelingService == null) {
       _toast(
@@ -366,11 +373,13 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
       );
       return;
     }
-    final picked = await _imagePicker.pickMultiImage(
-      maxWidth: 1920,
-      maxHeight: 1920,
-    );
-    if (picked.isEmpty) return;
+    final source = await _askImportSource();
+    if (source == null) return;
+
+    final picks = source == _ImportSource.photoLibrary
+        ? await _pickFromPhotoLibrary()
+        : await _pickFromFiles();
+    if (picks.isEmpty) return;
 
     final folderId = await _askTargetFolder();
     if (!mounted) return;
@@ -385,10 +394,7 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
     final lang =
         WidgetsBinding.instance.platformDispatcher.locale.languageCode;
     final job = await service.start(
-      picks: [
-        for (final p in picked)
-          (path: p.path, originalFileName: p.path.split('/').last),
-      ],
+      picks: picks,
       languageCode: lang,
       targetFolderId: folderId,
     );
@@ -409,6 +415,95 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
           ? '一括カード化: 成功${job.successCount} / 失敗${job.failedCount} / キャンセル${job.cancelledCount}'
           : 'Bulk capture: ${job.successCount} OK / ${job.failedCount} failed / ${job.cancelledCount} cancelled',
     );
+  }
+
+  /// Bottom sheet to choose between Photo Library and the iOS Files app.
+  /// v1.2.1 added the Files path so users can import images stored in
+  /// iCloud Drive or other Files-app providers.
+  Future<_ImportSource?> _askImportSource() async {
+    final isJa = _isJa;
+    return showModalBottomSheet<_ImportSource>(
+      context: context,
+      backgroundColor: AppColors.canvasSecondary,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+              child: Text(
+                isJa ? '取り込み元を選択' : 'Choose import source',
+                style: AppTypography.body(
+                  color: Colors.white,
+                  opacity: AppOpacity.textBody,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined,
+                  color: Colors.white),
+              title: Text(
+                isJa ? '写真ライブラリから' : 'From Photo Library',
+                style: const TextStyle(color: Colors.white),
+              ),
+              onTap: () => Navigator.pop(ctx, _ImportSource.photoLibrary),
+            ),
+            ListTile(
+              leading: const Icon(Icons.folder_open_outlined,
+                  color: Colors.white),
+              title: Text(
+                isJa ? 'ファイルから' : 'From Files',
+                style: const TextStyle(color: Colors.white),
+              ),
+              subtitle: Text(
+                isJa
+                    ? 'iCloud Drive やその他の場所にある画像'
+                    : 'Images from iCloud Drive or other locations',
+                style: TextStyle(
+                  color: Colors.white
+                      .withValues(alpha: AppOpacity.textTertiary),
+                  fontSize: 12,
+                ),
+              ),
+              onTap: () => Navigator.pop(ctx, _ImportSource.files),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<List<({String path, String originalFileName})>>
+      _pickFromPhotoLibrary() async {
+    final picked = await _imagePicker.pickMultiImage(
+      maxWidth: 1920,
+      maxHeight: 1920,
+    );
+    return [
+      for (final p in picked)
+        (path: p.path, originalFileName: p.path.split('/').last),
+    ];
+  }
+
+  Future<List<({String path, String originalFileName})>>
+      _pickFromFiles() async {
+    final picked = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      allowMultiple: true,
+    );
+    if (picked == null) return const [];
+    return [
+      for (final f in picked.files)
+        if (f.path != null)
+          (
+            path: f.path!,
+            originalFileName: f.name.isNotEmpty ? f.name : f.path!.split('/').last
+          ),
+    ];
   }
 
   Future<String?> _askTargetFolder() async {

@@ -224,7 +224,8 @@ class _TraceCardState extends State<TraceCard> {
         Text(
           widget.trace.imageLabels.isNotEmpty
               ? widget.trace.imageLabels.first
-              : widget.trace.atmosphericTimeForLanguage(widget.languageCode),
+              : (widget.trace.atmosphericTimeForLanguage(widget.languageCode) ??
+                  ''),
           style: AppTypography.headline(color: Colors.white).copyWith(
             shadows: [
               Shadow(
@@ -294,8 +295,11 @@ class _TraceCardState extends State<TraceCard> {
 
   /// 大気的時間 — ペーパーストリップの中心
   Widget _buildAtmosphericHero() {
+    final atmospheric =
+        widget.trace.atmosphericTimeForLanguage(widget.languageCode);
+    if (atmospheric == null) return const SizedBox.shrink();
     return Text(
-      widget.trace.atmosphericTimeForLanguage(widget.languageCode),
+      atmospheric,
       style: AppTypography.headline(
         color: _tc,
         opacity: AppOpacity.textHigh,
@@ -306,8 +310,14 @@ class _TraceCardState extends State<TraceCard> {
   }
 
   Widget _buildDateTimeRow() {
+    final time = widget.trace.formattedTime;
+    final date = widget.trace.formattedDate;
+    if (time == null && date == null) return const SizedBox.shrink();
+    final text = (time != null && date != null)
+        ? '$time  ·  $date'
+        : (time ?? date ?? '');
     return Text(
-      '${widget.trace.formattedTime}  ·  ${widget.trace.formattedDate}',
+      text,
       style: AppTypography.mono(
         color: _tc,
         opacity: AppOpacity.textTertiary,

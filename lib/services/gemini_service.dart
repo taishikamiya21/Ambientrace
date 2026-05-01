@@ -99,7 +99,7 @@ class GeminiService extends LlmService {
 
   @override
   Future<String?> generateStory({
-    required String time,
+    required String? time,
     required List<String> ambientTraces,
     required List<String> colorDescriptions,
     String? weather,

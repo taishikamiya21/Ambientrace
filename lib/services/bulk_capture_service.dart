@@ -106,7 +106,10 @@ class BulkCaptureService {
     String? targetFolderId,
   }) async {
     final file = File(item.localPhotoPath);
-    DateTime capturedAt = DateTime.now();
+    // v1.2.1: imports of photos without EXIF metadata leave capturedAt /
+    // GPS unset rather than masking the absence with `now()` or current
+    // device GPS — the UI hides the timestamp / location instead.
+    DateTime? capturedAt;
     double? lat;
     double? lon;
     try {

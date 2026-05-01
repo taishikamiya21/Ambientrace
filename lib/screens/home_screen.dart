@@ -78,7 +78,8 @@ class _HomeScreenState extends State<HomeScreen> {
         final matchesPlace = trace.placeName?.toLowerCase().contains(query) ?? false;
         final matchesLabels = trace.imageLabels.any((l) => l.toLowerCase().contains(query));
         final matchesWeather = trace.weatherCondition?.toLowerCase().contains(query) ?? false;
-        final matchesAtmospheric = trace.atmosphericTime.toLowerCase().contains(query);
+        final matchesAtmospheric =
+            trace.atmosphericTime?.toLowerCase().contains(query) ?? false;
         if (!matchesPlace && !matchesLabels && !matchesWeather && !matchesAtmospheric) {
           return false;
         }

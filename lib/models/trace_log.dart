@@ -4,8 +4,11 @@ import 'package:flutter/material.dart';
 class TraceLog {
   final String id;
 
-  /// When the photo was originally taken (from EXIF or capture time)
-  final DateTime capturedAt;
+  /// When the photo was originally taken (from EXIF or live capture).
+  /// Nullable since v1.2.1: imports of photos without EXIF date no longer
+  /// fall back to "now" — the field stays absent so the UI can hide the
+  /// timestamp instead of showing a misleading current time.
+  final DateTime? capturedAt;
 
   /// When this trace card was created in the app
   final DateTime createdAt;
@@ -38,21 +41,29 @@ class TraceLog {
     this.aiDescription,
     this.originalFileName,
     this.aiProviderUsed,
-  }) : createdAt = createdAt ?? capturedAt;
+  }) : createdAt = createdAt ?? capturedAt ?? DateTime.now();
 
   /// Get colors as Color objects
   List<Color> get colors => colorPalette.map((c) => Color(c)).toList();
 
-  /// Format the captured time
-  String get formattedTime {
-    final hour = capturedAt.hour.toString().padLeft(2, '0');
-    final minute = capturedAt.minute.toString().padLeft(2, '0');
+  /// True if a real capture timestamp is known (from EXIF or live shot).
+  bool get hasCapturedAt => capturedAt != null;
+
+  /// Formatted captured time, or null when [capturedAt] is unknown.
+  String? get formattedTime {
+    final at = capturedAt;
+    if (at == null) return null;
+    final hour = at.hour.toString().padLeft(2, '0');
+    final minute = at.minute.toString().padLeft(2, '0');
     return '$hour:$minute';
   }
 
-  /// Get atmospheric (fuzzy) time label in English
-  String get atmosphericTime {
-    final hour = capturedAt.hour;
+  /// Atmospheric (fuzzy) time label in English, or null when [capturedAt]
+  /// is unknown.
+  String? get atmosphericTime {
+    final at = capturedAt;
+    if (at == null) return null;
+    final hour = at.hour;
     if (hour >= 0 && hour < 4) return 'Late Night';
     if (hour >= 4 && hour < 6) return 'Dawn';
     if (hour >= 6 && hour < 10) return 'Morning';
@@ -63,9 +74,12 @@ class TraceLog {
     return 'Late Night';
   }
 
-  /// Get atmospheric (fuzzy) time label in Japanese
-  String get atmosphericTimeJa {
-    final hour = capturedAt.hour;
+  /// Atmospheric (fuzzy) time label in Japanese, or null when [capturedAt]
+  /// is unknown.
+  String? get atmosphericTimeJa {
+    final at = capturedAt;
+    if (at == null) return null;
+    final hour = at.hour;
     if (hour >= 0 && hour < 4) return '深夜';
     if (hour >= 4 && hour < 6) return '早朝';
     if (hour >= 6 && hour < 10) return '朝';
@@ -76,14 +90,17 @@ class TraceLog {
     return '深夜';
   }
 
-  /// Get atmospheric time for given language code
-  String atmosphericTimeForLanguage(String languageCode) {
+  /// Atmospheric time for the given language, or null when [capturedAt]
+  /// is unknown.
+  String? atmosphericTimeForLanguage(String languageCode) {
     return languageCode.startsWith('ja') ? atmosphericTimeJa : atmosphericTime;
   }
 
-  /// Format the captured date
-  String get formattedDate {
-    return '${capturedAt.year}/${capturedAt.month.toString().padLeft(2, '0')}/${capturedAt.day.toString().padLeft(2, '0')}';
+  /// Formatted captured date, or null when [capturedAt] is unknown.
+  String? get formattedDate {
+    final at = capturedAt;
+    if (at == null) return null;
+    return '${at.year}/${at.month.toString().padLeft(2, '0')}/${at.day.toString().padLeft(2, '0')}';
   }
 
   TraceLog copyWith({
@@ -125,7 +142,7 @@ class TraceLog {
   /// Convert to JSON
   Map<String, dynamic> toJson() => {
     'id': id,
-    'capturedAt': capturedAt.toIso8601String(),
+    'capturedAt': capturedAt?.toIso8601String(),
     'createdAt': createdAt.toIso8601String(),
     'latitude': latitude,
     'longitude': longitude,
@@ -144,7 +161,9 @@ class TraceLog {
   /// Create from JSON
   factory TraceLog.fromJson(Map<String, dynamic> json) => TraceLog(
     id: json['id'] as String,
-    capturedAt: DateTime.parse(json['capturedAt'] as String),
+    capturedAt: json['capturedAt'] != null
+        ? DateTime.parse(json['capturedAt'] as String)
+        : null,
     createdAt: json['createdAt'] != null
         ? DateTime.parse(json['createdAt'] as String)
         : null,

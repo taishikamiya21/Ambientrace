@@ -64,6 +64,46 @@ void main() {
       final result = ImportService.dryRun(raw);
       expect(result.problems.any((p) => p.contains('schemaVersion')), true);
     });
+
+    test('accepts traces with null capturedAt (v1.2.1 imports without EXIF)',
+        () {
+      final raw = json.encode({
+        'schemaVersion': 2,
+        'traces': [
+          {
+            'id': 'no-exif',
+            'capturedAt': null,
+            'createdAt': '2026-05-02T00:00:00Z',
+            'imageLabels': [],
+            'colorPalette': [],
+          },
+        ],
+        'folders': [],
+      });
+      final result = ImportService.dryRun(raw);
+      expect(result.traceCount, 1);
+      expect(result.problems, isEmpty);
+    });
+
+    test('still rejects malformed capturedAt strings', () {
+      final raw = json.encode({
+        'schemaVersion': 2,
+        'traces': [
+          {
+            'id': 'bad',
+            'capturedAt': 'not-a-date',
+            'imageLabels': [],
+            'colorPalette': [],
+          },
+        ],
+        'folders': [],
+      });
+      final result = ImportService.dryRun(raw);
+      expect(
+        result.problems.any((p) => p.contains('invalid capturedAt')),
+        isTrue,
+      );
+    });
   });
 
   group('ImportService.apply', () {

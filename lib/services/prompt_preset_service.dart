@@ -52,7 +52,7 @@ Each phrase must be 1-4 words. Never end with articles. Return ONLY comma-separa
 
   String storyPrompt({
     required PromptPreset preset,
-    required String time,
+    required String? time,
     required List<String> ambientTraces,
     required List<String> colorDescriptions,
     String? weather,
@@ -71,9 +71,10 @@ Each phrase must be 1-4 words. Never end with articles. Return ONLY comma-separa
         ? '$weather${temperature != null ? ', $temperature' : ''}'
         : (ja ? '不明な天気' : 'unknown weather');
     final placeText = placeName ?? (ja ? 'どこか' : 'somewhere');
+    final timeText = time ?? (ja ? '不明な時刻' : 'unknown time');
     final dataLine = ja
-        ? '時刻: $time / 雰囲気: $tracesText / 色彩: $colorsText / 天気: $weatherText / 場所: $placeText'
-        : 'Time: $time / Atmosphere: $tracesText / Colors: $colorsText / Weather: $weatherText / Place: $placeText';
+        ? '時刻: $timeText / 雰囲気: $tracesText / 色彩: $colorsText / 天気: $weatherText / 場所: $placeText'
+        : 'Time: $timeText / Atmosphere: $tracesText / Colors: $colorsText / Weather: $weatherText / Place: $placeText';
 
     // Output is rendered into a card slot that wraps automatically. The model
     // must NOT insert manual line breaks — pass it as a single flowing

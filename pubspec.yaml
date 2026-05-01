@@ -2,7 +2,7 @@ name: ambientrace
 description: "Capture the ambient trace of your moments - not the photo, just the feeling."
 publish_to: 'none'
 
-version: 1.2.0+4
+version: 1.2.1+5
 
 environment:
   sdk: ^3.10.7

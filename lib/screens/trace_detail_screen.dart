@@ -70,7 +70,7 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
         title: Text(
           widget.trace.imageLabels.isNotEmpty
               ? widget.trace.imageLabels.first
-              : widget.trace.atmosphericTimeForLanguage(_languageCode),
+              : (widget.trace.atmosphericTimeForLanguage(_languageCode) ?? ''),
           style: AppTypography.body(color: tc, opacity: AppOpacity.textBody),
           overflow: TextOverflow.ellipsis,
         ),

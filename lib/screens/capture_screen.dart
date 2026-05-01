@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:camera/camera.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../services/location_service.dart';
@@ -107,7 +108,7 @@ class _CaptureScreenState extends State<CaptureScreen>
 
     try {
       final image = await _controller!.takePicture();
-      await _processImage(image.path);
+      await _processImage(image.path, isImport: false);
     } catch (e) {
       print('Error capturing from camera: $e');
       _showError('Failed to capture trace');
@@ -131,7 +132,7 @@ class _CaptureScreenState extends State<CaptureScreen>
       );
 
       if (image != null) {
-        await _processImage(image.path);
+        await _processImage(image.path, isImport: true);
       } else {
         // User cancelled
         if (mounted) {
@@ -147,7 +148,13 @@ class _CaptureScreenState extends State<CaptureScreen>
     }
   }
 
-  Future<void> _processImage(String imagePath) async {
+  /// Process a captured or imported image into a trace.
+  ///
+  /// [isImport] is true for gallery / Files picks: when EXIF date/GPS is
+  /// missing the trace is saved with `capturedAt`/`latitude`/`longitude`
+  /// left null instead of defaulting to "now" / current device GPS, so the
+  /// UI hides those fields rather than showing misleading data.
+  Future<void> _processImage(String imagePath, {required bool isImport}) async {
     _capturedImagePath = imagePath;
 
     // Haptic feedback on capture (shutter feel)
@@ -159,15 +166,22 @@ class _CaptureScreenState extends State<CaptureScreen>
     // Get device language for localized labels
     final languageCode = PlatformDispatcher.instance.locale.languageCode;
 
-    // Gather all data in parallel
-    final locationFuture = _locationService.getCurrentPosition();
+    // Gather independent work in parallel. Device location is only useful
+    // for live captures — imports must rely on EXIF alone.
+    final locationFuture = isImport
+        ? Future<Position?>.value(null)
+        : _locationService.getCurrentPosition();
     final colorFuture = _colorService.extractColors(FileImage(File(imagePath)));
     final labelsFuture = widget.imageLabelingService.getLabelsWithProvider(
       imagePath,
       languageCode: languageCode,
     );
-    final noiseFuture = _noiseService.measureNoiseLevel();
-    final stepFuture = _stepService.getTodayStepCount();
+    final noiseFuture = isImport
+        ? Future<double?>.value(null)
+        : _noiseService.measureNoiseLevel();
+    final stepFuture = isImport
+        ? Future<int?>.value(null)
+        : _stepService.getTodayStepCount();
 
     final position = await locationFuture;
     final colors = await colorFuture;
@@ -176,48 +190,19 @@ class _CaptureScreenState extends State<CaptureScreen>
     final noiseLevel = await noiseFuture;
     final stepCount = await stepFuture;
 
-    // Get place name and weather if we have location
-    String? placeName;
-    double? temperature;
-    String? weatherCondition;
-
-    if (position != null) {
-      // Fetch place name and weather in parallel
-      final placeNameFuture = _locationService.getPlaceName(
-        position.latitude,
-        position.longitude,
-      );
-      final weatherFuture = _weatherService.getCurrentWeather(
-        position.latitude,
-        position.longitude,
-      );
-
-      placeName = await placeNameFuture;
-      final weather = await weatherFuture;
-
-      if (weather != null) {
-        temperature = weather.temperature;
-        weatherCondition = weather.condition;
-      }
-    }
-
-    // Create trace log
-    // Extract EXIF data (Date & Location)
-    DateTime capturedDate = DateTime.now();
+    // Extract EXIF (date + GPS) before deciding fallbacks.
+    DateTime? exifDate;
     double? exifLat;
     double? exifLon;
-
     try {
       final exif = await Exif.fromPath(imagePath);
       final originalDate = await exif.getOriginalDate();
       final latLong = await exif.getLatLong();
       await exif.close();
-
       if (originalDate != null) {
-        capturedDate = originalDate;
+        exifDate = originalDate;
         print('Captured: Using EXIF date: $originalDate');
       }
-
       if (latLong != null) {
         exifLat = latLong.latitude;
         exifLon = latLong.longitude;
@@ -227,25 +212,42 @@ class _CaptureScreenState extends State<CaptureScreen>
       print('Error reading EXIF: $e');
     }
 
-    // Use EXIF location if available, otherwise fall back to current position
-    final finalLat = exifLat ?? position?.latitude;
-    final finalLon = exifLon ?? position?.longitude;
+    // Resolve final captured timestamp:
+    //   - live capture: EXIF if present, otherwise "now" (the moment of
+    //     this shot, which is genuinely current).
+    //   - import:       EXIF only — leave null when EXIF lacks the date so
+    //     the UI hides the timestamp instead of fabricating one.
+    final DateTime? capturedDate = exifDate ?? (isImport ? null : DateTime.now());
 
-    // Refresh place name and weather if we are using EXIF location and it differs significantly
-    if (exifLat != null && exifLon != null) {
-      // Re-fetch place name and weather for the EXIF location
+    // Resolve final coordinates the same way: imports never fall back to
+    // device GPS, since that is unrelated to where the photo was taken.
+    final double? finalLat =
+        exifLat ?? (isImport ? null : position?.latitude);
+    final double? finalLon =
+        exifLon ?? (isImport ? null : position?.longitude);
+
+    // Resolve place name + weather. We only have a meaningful "now" weather
+    // reading for the live capture path; imports skip the lookup unless the
+    // EXIF GPS is present, and even then weather is the *current* reading,
+    // not historical (deferred to v1.3).
+    String? placeName;
+    double? temperature;
+    String? weatherCondition;
+    if (finalLat != null && finalLon != null) {
       try {
-        placeName = await _locationService.getPlaceName(exifLat, exifLon);
-        final weather = await _weatherService.getCurrentWeather(
-          exifLat,
-          exifLon,
-        );
-        if (weather != null) {
-          temperature = weather.temperature;
-          weatherCondition = weather.condition;
+        placeName = await _locationService.getPlaceName(finalLat, finalLon);
+        if (!isImport) {
+          final weather = await _weatherService.getCurrentWeather(
+            finalLat,
+            finalLon,
+          );
+          if (weather != null) {
+            temperature = weather.temperature;
+            weatherCondition = weather.condition;
+          }
         }
       } catch (e) {
-        print('Error refreshing metadata for EXIF location: $e');
+        print('Error fetching place/weather metadata: $e');
       }
     }
 
@@ -287,7 +289,7 @@ class _CaptureScreenState extends State<CaptureScreen>
       final capturedItems = <String>[];
       if (colors.isNotEmpty) capturedItems.add('${colors.length} colors');
       if (labels.isNotEmpty) capturedItems.add('${labels.length} traces');
-      if (position != null) capturedItems.add('location');
+      if (finalLat != null) capturedItems.add('location');
       if (temperature != null) capturedItems.add('weather');
       if (noiseLevel != null) capturedItems.add('sound');
 

@@ -62,15 +62,17 @@ class ImportService {
         problems.add('trace #$i missing id');
         continue;
       }
-      if (rawTrace['capturedAt'] == null) {
-        problems.add('trace ${rawTrace['id']} missing capturedAt');
-        continue;
-      }
-      try {
-        DateTime.parse(rawTrace['capturedAt'] as String);
-      } catch (_) {
-        problems.add('trace ${rawTrace['id']} invalid capturedAt');
-        continue;
+      // v1.2.1: capturedAt is now optional — imports of photos without
+      // EXIF date metadata legitimately omit it. We still reject malformed
+      // timestamps when one is present.
+      final rawCapturedAt = rawTrace['capturedAt'];
+      if (rawCapturedAt != null) {
+        try {
+          DateTime.parse(rawCapturedAt as String);
+        } catch (_) {
+          problems.add('trace ${rawTrace['id']} invalid capturedAt');
+          continue;
+        }
       }
       traceCount++;
     }

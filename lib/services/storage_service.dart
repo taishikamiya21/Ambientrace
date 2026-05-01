@@ -42,12 +42,14 @@ class StorageService {
     }
   }
 
-  /// Get traces for a specific date
+  /// Get traces for a specific date. Falls back to [TraceLog.createdAt] when
+  /// [TraceLog.capturedAt] is null (imports without EXIF date metadata).
   List<TraceLog> getTracesForDate(DateTime date) {
     return getAllTraces().where((trace) {
-      return trace.capturedAt.year == date.year &&
-          trace.capturedAt.month == date.month &&
-          trace.capturedAt.day == date.day;
+      final at = trace.capturedAt ?? trace.createdAt;
+      return at.year == date.year &&
+          at.month == date.month &&
+          at.day == date.day;
     }).toList();
   }
 

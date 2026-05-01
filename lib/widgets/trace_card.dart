@@ -205,7 +205,7 @@ class _TraceCardState extends State<TraceCard>
         Text(
           trace.imageLabels.isNotEmpty
               ? trace.imageLabels.first
-              : trace.atmosphericTime,
+              : (trace.atmosphericTime ?? ''),
           style: AppTypography.subtitle(
             color: Colors.white,
             opacity: AppOpacity.textHero,
@@ -262,7 +262,7 @@ class _TraceCardState extends State<TraceCard>
           Text(
             trace.imageLabels.isEmpty
                 ? _metadataLine(trace)
-                : trace.atmosphericTime,
+                : (trace.atmosphericTime ?? ''),
             style: AppTypography.body(
               color: tc,
               opacity: AppOpacity.textHigh,
@@ -293,7 +293,8 @@ class _TraceCardState extends State<TraceCard>
   String _metadataLine(TraceLog trace) {
     final lang = ui.PlatformDispatcher.instance.locale.languageCode;
     final parts = <String>[];
-    parts.add(trace.formattedTime);
+    final time = trace.formattedTime;
+    if (time != null) parts.add(time);
     if (trace.placeName != null) parts.add(trace.placeName!);
     if (trace.temperature != null) parts.add('${trace.temperature!.round()}°');
     if (trace.weatherCondition != null) {
