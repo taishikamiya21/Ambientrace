@@ -34,22 +34,34 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       icon: Icons.camera_alt_outlined,
       title: 'Capture',
       subtitle: '撮る',
-      description: 'Take a photo of your moment.\nBut the photo won\'t be saved.',
+      description:
+          'Take a photo of your moment.\nBut the photo won\'t be saved.',
       descriptionJa: '写真を撮る。\nでも、写真は保存されない。',
     ),
     OnboardingPage(
       icon: Icons.blur_on,
       title: 'Dissolve',
       subtitle: '溶ける',
-      description: 'The photo dissolves into data.\nColors, atmosphere, context.',
+      description:
+          'The photo dissolves into data.\nColors, atmosphere, context.',
       descriptionJa: '写真はデータに溶けていく。\n色、雰囲気、コンテキスト。',
     ),
     OnboardingPage(
       icon: Icons.auto_awesome,
       title: 'Remain',
       subtitle: '残る',
-      description: 'Only the ambient trace remains.\nImagine the scene from data.',
+      description:
+          'Only the ambient trace remains.\nImagine the scene from data.',
       descriptionJa: '空気の痕跡だけが残る。\nデータから情景を想像する。',
+    ),
+    OnboardingPage(
+      icon: Icons.psychology_alt_outlined,
+      title: 'AI Enrichment',
+      subtitle: 'AIで深く読む',
+      description:
+          'Enable an AI provider in settings to auto-generate ambient tags and a Reconstructed Memory from each photo. Without it, on-device ML Kit handles basic tagging. Change anytime in Settings.',
+      descriptionJa:
+          '設定でAIプロバイダーを設定すると、写真から空気感タグとReconstructed Memoryが自動生成されます。未設定なら端末内ML Kitだけで動きます。あとから設定画面で変更できます。',
     ),
   ];
 
@@ -149,13 +161,15 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                             Text(
                               'Ambientrace',
                               style: AppTypography.headline(
-                                  opacity: AppOpacity.textHero),
+                                opacity: AppOpacity.textHero,
+                              ),
                             ),
                             const SizedBox(height: AppSpacing.md),
                             Text(
                               'trace the atmosphere',
                               style: AppTypography.mono(
-                                  opacity: AppOpacity.textCaption),
+                                opacity: AppOpacity.textCaption,
+                              ),
                             ),
                           ],
                         ),
@@ -210,10 +224,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(
-              _pages.length,
-              (index) => _buildDot(index),
-            ),
+            children: List.generate(_pages.length, (index) => _buildDot(index)),
           ),
         ),
 
@@ -243,7 +254,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 color: Colors.transparent,
                 borderRadius: BorderRadius.circular(AppRadius.pill),
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: AppOpacity.borderDefault),
+                  color: Colors.white.withValues(
+                    alpha: AppOpacity.borderDefault,
+                  ),
                 ),
               ),
               child: Center(
@@ -260,6 +273,11 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   }
 
   Widget _buildPage(OnboardingPage page) {
+    final isJapanese = Localizations.localeOf(context).languageCode == 'ja';
+    final title = isJapanese ? page.subtitle : page.title;
+    final subtitle = isJapanese ? page.title : page.subtitle;
+    final description = isJapanese ? page.descriptionJa : page.description;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxxl),
       child: Column(
@@ -275,31 +293,25 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
           // Title
           Text(
-            page.title,
+            title,
             style: AppTypography.headline(opacity: AppOpacity.textHero),
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppSpacing.xs),
 
-          // Subtitle (Japanese)
+          // Subtitle
           Text(
-            page.subtitle,
+            subtitle,
             style: AppTypography.mono(opacity: AppOpacity.textCaption),
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 40),
 
           // Description
           Text(
-            page.description,
+            description,
             textAlign: TextAlign.center,
             style: AppTypography.body(opacity: AppOpacity.textSecondary),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-
-          // Japanese description
-          Text(
-            page.descriptionJa,
-            textAlign: TextAlign.center,
-            style: AppTypography.body(opacity: AppOpacity.textMuted),
           ),
         ],
       ),
