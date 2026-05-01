@@ -3,14 +3,21 @@ import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../services/image_labeling_service.dart';
 import '../services/llm_service.dart';
+import '../services/storage_service.dart';
 import '../services/theme_service.dart';
 import '../theme/app_theme.dart';
+import 'folder_management_screen.dart';
 import 'onboarding_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
+  final StorageService storageService;
   final ImageLabelingService imageLabelingService;
 
-  const SettingsScreen({super.key, required this.imageLabelingService});
+  const SettingsScreen({
+    super.key,
+    required this.storageService,
+    required this.imageLabelingService,
+  });
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -428,6 +435,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               child: Column(
                 children: [
+                  // Folder Management
+                  _buildListTile(
+                    icon: Icons.folder_outlined,
+                    title: _isJapanese ? 'フォルダ管理' : 'Folder Management',
+                    subtitle: _isJapanese
+                        ? 'フォルダを作成・名前変更・削除'
+                        : 'Create, rename, and delete folders',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => FolderManagementScreen(
+                          folderService:
+                              widget.storageService.folderService,
+                        ),
+                      ),
+                    ),
+                  ),
+                  _buildDivider(),
                   // About
                   _buildListTile(
                     icon: Icons.info_outline,
