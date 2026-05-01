@@ -1,4 +1,3 @@
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../services/image_labeling_service.dart';
@@ -207,11 +206,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   String _promptPresetLabel(PromptPreset preset) {
+    if (_isJapanese) {
+      return switch (preset) {
+        PromptPreset.minimal => 'シンプル',
+        PromptPreset.poetic => '詩的',
+        PromptPreset.documentary => '記録的',
+        PromptPreset.exhibition => '美術館風',
+      };
+    }
     return switch (preset) {
       PromptPreset.minimal => 'Minimal',
       PromptPreset.poetic => 'Poetic',
       PromptPreset.documentary => 'Documentary',
-      PromptPreset.exhibition => 'Exhibition',
+      PromptPreset.exhibition => 'Gallery',
     };
   }
 
@@ -269,12 +276,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    _isJapanese ? 'AIプロバイダー' : 'AI Provider',
-                    style: AppTypography.label(
-                      color: tc,
-                      opacity: AppOpacity.textBody,
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          _isJapanese ? 'AIプロバイダー' : 'AI Provider',
+                          style: AppTypography.label(
+                            color: tc,
+                            opacity: AppOpacity.textBody,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          Icons.info_outline,
+                          color: tc.withValues(alpha: AppOpacity.textMuted),
+                          size: 18,
+                        ),
+                        onPressed: _showProviderInfoSheet,
+                      ),
+                    ],
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   Row(
@@ -321,42 +342,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             ),
                             child: Column(
                               children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Flexible(
-                                      child: Text(
-                                        _getProviderDisplayName(provider),
-                                        overflow: TextOverflow.ellipsis,
-                                        style: isSelected
-                                            ? AppTypography.label(
-                                                color: tc,
-                                                opacity: AppOpacity.textHero,
-                                              )
-                                            : AppTypography.label(
-                                                color: tc,
-                                                opacity:
-                                                    AppOpacity.textTertiary,
-                                              ),
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      width: 28,
-                                      height: 28,
-                                      child: IconButton(
-                                        padding: EdgeInsets.zero,
-                                        icon: Icon(
-                                          Icons.info_outline,
-                                          color: tc.withValues(
-                                            alpha: AppOpacity.textMuted,
-                                          ),
-                                          size: 16,
+                                Text(
+                                  _getProviderDisplayName(provider),
+                                  overflow: TextOverflow.ellipsis,
+                                  style: isSelected
+                                      ? AppTypography.label(
+                                          color: tc,
+                                          opacity: AppOpacity.textHero,
+                                        )
+                                      : AppTypography.label(
+                                          color: tc,
+                                          opacity: AppOpacity.textTertiary,
                                         ),
-                                        onPressed: _showProviderInfoSheet,
-                                      ),
-                                    ),
-                                  ],
                                 ),
                                 const SizedBox(height: AppSpacing.xs),
                                 AiProviderBadge(state: _stateFor(provider)),
@@ -408,24 +405,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ],
                   ),
                   const SizedBox(height: AppSpacing.sm),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: SegmentedButton<PromptPreset>(
-                      segments: PromptPreset.values
-                          .map(
-                            (preset) => ButtonSegment<PromptPreset>(
-                              value: preset,
-                              label: Text(_promptPresetLabel(preset)),
-                            ),
-                          )
-                          .toList(),
-                      selected: {LlmService.presetService.current},
-                      onSelectionChanged: (selection) async {
-                        await LlmService.presetService.set(selection.first);
-                        setState(() {});
-                      },
-                    ),
-                  ),
+                  _buildPromptPresetGrid(tc),
                 ],
               ),
             ),
@@ -640,13 +620,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     icon: Icons.storage_outlined,
                     title: _isJapanese ? 'データ管理' : 'Data Management',
                     subtitle: _isJapanese
-                        ? 'JSON/CSVの書き出しとJSONの読み込み'
-                        : 'Export JSON/CSV and import JSON',
+                        ? 'JSON/CSV/画像の書き出しと取り込み'
+                        : 'Export JSON/CSV/images and import',
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (_) => DataManagementScreen(
                           storageService: widget.storageService,
+                          imageLabelingService: widget.imageLabelingService,
                         ),
                       ),
                     ),
@@ -722,6 +703,67 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             const SizedBox(height: AppSpacing.xl),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPromptPresetGrid(Color tc) {
+    final presets = PromptPreset.values;
+    // Two rows of two so the labels never wrap into a 3+1 split.
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(child: _buildPresetTile(presets[0], tc)),
+            const SizedBox(width: AppSpacing.xs),
+            Expanded(child: _buildPresetTile(presets[1], tc)),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        Row(
+          children: [
+            Expanded(child: _buildPresetTile(presets[2], tc)),
+            const SizedBox(width: AppSpacing.xs),
+            Expanded(child: _buildPresetTile(presets[3], tc)),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPresetTile(PromptPreset preset, Color tc) {
+    final isSelected = LlmService.presetService.current == preset;
+    return GestureDetector(
+      onTap: () async {
+        await LlmService.presetService.set(preset);
+        setState(() {});
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? tc.withValues(alpha: AppOpacity.surfaceElevated)
+              : tc.withValues(alpha: AppOpacity.surfaceFaint),
+          borderRadius: BorderRadius.circular(AppRadius.pill),
+          border: Border.all(
+            color: isSelected
+                ? tc.withValues(alpha: AppOpacity.borderStrong)
+                : tc.withValues(alpha: AppOpacity.borderSubtle),
+            width: isSelected ? 1.5 : 1,
+          ),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          _promptPresetLabel(preset),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: AppTypography.label(
+            color: tc,
+            opacity: isSelected
+                ? AppOpacity.textHero
+                : AppOpacity.textTertiary,
+          ),
         ),
       ),
     );
@@ -981,6 +1023,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tc = context.onCanvasColor;
+    final isJa = Localizations.localeOf(context).languageCode == 'ja';
     return Scaffold(
       backgroundColor: context.canvasColor,
       appBar: AppBar(
@@ -994,9 +1037,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          ui.PlatformDispatcher.instance.locale.languageCode == 'ja'
-              ? 'プライバシーポリシー'
-              : 'Privacy Policy',
+          isJa ? 'プライバシーポリシー' : 'Privacy Policy',
           style: AppTypography.subtitle(
             color: tc,
             opacity: AppOpacity.textHigh,
@@ -1010,62 +1051,95 @@ class PrivacyPolicyScreen extends StatelessWidget {
           children: [
             _buildSection(
               context,
-              'Overview',
-              'Ambientrace is designed with privacy as a core principle. '
-                  'Unlike traditional photo apps, Ambientrace intentionally does not store your photos. '
-                  'Instead, it extracts environmental data (the "ambient trace") from your images and then permanently deletes the original photo.',
+              isJa ? '概要' : 'Overview',
+              isJa
+                  ? 'Ambientraceはプライバシーを中核に設計されています。'
+                      '一般的な写真アプリと異なり、Ambientraceは写真そのものを保存しません。'
+                      '画像から環境データ (「アンビエントトレース」) のみを抽出し、元の写真は速やかに完全削除します。'
+                  : 'Ambientrace is designed with privacy as a core principle. '
+                      'Unlike traditional photo apps, Ambientrace intentionally does not store your photos. '
+                      'Instead, it extracts environmental data (the "ambient trace") from your images and then permanently deletes the original photo.',
             ),
             _buildSection(
               context,
-              'Data We Collect',
-              '• Color palette — The dominant colors in the image\n'
-                  '• Ambient labels — Descriptive tags about the atmosphere\n'
-                  '• Noise level — The ambient sound level (if microphone permission is granted)\n'
-                  '• Location — GPS coordinates and place name (if location permission is granted)\n'
-                  '• Weather — Temperature and weather condition',
+              isJa ? '収集するデータ' : 'Data We Collect',
+              isJa
+                  ? '• カラーパレット — 画像の代表色\n'
+                      '• アンビエントラベル — 雰囲気を表すタグ\n'
+                      '• ノイズレベル — 周囲の音量 (マイク許可時)\n'
+                      '• 位置情報 — GPS座標と地名 (位置情報許可時)\n'
+                      '• 天気 — 気温と天候'
+                  : '• Color palette — The dominant colors in the image\n'
+                      '• Ambient labels — Descriptive tags about the atmosphere\n'
+                      '• Noise level — The ambient sound level (if microphone permission is granted)\n'
+                      '• Location — GPS coordinates and place name (if location permission is granted)\n'
+                      '• Weather — Temperature and weather condition',
             ),
             _buildSection(
               context,
-              'Data We Do NOT Collect',
-              '• Photos — Images are processed locally and immediately deleted\n'
-                  '• Personal information — No names, emails, or account information\n'
-                  '• Usage analytics — No tracking or analytics services\n'
-                  '• Advertising data — No ad networks or identifiers',
+              isJa ? '収集しないデータ' : 'Data We Do NOT Collect',
+              isJa
+                  ? '• 写真 — 画像は端末内で処理され、即座に削除されます\n'
+                      '• 個人情報 — 氏名、メールアドレス、アカウント情報は収集しません\n'
+                      '• 利用解析 — トラッキングや解析サービスは使用しません\n'
+                      '• 広告データ — 広告ネットワークや識別子は使用しません'
+                  : '• Photos — Images are processed locally and immediately deleted\n'
+                      '• Personal information — No names, emails, or account information\n'
+                      '• Usage analytics — No tracking or analytics services\n'
+                      '• Advertising data — No ad networks or identifiers',
             ),
             _buildSection(
               context,
-              'Third-Party Services',
-              '• Google ML Kit — On-device image labeling (no data sent to servers)\n'
-                  '• Gemini API (Optional) — Enhanced labeling if you provide an API key\n'
-                  '• OpenAI API (Optional) — Alternative AI labeling provider\n'
-                  '• Anthropic API (Optional) — Alternative AI labeling provider\n'
-                  '• Open-Meteo — Weather data (only GPS coordinates sent)',
+              isJa ? '外部サービス' : 'Third-Party Services',
+              isJa
+                  ? '• Google ML Kit — 端末内での画像ラベリング (サーバ送信なし)\n'
+                      '• Gemini API (任意) — APIキー設定時に高精度ラベリング\n'
+                      '• OpenAI API (任意) — 代替AIラベリング\n'
+                      '• Anthropic API (任意) — 代替AIラベリング\n'
+                      '• Open-Meteo — 天気データ取得 (GPS座標のみ送信)'
+                  : '• Google ML Kit — On-device image labeling (no data sent to servers)\n'
+                      '• Gemini API (Optional) — Enhanced labeling if you provide an API key\n'
+                      '• OpenAI API (Optional) — Alternative AI labeling provider\n'
+                      '• Anthropic API (Optional) — Alternative AI labeling provider\n'
+                      '• Open-Meteo — Weather data (only GPS coordinates sent)',
             ),
             _buildSection(
               context,
-              'Data Storage',
-              'All ambient trace data is stored locally on your device only:\n'
-                  '• Data is saved in the app\'s private storage\n'
-                  '• No cloud sync or backup to external servers\n'
-                  '• Deleting the app removes all data',
+              isJa ? 'データの保存' : 'Data Storage',
+              isJa
+                  ? 'アンビエントトレースのデータはすべて端末内のみに保存されます。\n'
+                      '• アプリ専用領域に保存\n'
+                      '• クラウド同期や外部サーバへのバックアップは行いません\n'
+                      '• アプリを削除するとすべてのデータが消去されます'
+                  : 'All ambient trace data is stored locally on your device only:\n'
+                      '• Data is saved in the app\'s private storage\n'
+                      '• No cloud sync or backup to external servers\n'
+                      '• Deleting the app removes all data',
             ),
             _buildSection(
               context,
-              'Your Rights',
-              '• Delete individual traces using the delete button\n'
-                  '• Delete all data by uninstalling the app\n'
-                  '• Deny permissions — The app works with limited functionality',
+              isJa ? 'ユーザーの権利' : 'Your Rights',
+              isJa
+                  ? '• 削除ボタンから個別トレースを削除可能\n'
+                      '• アプリをアンインストールすると全データを削除\n'
+                      '• 各種許可を拒否しても機能を限定して利用可能'
+                  : '• Delete individual traces using the delete button\n'
+                      '• Delete all data by uninstalling the app\n'
+                      '• Deny permissions — The app works with limited functionality',
             ),
             _buildSection(
               context,
-              'Contact',
-              'For questions about this Privacy Policy:\n'
-                  'GitHub: github.com/taishikamiya21/Ambientrace',
+              isJa ? 'お問い合わせ' : 'Contact',
+              isJa
+                  ? '本ポリシーに関するお問い合わせ:\n'
+                      'GitHub: github.com/taishikamiya21/Ambientrace'
+                  : 'For questions about this Privacy Policy:\n'
+                      'GitHub: github.com/taishikamiya21/Ambientrace',
             ),
             const SizedBox(height: AppSpacing.md),
             Center(
               child: Text(
-                'Last Updated: February 7, 2026',
+                isJa ? '最終更新: 2026年2月7日' : 'Last Updated: February 7, 2026',
                 style: AppTypography.mono(
                   color: tc,
                   opacity: AppOpacity.textMuted,
