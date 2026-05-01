@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import '../models/folder.dart';
 import '../models/trace_log.dart';
 import '../services/storage_service.dart';
 import '../services/image_labeling_service.dart';
@@ -8,6 +9,7 @@ import '../theme/app_theme.dart';
 import 'capture_screen.dart';
 import 'trace_detail_screen.dart';
 import 'settings_screen.dart';
+import '../widgets/folder_selector.dart';
 import '../widgets/trace_card.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -27,19 +29,35 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   List<TraceLog> _traces = [];
   List<TraceLog> _filteredTraces = [];
+  List<Folder> _folders = const [];
   String _searchQuery = '';
   String? _weatherFilter;
+  String? _selectedFolderId;
   bool _isSearching = false;
 
   @override
   void initState() {
     super.initState();
     _loadTraces();
+    _loadFolders();
   }
 
   void _loadTraces() {
     setState(() {
       _traces = widget.storageService.getAllTraces();
+      _applyFilters();
+    });
+  }
+
+  Future<void> _loadFolders() async {
+    final folders = await widget.storageService.folderService.listFolders();
+    if (!mounted) return;
+    setState(() {
+      _folders = folders;
+      if (_selectedFolderId != null &&
+          !_folders.any((folder) => folder.id == _selectedFolderId)) {
+        _selectedFolderId = null;
+      }
       _applyFilters();
     });
   }
@@ -59,6 +77,11 @@ class _HomeScreenState extends State<HomeScreen> {
       if (_weatherFilter != null) {
         if (trace.weatherCondition != _weatherFilter) return false;
       }
+      if (_selectedFolderId != null) {
+        final folders =
+            widget.storageService.folderService.foldersOf(trace.id);
+        if (!folders.contains(_selectedFolderId)) return false;
+      }
       return true;
     }).toList();
   }
@@ -74,11 +97,13 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+    if (!mounted) return;
     _loadTraces();
+    await _loadFolders();
   }
 
-  void _openDetail(TraceLog trace) {
-    Navigator.push(
+  void _openDetail(TraceLog trace) async {
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => TraceDetailScreen(
@@ -89,6 +114,9 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+    if (!mounted) return;
+    _loadTraces();
+    await _loadFolders();
   }
 
   Map<String, List<TraceLog>> _groupByDate(List<TraceLog> traces) {
@@ -209,16 +237,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                   color: tc.withValues(alpha: AppOpacity.textTertiary),
                                   size: 22,
                                 ),
-                                onPressed: () {
-                                  Navigator.push(
+                                onPressed: () async {
+                                  await Navigator.push(
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => SettingsScreen(
+                                        storageService: widget.storageService,
                                         imageLabelingService:
                                             widget.imageLabelingService,
                                       ),
                                     ),
                                   );
+                                  if (!context.mounted) return;
+                                  await _loadFolders();
                                 },
                               ),
                           ],
@@ -279,6 +310,23 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
+
+            if (!_isSearching)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: AppSpacing.md),
+                  child: FolderSelector(
+                    folders: _folders,
+                    selectedFolderId: _selectedFolderId,
+                    onChanged: (id) {
+                      setState(() {
+                        _selectedFolderId = id;
+                        _applyFilters();
+                      });
+                    },
+                  ),
+                ),
+              ),
 
             // Weather filter chips
             if (weatherConditions.isNotEmpty && !_isSearching)
@@ -424,7 +472,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildEmptyState(Color tc) {
-    final isFiltered = _searchQuery.isNotEmpty || _weatherFilter != null;
+    final isFiltered = _searchQuery.isNotEmpty ||
+        _weatherFilter != null ||
+        _selectedFolderId != null;
     return Center(
       child: Padding(
         padding: const EdgeInsets.only(bottom: 100),
