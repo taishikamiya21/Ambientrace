@@ -1,6 +1,6 @@
 # Privacy Policy for Ambientrace
 
-**Last Updated:** February 3, 2026
+**Last Updated:** May 2, 2026
 
 ## Overview
 
@@ -38,11 +38,14 @@ Weather data is obtained from Open-Meteo, a free weather API that does not requi
 ### Google ML Kit (On-Device)
 The App uses Google ML Kit for on-device image labeling. This processing happens entirely on your device, and no image data is sent to Google servers.
 
-### Gemini API (Optional)
-If you provide a Gemini API key in Settings:
-- Image data may be sent to Google's Gemini API for enhanced ambient labeling
-- This is subject to Google's Privacy Policy
-- You can use the App without Gemini by relying on on-device ML Kit
+### AI Provider APIs (Optional)
+The App supports three AI providers for enhanced ambient labeling and Reconstructed Memory generation — Gemini (Google), ChatGPT (OpenAI), and Claude (Anthropic). If you supply an API key for any of them in Settings:
+- Image data and prompts may be sent to the selected provider's API
+- This is subject to the provider's own privacy policy:
+  - Google Gemini: https://ai.google.dev/gemini-api/terms
+  - OpenAI: https://openai.com/policies/privacy-policy
+  - Anthropic: https://www.anthropic.com/legal/privacy
+- You can use the App without any AI provider by relying on on-device ML Kit alone
 
 ### Open-Meteo Weather API
 - Only GPS coordinates are sent (no personal data)
@@ -55,6 +58,19 @@ All ambient trace data is stored **locally on your device only**:
 - Data is saved in the app's private storage
 - No cloud sync or backup to external servers
 - Deleting the app removes all data
+
+## API Key Storage (v1.2+)
+
+When you enter an API key for an AI provider, it is stored in the iOS Keychain (Apple's secure system storage), not in plain-text app preferences. Keys are accessible only to Ambientrace on your device and are removed when the app is uninstalled.
+
+## Data Export (v1.2+)
+
+You can export your trace data from Settings → Data Management in the following formats:
+- **JSON** — a full backup including all traces and folders
+- **CSV** — a flat list intended for spreadsheets or quick review
+- **ZIP archive** — print-ready Trace Cards (A4 / A3 / 300dpi) bundled with `index.csv` and `manifest.json`
+
+Exported files are written to your device's local storage and are shared only when you explicitly use the iOS share sheet. Ambientrace itself does not transmit exported data to any server.
 
 ## Your Rights
 
@@ -80,7 +96,7 @@ For questions about this Privacy Policy:
 
 # プライバシーポリシー（日本語）
 
-**最終更新日:** 2026年2月3日
+**最終更新日:** 2026年5月2日
 
 ## 概要
 
@@ -118,11 +134,14 @@ Ambientrace（「本アプリ」）は、プライバシーを核心的な原則
 ### Google ML Kit（オンデバイス）
 画像ラベリングにGoogle ML Kitを使用しますが、処理は完全にデバイス上で行われ、画像データはGoogleサーバーに送信されません。
 
-### Gemini API（オプション）
-設定でGemini APIキーを入力した場合：
-- 画像データがGoogleのGemini APIに送信される場合があります
-- Googleのプライバシーポリシーが適用されます
-- オンデバイスのML Kitのみでも利用可能です
+### AIプロバイダーAPI（オプション）
+本アプリは、Reconstructed Memory（雰囲気文章生成）と高度なラベリングのために 3 つの AI プロバイダーに対応しています — Gemini (Google) / ChatGPT (OpenAI) / Claude (Anthropic)。設定でいずれかの API キーを入力した場合：
+- 画像データやプロンプトが、選択中のプロバイダーの API に送信される場合があります
+- 各社のプライバシーポリシーが適用されます：
+  - Google Gemini: https://ai.google.dev/gemini-api/terms
+  - OpenAI: https://openai.com/policies/privacy-policy
+  - Anthropic: https://www.anthropic.com/legal/privacy
+- いずれの API キーも未設定の場合は、オンデバイスの ML Kit のみで動作します
 
 ### Open-Meteo天気API
 - GPS座標のみ送信（個人データなし）
@@ -134,6 +153,19 @@ Ambientrace（「本アプリ」）は、プライバシーを核心的な原則
 - アプリのプライベートストレージに保存
 - クラウド同期や外部サーバーへのバックアップなし
 - アプリを削除するとすべてのデータが削除されます
+
+## API キーの保存（v1.2 以降）
+
+AI プロバイダーの API キーを入力すると、平文のアプリ設定ではなく **iOS Keychain**（Apple のセキュアな保存領域）に格納されます。キーは本アプリのみがアクセス可能で、アプリを削除すると同時に消去されます。
+
+## データエクスポート（v1.2 以降）
+
+設定 → データ管理 から、トレースデータを以下のフォーマットで書き出せます：
+- **JSON** — トレースとフォルダを含むフルバックアップ
+- **CSV** — 表計算・分析用のフラットリスト
+- **ZIP アーカイブ** — `index.csv` / `manifest.json` を同梱したプリント対応カード（A4 / A3 / 300dpi）
+
+書き出したファイルはデバイスのローカルストレージに保存され、iOS のシェアシートを使って明示的に共有した場合のみ外部に渡ります。本アプリ自体は書き出しデータをいかなるサーバーにも送信しません。
 
 ## お問い合わせ
 

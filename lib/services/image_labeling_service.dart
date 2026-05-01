@@ -5,6 +5,13 @@ import 'gemini_service.dart';
 import 'openai_service.dart';
 import 'claude_service.dart';
 
+class LabelResult {
+  final List<String> labels;
+  final String? provider;
+
+  const LabelResult(this.labels, this.provider);
+}
+
 /// Unified image labeling service that uses the best available method
 class ImageLabelingService {
   final GeminiService geminiService = GeminiService();
@@ -64,14 +71,34 @@ class ImageLabelingService {
 
   /// Get labels from an image
   /// [languageCode] should be the device locale (e.g., 'ja', 'en', 'ja_JP')
-  Future<List<String>> getLabels(String imagePath, {String languageCode = 'en'}) async {
+  Future<List<String>> getLabels(
+    String imagePath, {
+    String languageCode = 'en',
+  }) async {
+    final result = await getLabelsWithProvider(
+      imagePath,
+      languageCode: languageCode,
+    );
+    return result.labels;
+  }
+
+  /// Get labels and the provider that produced them.
+  /// [languageCode] should be the device locale (e.g., 'ja', 'en', 'ja_JP')
+  Future<LabelResult> getLabelsWithProvider(
+    String imagePath, {
+    String languageCode = 'en',
+  }) async {
     if (!_initialized) {
       await init();
     }
 
     print('ImageLabelingService: Getting labels for $imagePath');
-    print('ImageLabelingService: Platform is iOS=${Platform.isIOS}, Android=${Platform.isAndroid}');
-    print('ImageLabelingService: Active provider=${activeLlmService.providerName}, configured=${activeLlmService.isConfigured}');
+    print(
+      'ImageLabelingService: Platform is iOS=${Platform.isIOS}, Android=${Platform.isAndroid}',
+    );
+    print(
+      'ImageLabelingService: Active provider=${activeLlmService.providerName}, configured=${activeLlmService.isConfigured}',
+    );
     print('ImageLabelingService: ML Kit available=${_imageLabeler != null}');
     print('ImageLabelingService: Language code=$languageCode');
 
@@ -79,13 +106,20 @@ class ImageLabelingService {
     if (activeLlmService.isConfigured) {
       print('ImageLabelingService: Using ${activeLlmService.providerName} API');
       try {
-        final labels = await activeLlmService.analyzeImage(imagePath, languageCode: languageCode);
+        final labels = await activeLlmService.analyzeImage(
+          imagePath,
+          languageCode: languageCode,
+        );
         if (labels.isNotEmpty) {
-          print('ImageLabelingService: Got ${activeLlmService.providerName} labels: $labels');
-          return labels;
+          print(
+            'ImageLabelingService: Got ${activeLlmService.providerName} labels: $labels',
+          );
+          return LabelResult(labels, _providerToString(_selectedProvider));
         }
       } catch (e) {
-        print('ImageLabelingService: ${activeLlmService.providerName} failed - $e');
+        print(
+          'ImageLabelingService: ${activeLlmService.providerName} failed - $e',
+        );
       }
     }
 
@@ -97,20 +131,39 @@ class ImageLabelingService {
         final labels = await _imageLabeler!.processImage(inputImage);
 
         // Convert to ambient-style labels
-        final ambientLabels = _convertToAmbientLabels(labels, languageCode: languageCode);
+        final ambientLabels = _convertToAmbientLabels(
+          labels,
+          languageCode: languageCode,
+        );
         print('ImageLabelingService: Got ML Kit labels: $ambientLabels');
-        return ambientLabels;
+        return LabelResult(ambientLabels, 'mlkit');
       } catch (e) {
         print('ImageLabelingService: ML Kit error - $e');
       }
     }
 
-    print('ImageLabelingService: No labeling method available or all methods failed');
-    return [];
+    print(
+      'ImageLabelingService: No labeling method available or all methods failed',
+    );
+    return const LabelResult([], null);
+  }
+
+  String _providerToString(LlmProvider p) {
+    switch (p) {
+      case LlmProvider.gemini:
+        return 'gemini';
+      case LlmProvider.openai:
+        return 'openai';
+      case LlmProvider.claude:
+        return 'claude';
+    }
   }
 
   /// Convert ML Kit labels to more "ambient" style labels (localized)
-  List<String> _convertToAmbientLabels(List<ImageLabel> labels, {String languageCode = 'en'}) {
+  List<String> _convertToAmbientLabels(
+    List<ImageLabel> labels, {
+    String languageCode = 'en',
+  }) {
     final ambientMap = languageCode.startsWith('ja')
         ? _ambientMapJa
         : _ambientMapEn;
@@ -131,7 +184,8 @@ class ImageLabelingService {
 
       // If no mapping found and confidence is high, use the original label
       if (result.length < 5 && label.confidence > 0.7) {
-        final capitalizedLabel = label.label[0].toUpperCase() + label.label.substring(1);
+        final capitalizedLabel =
+            label.label[0].toUpperCase() + label.label.substring(1);
         if (!result.contains(capitalizedLabel)) {
           result.add(capitalizedLabel);
         }

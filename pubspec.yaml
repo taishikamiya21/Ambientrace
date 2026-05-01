@@ -2,13 +2,15 @@ name: ambientrace
 description: "Capture the ambient trace of your moments - not the photo, just the feeling."
 publish_to: 'none'
 
-version: 1.1.0+2
+version: 1.2.0+4
 
 environment:
   sdk: ^3.10.7
 
 dependencies:
   flutter:
+    sdk: flutter
+  flutter_localizations:
     sdk: flutter
 
   cupertino_icons: ^1.0.8
@@ -28,10 +30,7 @@ dependencies:
   
   # Date/Time formatting
   intl: ^0.20.0
-  
-  # Image processing (for color palette extraction)
-  palette_generator: ^0.3.3+4
-  
+
   # UUID for unique IDs
   uuid: ^4.5.1
   
@@ -57,6 +56,21 @@ dependencies:
   # App info (version, etc.)
   package_info_plus: ^8.0.0
   native_exif: ^0.7.0
+
+  # v1.2: secure storage for API keys
+  flutter_secure_storage: ^9.2.2
+
+  # v1.2: file picking for import
+  file_picker: ^8.1.4
+
+  # v1.2: CSV export
+  csv: ^6.0.0
+
+  # v1.2: collection helpers (firstWhereOrNull)
+  collection: ^1.18.0
+
+  # v1.2 Phase B: ZIP packaging for card export
+  archive: ^4.0.0
 
 dev_dependencies:
   flutter_test:

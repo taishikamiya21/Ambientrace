@@ -1,14 +1,20 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/trace_log.dart';
+import 'folder_service.dart';
 
 class StorageService {
   static const String _tracesKey = 'trace_logs';
   SharedPreferences? _prefs;
+  final FolderService folderService;
+
+  StorageService({FolderService? folderService})
+    : folderService = folderService ?? FolderService();
 
   /// Initialize storage
   Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
+    await folderService.init();
   }
 
   /// Save a new trace log
@@ -49,6 +55,32 @@ class StorageService {
   Future<void> deleteTrace(String id) async {
     final traces = getAllTraces();
     traces.removeWhere((t) => t.id == id);
+    await _saveTraces(traces);
+    await folderService.removeTraceFromAllFolders(id);
+  }
+
+  /// Find a trace by id.
+  TraceLog? findById(String id) {
+    for (final trace in getAllTraces()) {
+      if (trace.id == id) return trace;
+    }
+    return null;
+  }
+
+  /// Insert or replace a trace with the same id.
+  Future<void> upsertTrace(TraceLog trace) async {
+    final traces = getAllTraces();
+    final index = traces.indexWhere((t) => t.id == trace.id);
+    if (index >= 0) {
+      traces[index] = trace;
+    } else {
+      traces.add(trace);
+    }
+    await _saveTraces(traces);
+  }
+
+  /// Replace all trace data.
+  Future<void> replaceAllTraces(List<TraceLog> traces) async {
     await _saveTraces(traces);
   }
 

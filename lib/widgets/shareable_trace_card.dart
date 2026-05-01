@@ -17,11 +17,17 @@ class TraceCard extends StatefulWidget {
   final String? story;
   final String languageCode;
 
+  /// v1.2 Phase B (C-7): show the original photo filename in small mono
+  /// type at the bottom-right of Zone B. Helps cross-reference printed
+  /// cards with their source photos in a gallery / exhibition context.
+  final bool showOriginalFileName;
+
   const TraceCard({
     super.key,
     required this.trace,
     required this.languageCode,
     this.story,
+    this.showOriginalFileName = false,
   });
 
   @override
@@ -29,18 +35,17 @@ class TraceCard extends StatefulWidget {
 }
 
 class _TraceCardState extends State<TraceCard> {
-  // ── ヒーロー高さ (画面高さの35%, 220〜270px) ─────────
-  double _heroHeight(BuildContext context) =>
-      (MediaQuery.of(context).size.height * 0.35).clamp(220.0, 270.0);
+  // Hero is sized off the actual card height via LayoutBuilder so Zone B
+  // always has enough room for 4 story lines on every device. Slightly
+  // generous fraction + min so the title and tags have breathing room.
+  static const double _heroFraction = 0.45;
+  static const double _heroMin = 180.0;
+  static const double _heroMax = 260.0;
 
   @override
   Widget build(BuildContext context) {
-    final heroH = _heroHeight(context);
     final isDark = context.isDark;
 
-    // ライトモード: カードを白紙にしてクリーム背景と明確に区別
-    // ダークモード: ダーク背景に白紙カードは十分なコントラスト
-    // シャドウとclipBehaviorを共存させるため外/内の二層構造
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppRadius.surface),
@@ -67,110 +72,115 @@ class _TraceCardState extends State<TraceCard> {
           borderRadius: BorderRadius.circular(AppRadius.surface),
         ),
         clipBehavior: Clip.antiAlias,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-          // ── Zone A: グラデーションヒーロー ────────────
-          SizedBox(
-            height: heroH,
-            child: Stack(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final heroH =
+                (constraints.maxHeight * _heroFraction).clamp(_heroMin, _heroMax);
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // カラーグラデーション背景
-                Positioned.fill(child: _buildHeroGradient()),
-                // 下部フェード: グラデーション → ホワイト
-                // Zone B とシームレスに接続する「印画紙に現像される」表現
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: Container(
-                    height: 120,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.transparent,
-                          Colors.white.withValues(alpha: 0.92),
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
+                // ── Zone A: グラデーションヒーロー ────────────
+                SizedBox(
+                  height: heroH,
+                  child: Stack(
+                    children: [
+                      Positioned.fill(child: _buildHeroGradient()),
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        child: Container(
+                          height: 120,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.transparent,
+                                Colors.white.withValues(alpha: 0.92),
+                              ],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            ),
+                          ),
+                        ),
                       ),
+                      Positioned(
+                        left: AppSpacing.xl,
+                        right: AppSpacing.xl,
+                        bottom: AppSpacing.lg,
+                        child: _buildHeroTags(),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // ── Zone B: ホワイトペーパーストリップ ────────
+                Expanded(
+                  child: Container(
+                    color: Colors.white,
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.xl,
+                      AppSpacing.sm,
+                      AppSpacing.xl,
+                      AppSpacing.md,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildAtmosphericHero(),
+                        const SizedBox(height: AppSpacing.xxs),
+                        _buildDateTimeRow(),
+                        const SizedBox(height: AppSpacing.xs),
+                        if (widget.trace.colorPalette.isNotEmpty) ...[
+                          _buildColorDots(),
+                          const SizedBox(height: AppSpacing.xs),
+                        ],
+                        if (widget.trace.placeName != null ||
+                            widget.trace.temperature != null ||
+                            widget.trace.weatherCondition != null) ...[
+                          _buildInfoChips(),
+                          const SizedBox(height: AppSpacing.xs),
+                        ],
+                        // Story occupies remaining space. Text(maxLines:4)
+                        // truncates with ellipsis if a sentence is too long.
+                        Expanded(
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 700),
+                            switchInCurve: Curves.easeOut,
+                            switchOutCurve: Curves.easeIn,
+                            transitionBuilder: (child, animation) {
+                              return FadeTransition(
+                                opacity: animation,
+                                child: SlideTransition(
+                                  position: Tween<Offset>(
+                                    begin: const Offset(0, 0.10),
+                                    end: Offset.zero,
+                                  ).animate(CurvedAnimation(
+                                      parent: animation,
+                                      curve: Curves.easeOut)),
+                                  child: child,
+                                ),
+                              );
+                            },
+                            child:
+                                (widget.story != null && widget.story!.isNotEmpty)
+                                    ? Align(
+                                        key: ValueKey(widget.story),
+                                        alignment: Alignment.topLeft,
+                                        child: _buildStoryBlock(),
+                                      )
+                                    : const SizedBox.shrink(
+                                        key: ValueKey('no-story')),
+                          ),
+                        ),
+                        _buildBranding(),
+                      ],
                     ),
                   ),
                 ),
-                // 主タグ + 副タグ (左下揃え)
-                Positioned(
-                  left: AppSpacing.xl,
-                  right: AppSpacing.xl,
-                  bottom: AppSpacing.lg,
-                  child: _buildHeroTags(),
-                ),
               ],
-            ),
-          ),
-
-          // ── Zone B: ホワイトペーパーストリップ ────────
-          Expanded(
-            child: Container(
-              color: Colors.white,
-              padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.xl, AppSpacing.md, AppSpacing.xl, AppSpacing.lg),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 大気的時間 — ペーパーストリップのヒーロー
-                  _buildAtmosphericHero(),
-                  const SizedBox(height: AppSpacing.xs),
-                  // 日時
-                  _buildDateTimeRow(),
-                  const SizedBox(height: AppSpacing.sm),
-                  // カラードット
-                  if (widget.trace.colorPalette.isNotEmpty) ...[
-                    _buildColorDots(),
-                    const SizedBox(height: AppSpacing.sm),
-                  ],
-                  // 情報チップ
-                  if (widget.trace.placeName != null ||
-                      widget.trace.temperature != null ||
-                      widget.trace.weatherCondition != null) ...[
-                    _buildInfoChips(),
-                    const SizedBox(height: AppSpacing.sm),
-                  ],
-                  // ストーリー (フェードイン)
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 700),
-                    switchInCurve: Curves.easeOut,
-                    switchOutCurve: Curves.easeIn,
-                    transitionBuilder: (child, animation) {
-                      return FadeTransition(
-                        opacity: animation,
-                        child: SlideTransition(
-                          position: Tween<Offset>(
-                            begin: const Offset(0, 0.10),
-                            end: Offset.zero,
-                          ).animate(CurvedAnimation(
-                              parent: animation, curve: Curves.easeOut)),
-                          child: child,
-                        ),
-                      );
-                    },
-                    child: (widget.story != null && widget.story!.isNotEmpty)
-                        ? Padding(
-                            key: ValueKey(widget.story),
-                            padding:
-                                const EdgeInsets.only(bottom: AppSpacing.sm),
-                            child: _buildStoryBlock(),
-                          )
-                        : const SizedBox.shrink(key: ValueKey('no-story')),
-                  ),
-                  // ブランディングを底に固定
-                  const Spacer(),
-                  _buildBranding(),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
+            );
+          },
+        ),
       ),
     );
   }
@@ -239,9 +249,10 @@ class _TraceCardState extends State<TraceCard> {
     return Wrap(
       spacing: AppSpacing.xs,
       runSpacing: AppSpacing.xs,
+      // Match home/list view: 1 main label + up to 3 secondary chips.
       children: widget.trace.imageLabels
           .skip(1)
-          .take(4)
+          .take(3)
           .toList()
           .asMap()
           .entries
@@ -380,61 +391,108 @@ class _TraceCardState extends State<TraceCard> {
   }
 
   /// ストーリーブロック — エディトリアル左アクセントライン
+  ///
+  /// 4 行 × 13px × line-height 1.4 = 72.8px が理想。利用可能な高さに応じて
+  /// maxLines を 1〜4 に動的調整。`strutStyle` で leading を固定し、
+  /// 末尾のディセンダーが切れないように 6px の安全余白を加える。
   Widget _buildStoryBlock() {
     final accentColor = widget.trace.colorPalette.isNotEmpty
         ? Color(widget.trace.colorPalette.first)
         : _tc.withValues(alpha: 0.30);
 
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // 左アクセントライン: パレット色をそのまま (白紙上で鮮やかに映える)
-          Container(
-            width: 2.5,
-            decoration: BoxDecoration(
-              color: accentColor,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Text(
-              widget.story!,
-              style: AppTypography.body(
-                color: _tc,
-                opacity: AppOpacity.textBody,
-              ).copyWith(
-                fontSize: 13,
-                fontStyle: FontStyle.italic,
-                height: 1.65,
+    const fontSize = 13.0;
+    const lineHeight = 1.4;
+    const lineSize = fontSize * lineHeight; // 18.2px
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // 末尾の安全余白 6px を引いた上で、収まる行数を計算 (1〜4)。
+        final usable = constraints.maxHeight - 6;
+        final maxLines = (usable / lineSize).floor().clamp(1, 4);
+        final accentHeight = lineSize * maxLines;
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 6),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 2.5,
+                height: accentHeight,
+                decoration: BoxDecoration(
+                  color: accentColor,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
-              maxLines: 5,
-              overflow: TextOverflow.ellipsis,
-            ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text(
+                  widget.story!,
+                  style: AppTypography.body(
+                    color: _tc,
+                    opacity: AppOpacity.textBody,
+                  ).copyWith(
+                    fontSize: fontSize,
+                    fontStyle: FontStyle.italic,
+                    height: lineHeight,
+                  ),
+                  strutStyle: const StrutStyle(
+                    fontSize: fontSize,
+                    height: lineHeight,
+                    forceStrutHeight: true,
+                  ),
+                  maxLines: maxLines,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  /// ブランディングフッター
+  /// ブランディングフッター + 任意の元画像ファイル名注記
   Widget _buildBranding() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    final fileName = widget.trace.originalFileName;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(
-          Icons.grain,
-          color: _tc.withValues(alpha: AppOpacity.textCaption),
-          size: 11,
-        ),
-        const SizedBox(width: AppSpacing.xs),
-        Text(
-          'AMBIENTRACE',
-          style: AppTypography.section(
-            color: _tc,
-            opacity: AppOpacity.textCaption,
+        if (widget.showOriginalFileName &&
+            fileName != null &&
+            fileName.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Text(
+                fileName,
+                style: AppTypography.mono(
+                  color: _tc,
+                  opacity: AppOpacity.textCaption,
+                ).copyWith(fontSize: 9),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.grain,
+              color: _tc.withValues(alpha: AppOpacity.textCaption),
+              size: 11,
+            ),
+            const SizedBox(width: AppSpacing.xs),
+            Text(
+              'AMBIENTRACE',
+              style: AppTypography.section(
+                color: _tc,
+                opacity: AppOpacity.textCaption,
+              ),
+            ),
+          ],
         ),
       ],
     );

@@ -111,3 +111,29 @@
 - [ ] TestFlight再配布（修正版）& 最終テスト
 - [ ] App Store 申請
 - [ ] Google Play 申請
+
+## 🚀 Phase 7: v1.2 Phase A ✅ <!-- completed: 2026-05-01 -->
+- [x] **C-1 データエクスポート:** JSON / CSV export <!-- completed: 2026-05-01 -->
+- [x] **C-2 データインポート:** JSON dry-run / apply / conflict handling <!-- completed: 2026-05-01 -->
+- [x] **C-4 データモデル拡張:** `originalFileName`, `aiProviderUsed`, `schemaVersion` <!-- completed: 2026-05-01 -->
+- [x] **C-5 カラー抽出改善:** LAB k-means++ unified extractor with chroma-aware dedup + non-uint8 pixel format defence <!-- completed: 2026-05-01 → reworked Phase B for white-out fix -->
+- [x] **C-6 フォルダ機能:** folder model, service, selector, management UI <!-- completed: 2026-05-01 -->
+- [x] **C-8 オンボーディング・設定 UX 改善:** AI Enrichment, info sheets, provider badges <!-- completed: 2026-05-01 -->
+- [x] **C-9 APIキー secure storage 移行:** secure storage + migration <!-- completed: 2026-05-01 -->
+- [x] **C-10 プロンプトプリセット:** Minimal / Poetic / Documentary / Exhibition <!-- completed: 2026-05-01 -->
+
+## 🚀 Phase 7B: v1.2 Phase B ✅ <!-- completed: 2026-05-01 -->
+- [x] **C-3 既存写真の一括カード化:** sequential bulk pipeline via `BulkCaptureService` + `BulkProgressScreen` (cancel button, per-item failure surfacing, target-folder selection) <!-- completed: 2026-05-01 -->
+- [x] **C-7 カード ZIP 出力:** ZIP packaging with `cards/`, `index.csv`, `manifest.json`; A4 / A3 高解像度プリセット追加; OS 禁止文字サニタイズ; 元画像ファイル名注記トグル; キャンセル付き進捗ダイアログ <!-- completed: 2026-05-01 -->
+- [ ] **C-3 v1.3 hardening:** persistent job queue (restart-resume), 2-parallel concurrency, retry/backoff, Wi-Fi-only option, historical weather lookup
+- [ ] **C-7 v1.3 hardening:** folder/tag-based target selection
+
+## 🚀 Phase 7C: v1.2.0 リリースビルド <!-- in progress: 2026-05-02 -->
+- [x] **品質ゲート:** `flutter analyze` errors=0 / `flutter test` 45/45 pass <!-- completed: 2026-05-02 -->
+- [x] **バージョン更新:** `1.2.0-alpha.1+3` → `1.2.0+4` <!-- completed: 2026-05-02 -->
+- [x] **STATUS / TASKS 反映:** Phase 7C セクション、リリースノート追記 <!-- completed: 2026-05-02 -->
+- [ ] **リリースコミット & タグ:** annotated tag `v1.2.0` 作成
+- [ ] **iOS リリースビルド:** `flutter build ipa --release`
+- [ ] **TestFlight アップロード:** Xcode Organizer 経由 (ユーザー実行)
+- [ ] **TestFlight 内部テスト確認:** ビルド処理完了・テスター通知
+- [ ] **post-release 整理:** step_service vestigial フィールド削除を v1.2.x で対応（軽微）

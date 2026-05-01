@@ -161,10 +161,8 @@ class _CaptureScreenState extends State<CaptureScreen>
 
     // Gather all data in parallel
     final locationFuture = _locationService.getCurrentPosition();
-    final colorFuture = _colorService.extractColors(
-      FileImage(File(imagePath)),
-    );
-    final labelsFuture = widget.imageLabelingService.getLabels(
+    final colorFuture = _colorService.extractColors(FileImage(File(imagePath)));
+    final labelsFuture = widget.imageLabelingService.getLabelsWithProvider(
       imagePath,
       languageCode: languageCode,
     );
@@ -173,7 +171,8 @@ class _CaptureScreenState extends State<CaptureScreen>
 
     final position = await locationFuture;
     final colors = await colorFuture;
-    final labels = await labelsFuture;
+    final labelResult = await labelsFuture;
+    final labels = labelResult.labels;
     final noiseLevel = await noiseFuture;
     final stepCount = await stepFuture;
 
@@ -237,7 +236,10 @@ class _CaptureScreenState extends State<CaptureScreen>
       // Re-fetch place name and weather for the EXIF location
       try {
         placeName = await _locationService.getPlaceName(exifLat, exifLon);
-        final weather = await _weatherService.getCurrentWeather(exifLat, exifLon);
+        final weather = await _weatherService.getCurrentWeather(
+          exifLat,
+          exifLon,
+        );
         if (weather != null) {
           temperature = weather.temperature;
           weatherCondition = weather.condition;
@@ -257,6 +259,7 @@ class _CaptureScreenState extends State<CaptureScreen>
       placeName: placeName,
       colorPalette: colors,
       imageLabels: labels,
+      aiProviderUsed: labelResult.provider,
       noiseLevel: noiseLevel,
       stepCount: stepCount,
       temperature: temperature,
@@ -297,7 +300,9 @@ class _CaptureScreenState extends State<CaptureScreen>
           content: Row(
             children: [
               Icon(
-                labels.isEmpty ? Icons.warning_amber_rounded : Icons.check_circle_outline,
+                labels.isEmpty
+                    ? Icons.warning_amber_rounded
+                    : Icons.check_circle_outline,
                 color: labels.isEmpty ? AppColors.warning : AppColors.success,
                 size: 20,
               ),
@@ -313,7 +318,8 @@ class _CaptureScreenState extends State<CaptureScreen>
           backgroundColor: AppColors.canvasSecondary,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppRadius.container)),
+            borderRadius: BorderRadius.circular(AppRadius.container),
+          ),
           duration: const Duration(seconds: 3),
         ),
       );
@@ -329,11 +335,7 @@ class _CaptureScreenState extends State<CaptureScreen>
         SnackBar(
           content: Row(
             children: [
-              Icon(
-                Icons.error_outline,
-                color: AppColors.error,
-                size: 20,
-              ),
+              Icon(Icons.error_outline, color: AppColors.error, size: 20),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
@@ -346,7 +348,8 @@ class _CaptureScreenState extends State<CaptureScreen>
           backgroundColor: AppColors.canvasSecondary,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppRadius.container)),
+            borderRadius: BorderRadius.circular(AppRadius.container),
+          ),
           duration: const Duration(seconds: 3),
         ),
       );
@@ -388,9 +391,7 @@ class _CaptureScreenState extends State<CaptureScreen>
           // Camera preview or placeholder
           if (_isInitialized)
             _isCameraAvailable && _controller != null
-                ? Positioned.fill(
-                    child: CameraPreview(_controller!),
-                  )
+                ? Positioned.fill(child: CameraPreview(_controller!))
                 : _buildNoCameraUI()
           else
             Center(
@@ -435,14 +436,17 @@ class _CaptureScreenState extends State<CaptureScreen>
             child: SafeArea(
               child: Padding(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.xs, vertical: AppSpacing.xxs),
+                  horizontal: AppSpacing.xs,
+                  vertical: AppSpacing.xxs,
+                ),
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: IconButton(
                     icon: Icon(
                       Icons.arrow_back,
-                      color: Colors.white
-                          .withValues(alpha: AppOpacity.textHigh),
+                      color: Colors.white.withValues(
+                        alpha: AppOpacity.textHigh,
+                      ),
                     ),
                     onPressed: () => Navigator.pop(context),
                   ),
@@ -467,18 +471,21 @@ class _CaptureScreenState extends State<CaptureScreen>
                     height: 44,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.white
-                          .withValues(alpha: AppOpacity.surfaceElevated),
+                      color: Colors.white.withValues(
+                        alpha: AppOpacity.surfaceElevated,
+                      ),
                       border: Border.all(
-                        color: Colors.white
-                            .withValues(alpha: AppOpacity.borderStrong),
+                        color: Colors.white.withValues(
+                          alpha: AppOpacity.borderStrong,
+                        ),
                         width: 1.5,
                       ),
                     ),
                     child: Icon(
                       Icons.photo_library_outlined,
-                      color: Colors.white
-                          .withValues(alpha: AppOpacity.textBody),
+                      color: Colors.white.withValues(
+                        alpha: AppOpacity.textBody,
+                      ),
                       size: 20,
                     ),
                   ),
@@ -491,13 +498,12 @@ class _CaptureScreenState extends State<CaptureScreen>
                   onTap: _isCapturing
                       ? null
                       : (_isCameraAvailable
-                          ? _captureFromCamera
-                          : _pickFromGallery),
+                            ? _captureFromCamera
+                            : _pickFromGallery),
                   child: AnimatedBuilder(
                     animation: _pulseAnimation,
                     builder: (context, child) {
-                      final scale =
-                          _isCapturing ? _pulseAnimation.value : 1.0;
+                      final scale = _isCapturing ? _pulseAnimation.value : 1.0;
                       return Transform.scale(
                         scale: scale,
                         child: Container(
@@ -506,8 +512,9 @@ class _CaptureScreenState extends State<CaptureScreen>
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: Colors.white
-                                  .withValues(alpha: AppOpacity.textHigh),
+                              color: Colors.white.withValues(
+                                alpha: AppOpacity.textHigh,
+                              ),
                               width: 2,
                             ),
                           ),
@@ -523,7 +530,8 @@ class _CaptureScreenState extends State<CaptureScreen>
                                 ),
                                 color: _isCapturing
                                     ? Colors.white.withValues(
-                                        alpha: AppOpacity.surfaceElevated)
+                                        alpha: AppOpacity.surfaceElevated,
+                                      )
                                     : Colors.transparent,
                               ),
                             ),
@@ -552,8 +560,7 @@ class _CaptureScreenState extends State<CaptureScreen>
           Icon(
             Icons.blur_on,
             size: 100,
-            color:
-                Colors.white.withValues(alpha: AppOpacity.textWhisper),
+            color: Colors.white.withValues(alpha: AppOpacity.textWhisper),
           ),
           const SizedBox(height: AppSpacing.lg),
           Text(

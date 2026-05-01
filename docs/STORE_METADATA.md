@@ -52,11 +52,15 @@ Later, when you look back at your traces, you'll find that a handful of colors a
 
 - Dissolve animation — watch your photo transform into ambient data in real time
 - AI atmosphere detection — supports Gemini, ChatGPT, and Claude (bring your own API key)
+- AI prompt presets — choose the voice your traces are generated in: Minimal, Poetic, Documentary, or Exhibition
 - Trace Cards — shareable cards designed for social media
+- Folders — group your traces by mood, project, or trip
+- Bulk capture — convert your existing photo library into traces in one go
+- Data portability — export everything as JSON, CSV, or print-ready A4/A3 ZIP archives
 - ML Kit fallback — works without an API key using on-device image analysis
 - Atmospheric Time — times of day expressed as Dawn, Morning, Dusk, Late Night
 - Bilingual — full Japanese and English support
-- Privacy-first — all data stored locally on your device
+- Privacy-first — all data stored locally on your device, with API keys protected by the iOS Keychain
 
 **Perfect for:**
 
@@ -103,11 +107,15 @@ Ambientraceは、写真を撮って、そのまま消すカメラアプリです
 
 - 溶解アニメーション — 写真がリアルタイムでデータに変わる演出
 - AI雰囲気検出 — Gemini、ChatGPT、Claudeに対応（APIキーを設定して利用）
+- AIプロンプトプリセット — Minimal / Poetic / Documentary / Exhibition から文章のトーンを選べる
 - トレースカード — SNSでシェアできるデザインカード
+- フォルダ分類 — 気分・プロジェクト・旅ごとにトレースを整理
+- 一括カード化 — 既存のフォトライブラリをまとめてトレースに変換
+- データの持ち運び — JSON / CSV / A4・A3印刷対応 ZIP で書き出し
 - ML Kitフォールバック — APIキーなしでもデバイス上の画像解析で動作
 - Atmospheric Time — Dawn、Morning、Duskなど、記憶に寄り添う時刻表現
 - 日本語・英語対応 — ラベルもUIも自動切替
-- プライバシー重視 — すべてのデータはデバイス内にローカル保存
+- プライバシー重視 — すべてのデータはデバイス内にローカル保存。APIキーは iOS Keychain で保護
 
 **こんな人に：**
 
@@ -264,6 +272,34 @@ Light Mode, redesigned cards, and a new way to relive your traces.
 - **長押しで保存・共有** — カードを長押しするとフォトライブラリへの保存または共有が選択できるアクションシートが開く
 - **Generate Memory のフェードイン** — AIが生成した記憶の文章がふわりとフェードインするように改善
 - **バグ修正** — iOS 26 での動作安定性向上、AIモデルIDの更新
+
+---
+
+## What's New / リリースノート (Version 1.2.0)
+
+### English
+
+Take control of your traces — export, organize, and bulk-process.
+
+- **Data Export & Import** — back up everything as JSON, or take a quick look as CSV. Restore on a new device with conflict resolution (skip / overwrite / merge)
+- **Folders** — group traces by mood, project, or trip; a trace can belong to multiple folders
+- **Bulk Capture** — convert your existing photo library into traces in one go, with EXIF date and GPS read automatically
+- **Trace Card ZIP Export** — print-ready cards (A4 / A3, 300dpi) packaged with index.csv and manifest.json for archival
+- **AI Prompt Presets** — choose the voice your traces are generated in: Minimal, Poetic, Documentary, or Exhibition
+- **Secure API Key Storage** — your AI provider keys are now stored in the iOS Keychain
+- **Color Extraction Rewrite** — switched to LAB k-means++; vivid scenes (sunsets, flowers, neon) now read correctly without washing out
+
+### Japanese
+
+トレースを「持ち運び・整理・まとめて作る」。
+
+- **データのエクスポート / インポート** — JSON でフルバックアップ、CSV で一覧確認。新しい端末でも復元（スキップ / 上書き / マージから選択）
+- **フォルダ機能** — 旅、気分、プロジェクトごとにトレースを分類。1 つのトレースを複数フォルダに所属させられる
+- **既存写真の一括カード化** — フォトライブラリの写真をまとめてトレース化。EXIF の撮影日時と GPS を自動取得
+- **カード ZIP 出力** — A4 / A3 / 300dpi のプリント対応カードを index.csv / manifest.json 付きで ZIP 化
+- **AI プロンプトプリセット** — 生成される文章のトーンを Minimal / Poetic / Documentary / Exhibition から選択
+- **API キーを Keychain に保存** — AI プロバイダーの API キーを iOS Keychain に格納する仕組みに変更
+- **カラー抽出を再設計** — LAB k-means++ に統一。夕焼け・花・ネオンなど鮮やかなシーンの色味が正しく出るようになりました
 
 ---
 

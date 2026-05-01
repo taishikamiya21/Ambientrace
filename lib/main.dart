@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'services/storage_service.dart';
 import 'services/image_labeling_service.dart';
+import 'services/migration_service.dart';
+import 'services/secure_key_storage.dart';
+import 'services/llm_service.dart';
 import 'services/theme_service.dart';
 import 'screens/home_screen.dart';
 import 'screens/onboarding_screen.dart';
@@ -24,6 +28,11 @@ void main() async {
   );
 
   final prefs = await SharedPreferences.getInstance();
+  await MigrationService(prefs: prefs, secure: SecureKeyStorage()).run();
+  await LlmService.presetService.init();
+  // v1.2 retired the user-facing color extraction algorithm picker. Wipe the
+  // legacy preference key so it doesn't linger after upgrade.
+  await prefs.remove('color_extraction_algorithm');
   final onboardingComplete = prefs.getBool('onboarding_complete') ?? false;
 
   final storageService = StorageService();
@@ -32,11 +41,13 @@ void main() async {
   final imageLabelingService = ImageLabelingService();
   await imageLabelingService.init();
 
-  runApp(AmbientraleApp(
-    storageService: storageService,
-    imageLabelingService: imageLabelingService,
-    showOnboarding: !onboardingComplete,
-  ));
+  runApp(
+    AmbientraleApp(
+      storageService: storageService,
+      imageLabelingService: imageLabelingService,
+      showOnboarding: !onboardingComplete,
+    ),
+  );
 }
 
 class AmbientraleApp extends StatefulWidget {
@@ -83,6 +94,15 @@ class _AmbientraleAppState extends State<AmbientraleApp> {
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
       themeMode: ThemeService.instance.themeNotifier.value,
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('ja'),
+        Locale('en'),
+      ],
       home: _showOnboarding
           ? OnboardingScreen(onComplete: _onOnboardingComplete)
           : HomeScreen(

@@ -1,6 +1,6 @@
 # Ambientrace 開発ステータス
 
-**最終更新:** 2026-02-11 JST
+**最終更新:** 2026-05-02 JST (v1.2.0 リリースビルド準備 — version 1.2.0+4 / TestFlight 配布)
 
 ---
 
@@ -89,11 +89,47 @@
 | **歩数計測** | 撮影時の歩数取得（macOS不可） | ❌ UI非表示（データは収集継続） |
 | **AIスケッチ生成** | トレースデータから抽象画を生成 | ❌ 削除（Phase 2で「想像」を重視） |
 | **スプラッシュ画面** | ネイティブスプラッシュ（ブランドカラー） | ✅ |
-| **オンボーディング** | 初回起動時のコンセプト説明（3ページ） | ✅ |
+| **オンボーディング** | 初回起動時のコンセプト説明（4ページ） | ✅ |
 | **設定画面（情報）** | About/Licenses/Privacy Policy | ✅ |
 | **アプリアイコン** | iOS/Android両対応のアイコン生成済み | ✅ |
 | **エラーフィードバック** | スタイル付きSnackbar | ✅ |
 | **ストアメタデータ** | 説明文・キーワード作成済み | ✅ |
+
+---
+
+### 🚀 v1.2.0 リリースビルド — 2026-05-02
+
+- **バージョン:** `1.2.0+4`（pre-release alpha 表記を外し、TestFlight 内部テスト向け正式版へ）
+- **品質ゲート:** `flutter analyze` errors=0 / warnings=2（step_service の vestigial フィールド、UI 影響なし）、`flutter test` 45/45 pass。
+- **配布方式:** Xcode Organizer 経由で App Store Connect → TestFlight 内部テストグループへ配信。
+
+#### v1.2 What's New（リリースノート抜粋）
+
+**Phase A — Data Stewardship & AI UX**
+- データエクスポート（JSON / CSV）と復元可能インポート（dry-run / apply / 衝突方針）。
+- フォルダによるトレース分類、AI Provider 解説 / プリセット選択（Minimal / Poetic / Documentary / Exhibition）。
+- API キーを Secure Storage に移行、schemaVersion 付きデータモデル拡張。
+- LAB k-means++ ベースのカラー抽出に統一、iPhone 実画像の白飛びを修正。
+
+**Phase B — Bulk Workflows**
+- 既存写真の一括カード化（EXIF 撮影日時 / GPS 反映、進捗・キャンセル・失敗可視化）。
+- カード ZIP 出力（PNG + index.csv + manifest.json、A4/A3 高解像度プリセット）。
+
+### ✅ v1.2 Phase A — 2026-05-01 完了
+
+- **C-1 データエクスポート:** JSON（フル復元用）と CSV（一覧・分析用）の書き出しを実装。
+- **C-2 データインポート:** JSON の dry-run / apply と skip・overwrite・duplicate・merge の取り込み方針を実装。
+- **C-4 データモデル拡張:** `originalFileName`、`aiProviderUsed`、`schemaVersion` を追加し、移行対象に反映。
+- **C-5 カラー抽出改善:** Phase B で LAB k-means++ 統一実装にリライト（Vibrant + HSV ステージはアーカイブ）。CIE76 ΔE chroma-aware dedup と非 uint8 ピクセルフォーマット対策（`rNormalized*255`）で iPhone 実画像の白飛びを解消。
+- **C-6 フォルダ機能:** Folder model / FolderService / Home filter / Folder Management / Trace Detail 連携を実装。
+- **C-8 AI UX 改善:** Onboarding に AI Enrichment ページを追加し、Settings に AI Provider 解説・状態バッジ・優先順位説明を追加。
+- **C-9 Secure Storage 移行:** API キーを `flutter_secure_storage` に移行し、v1 → v2 migration を追加。
+- **C-10 プロンプトプリセット:** Minimal / Poetic / Documentary / Exhibition の 4 プリセットを実装し、Settings から選択可能にした。
+
+### ✅ v1.2 Phase B — 2026-05-01 完了
+
+- **C-3 既存写真の一括カード化:** `BulkCaptureService` + `BulkProgressScreen` を新設し、複数画像を順次処理。EXIF 撮影日時 / GPS の読み取り、対象フォルダ選択、進捗・キャンセル・失敗の可視化、ジョブ完了サマリ表示。**v1.3 持ち越し**: 永続ジョブキュー（再起動再開）、2-並列実行、指数バックオフ・リトライ、Wi-Fi 限定オプション、過去日時の天気逆引き。
+- **C-7 カード ZIP 出力:** カード PNG を `cards/` 配下に格納した ZIP として書き出し、`index.csv`（originalFileName / traceId / outputFileName 対応表）、`manifest.json`（schemaVersion / exportedAt / params）を同梱。A4（2480×3508 @ 300dpi）と A3（3508×4961 @ 300dpi）プリセットを追加し、OS 禁止文字サニタイズ・元画像ファイル名注記トグル・キャンセル付き進捗ダイアログを実装。**v1.3 持ち越し**: フォルダ／タグ単位での対象選択。
 
 ---
 
