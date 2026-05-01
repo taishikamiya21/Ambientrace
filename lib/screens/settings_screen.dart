@@ -6,6 +6,7 @@ import '../services/llm_service.dart';
 import '../services/storage_service.dart';
 import '../services/theme_service.dart';
 import '../theme/app_theme.dart';
+import 'data_management_screen.dart';
 import 'folder_management_screen.dart';
 import 'onboarding_screen.dart';
 
@@ -448,6 +449,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         builder: (_) => FolderManagementScreen(
                           folderService:
                               widget.storageService.folderService,
+                        ),
+                      ),
+                    ),
+                  ),
+                  _buildDivider(),
+                  _buildListTile(
+                    icon: Icons.storage_outlined,
+                    title: _isJapanese ? 'データ管理' : 'Data Management',
+                    subtitle: _isJapanese
+                        ? 'JSON/CSVの書き出しとJSONの読み込み'
+                        : 'Export JSON/CSV and import JSON',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => DataManagementScreen(
+                          storageService: widget.storageService,
                         ),
                       ),
                     ),
