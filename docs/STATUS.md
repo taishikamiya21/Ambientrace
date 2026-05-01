@@ -1,6 +1,6 @@
 # Ambientrace 開発ステータス
 
-**最終更新:** 2026-02-11 JST
+**最終更新:** 2026-05-01 JST
 
 ---
 
@@ -89,11 +89,26 @@
 | **歩数計測** | 撮影時の歩数取得（macOS不可） | ❌ UI非表示（データは収集継続） |
 | **AIスケッチ生成** | トレースデータから抽象画を生成 | ❌ 削除（Phase 2で「想像」を重視） |
 | **スプラッシュ画面** | ネイティブスプラッシュ（ブランドカラー） | ✅ |
-| **オンボーディング** | 初回起動時のコンセプト説明（3ページ） | ✅ |
+| **オンボーディング** | 初回起動時のコンセプト説明（4ページ） | ✅ |
 | **設定画面（情報）** | About/Licenses/Privacy Policy | ✅ |
 | **アプリアイコン** | iOS/Android両対応のアイコン生成済み | ✅ |
 | **エラーフィードバック** | スタイル付きSnackbar | ✅ |
 | **ストアメタデータ** | 説明文・キーワード作成済み | ✅ |
+
+---
+
+### ✅ v1.2 Phase A — 2026-05-01 完了
+
+- **C-1 データエクスポート:** JSON（フル復元用）と CSV（一覧・分析用）の書き出しを実装。
+- **C-2 データインポート:** JSON の dry-run / apply と skip・overwrite・duplicate・merge の取り込み方針を実装。
+- **C-3 既存写真の一括カード化:** Phase B 対象として継続管理。
+- **C-4 データモデル拡張:** `originalFileName`、`aiProviderUsed`、`schemaVersion` を追加し、移行対象に反映。
+- **C-5 カラー抽出改善:** Vibrant ターゲット、HSV フィルタ、dominant フォールバックの段階的抽出に更新。
+- **C-6 フォルダ機能:** Folder model / FolderService / Home filter / Folder Management / Trace Detail 連携を実装。
+- **C-7 カード ZIP 出力:** Phase B 対象として継続管理。
+- **C-8 AI UX 改善:** Onboarding に AI Enrichment ページを追加し、Settings に AI Provider 解説・状態バッジ・優先順位説明を追加。
+- **C-9 Secure Storage 移行:** API キーを `flutter_secure_storage` に移行し、v1 → v2 migration を追加。
+- **C-10 プロンプトプリセット:** Minimal / Poetic / Documentary / Exhibition の 4 プリセットを実装し、Settings から選択可能にした。
 
 ---
 

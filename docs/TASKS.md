@@ -111,3 +111,15 @@
 - [ ] TestFlight再配布（修正版）& 最終テスト
 - [ ] App Store 申請
 - [ ] Google Play 申請
+
+## 🚀 Phase 7: v1.2 Phase A ✅ <!-- completed: 2026-05-01 -->
+- [x] **C-1 データエクスポート:** JSON / CSV export <!-- completed: 2026-05-01 -->
+- [x] **C-2 データインポート:** JSON dry-run / apply / conflict handling <!-- completed: 2026-05-01 -->
+- [ ] **C-3 既存写真の一括カード化:** Phase B 対象
+- [x] **C-4 データモデル拡張:** `originalFileName`, `aiProviderUsed`, `schemaVersion` <!-- completed: 2026-05-01 -->
+- [x] **C-5 カラー抽出改善:** Vibrant + HSV staged extraction <!-- completed: 2026-05-01 -->
+- [x] **C-6 フォルダ機能:** folder model, service, selector, management UI <!-- completed: 2026-05-01 -->
+- [ ] **C-7 カード ZIP 出力:** Phase B 対象
+- [x] **C-8 オンボーディング・設定 UX 改善:** AI Enrichment, info sheets, provider badges <!-- completed: 2026-05-01 -->
+- [x] **C-9 APIキー secure storage 移行:** secure storage + migration <!-- completed: 2026-05-01 -->
+- [x] **C-10 プロンプトプリセット:** Minimal / Poetic / Documentary / Exhibition <!-- completed: 2026-05-01 -->
