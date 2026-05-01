@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:gal/gal.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import '../models/folder.dart';
 import '../models/trace_log.dart';
 import '../services/storage_service.dart';
 import '../services/image_labeling_service.dart';
@@ -107,6 +108,7 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
                 ),
               ),
             ),
+            _buildFolderSection(),
             // ストーリーコントロール: 固定高さで card サイズを変えない
             SizedBox(
               height: _controlsHeight,
@@ -118,7 +120,141 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
     );
   }
 
+  Widget _buildFolderSection() {
+    final tc = context.onCanvasColor;
+    return FutureBuilder<List<Folder>>(
+      future: widget.storageService.folderService.listFolders(),
+      builder: (context, snapshot) {
+        final folders = snapshot.data ?? const <Folder>[];
+        final selectedIds =
+            widget.storageService.folderService.foldersOf(widget.trace.id);
+        final selectedFolders =
+            folders.where((folder) => selectedIds.contains(folder.id)).toList();
+
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.xl,
+            AppSpacing.xs,
+            AppSpacing.xl,
+            0,
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: selectedFolders.isEmpty
+                    ? Text(
+                        _languageCode == 'ja' ? 'フォルダなし' : 'No folders',
+                        style: AppTypography.mono(
+                          color: tc,
+                          opacity: AppOpacity.textMuted,
+                        ),
+                      )
+                    : SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: selectedFolders.map((folder) {
+                            return Padding(
+                              padding: const EdgeInsets.only(
+                                  right: AppSpacing.xs),
+                              child: Chip(
+                                label: Text(
+                                  folder.name,
+                                  style: AppTypography.mono(
+                                    color: tc,
+                                    opacity: AppOpacity.textSecondary,
+                                  ),
+                                ),
+                                materialTapTargetSize:
+                                    MaterialTapTargetSize.shrinkWrap,
+                                visualDensity: VisualDensity.compact,
+                                backgroundColor: tc.withValues(
+                                    alpha: AppOpacity.surfaceSubtle),
+                                side: BorderSide(
+                                  color: tc.withValues(
+                                      alpha: AppOpacity.borderSubtle),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              IconButton(
+                tooltip: _languageCode == 'ja' ? 'フォルダを編集' : 'Edit folders',
+                icon: Icon(
+                  Icons.drive_file_move_outline,
+                  color: tc.withValues(alpha: AppOpacity.textBody),
+                ),
+                onPressed: _editFolders,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _editFolders() async {
+    final all = await widget.storageService.folderService.listFolders();
+    if (!mounted) return;
+    final selected =
+        widget.storageService.folderService.foldersOf(widget.trace.id).toSet();
+
+    final result = await showModalBottomSheet<Set<String>>(
+      context: context,
+      backgroundColor: context.canvasSecondaryColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius:
+            BorderRadius.vertical(top: Radius.circular(AppRadius.surface)),
+      ),
+      builder: (_) => StatefulBuilder(builder: (ctx, setSt) {
+        return SafeArea(
+          child: ListView(
+            shrinkWrap: true,
+            children: [
+              for (final f in all)
+                CheckboxListTile(
+                  title: Text(f.name),
+                  value: selected.contains(f.id),
+                  onChanged: (v) => setSt(() {
+                    if (v == true) {
+                      selected.add(f.id);
+                    } else {
+                      selected.remove(f.id);
+                    }
+                  }),
+                ),
+              ListTile(
+                title: const Text('Done'),
+                onTap: () => Navigator.pop(ctx, selected),
+              ),
+            ],
+          ),
+        );
+      }),
+    );
+    if (result == null) return;
+
+    for (final f in all) {
+      final wasIn = widget.storageService.folderService
+          .foldersOf(widget.trace.id)
+          .contains(f.id);
+      final nowIn = result.contains(f.id);
+      if (nowIn && !wasIn) {
+        await widget.storageService.folderService
+            .addTraceToFolder(widget.trace.id, f.id);
+      }
+      if (!nowIn && wasIn) {
+        await widget.storageService.folderService
+            .removeTraceFromFolder(widget.trace.id, f.id);
+      }
+    }
+    if (mounted) setState(() {});
+  }
+
   // ── ストーリーコントロール ───────────────────────────
+
 
   Widget _buildStoryControls() {
     final isLlmConfigured =
