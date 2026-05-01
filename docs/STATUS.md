@@ -1,6 +1,6 @@
 # Ambientrace 開発ステータス
 
-**最終更新:** 2026-05-01 JST
+**最終更新:** 2026-05-01 JST (v1.2 Phase B 完了)
 
 ---
 
@@ -101,14 +101,17 @@
 
 - **C-1 データエクスポート:** JSON（フル復元用）と CSV（一覧・分析用）の書き出しを実装。
 - **C-2 データインポート:** JSON の dry-run / apply と skip・overwrite・duplicate・merge の取り込み方針を実装。
-- **C-3 既存写真の一括カード化:** Phase B 対象として継続管理。
 - **C-4 データモデル拡張:** `originalFileName`、`aiProviderUsed`、`schemaVersion` を追加し、移行対象に反映。
-- **C-5 カラー抽出改善:** Vibrant ターゲット、HSV フィルタ、dominant フォールバックの段階的抽出に更新。
+- **C-5 カラー抽出改善:** Phase B で LAB k-means++ 統一実装にリライト（Vibrant + HSV ステージはアーカイブ）。CIE76 ΔE chroma-aware dedup と非 uint8 ピクセルフォーマット対策（`rNormalized*255`）で iPhone 実画像の白飛びを解消。
 - **C-6 フォルダ機能:** Folder model / FolderService / Home filter / Folder Management / Trace Detail 連携を実装。
-- **C-7 カード ZIP 出力:** Phase B 対象として継続管理。
 - **C-8 AI UX 改善:** Onboarding に AI Enrichment ページを追加し、Settings に AI Provider 解説・状態バッジ・優先順位説明を追加。
 - **C-9 Secure Storage 移行:** API キーを `flutter_secure_storage` に移行し、v1 → v2 migration を追加。
 - **C-10 プロンプトプリセット:** Minimal / Poetic / Documentary / Exhibition の 4 プリセットを実装し、Settings から選択可能にした。
+
+### ✅ v1.2 Phase B — 2026-05-01 完了
+
+- **C-3 既存写真の一括カード化:** `BulkCaptureService` + `BulkProgressScreen` を新設し、複数画像を順次処理。EXIF 撮影日時 / GPS の読み取り、対象フォルダ選択、進捗・キャンセル・失敗の可視化、ジョブ完了サマリ表示。**v1.3 持ち越し**: 永続ジョブキュー（再起動再開）、2-並列実行、指数バックオフ・リトライ、Wi-Fi 限定オプション、過去日時の天気逆引き。
+- **C-7 カード ZIP 出力:** カード PNG を `cards/` 配下に格納した ZIP として書き出し、`index.csv`（originalFileName / traceId / outputFileName 対応表）、`manifest.json`（schemaVersion / exportedAt / params）を同梱。A4（2480×3508 @ 300dpi）と A3（3508×4961 @ 300dpi）プリセットを追加し、OS 禁止文字サニタイズ・元画像ファイル名注記トグル・キャンセル付き進捗ダイアログを実装。**v1.3 持ち越し**: フォルダ／タグ単位での対象選択。
 
 ---
 

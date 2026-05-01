@@ -115,11 +115,15 @@
 ## 🚀 Phase 7: v1.2 Phase A ✅ <!-- completed: 2026-05-01 -->
 - [x] **C-1 データエクスポート:** JSON / CSV export <!-- completed: 2026-05-01 -->
 - [x] **C-2 データインポート:** JSON dry-run / apply / conflict handling <!-- completed: 2026-05-01 -->
-- [ ] **C-3 既存写真の一括カード化:** Phase B 対象
 - [x] **C-4 データモデル拡張:** `originalFileName`, `aiProviderUsed`, `schemaVersion` <!-- completed: 2026-05-01 -->
-- [x] **C-5 カラー抽出改善:** Vibrant + HSV staged extraction <!-- completed: 2026-05-01 -->
+- [x] **C-5 カラー抽出改善:** LAB k-means++ unified extractor with chroma-aware dedup + non-uint8 pixel format defence <!-- completed: 2026-05-01 → reworked Phase B for white-out fix -->
 - [x] **C-6 フォルダ機能:** folder model, service, selector, management UI <!-- completed: 2026-05-01 -->
-- [ ] **C-7 カード ZIP 出力:** Phase B 対象
 - [x] **C-8 オンボーディング・設定 UX 改善:** AI Enrichment, info sheets, provider badges <!-- completed: 2026-05-01 -->
 - [x] **C-9 APIキー secure storage 移行:** secure storage + migration <!-- completed: 2026-05-01 -->
 - [x] **C-10 プロンプトプリセット:** Minimal / Poetic / Documentary / Exhibition <!-- completed: 2026-05-01 -->
+
+## 🚀 Phase 7B: v1.2 Phase B ✅ <!-- completed: 2026-05-01 -->
+- [x] **C-3 既存写真の一括カード化:** sequential bulk pipeline via `BulkCaptureService` + `BulkProgressScreen` (cancel button, per-item failure surfacing, target-folder selection) <!-- completed: 2026-05-01 -->
+- [x] **C-7 カード ZIP 出力:** ZIP packaging with `cards/`, `index.csv`, `manifest.json`; A4 / A3 高解像度プリセット追加; OS 禁止文字サニタイズ; 元画像ファイル名注記トグル; キャンセル付き進捗ダイアログ <!-- completed: 2026-05-01 -->
+- [ ] **C-3 v1.3 hardening:** persistent job queue (restart-resume), 2-parallel concurrency, retry/backoff, Wi-Fi-only option, historical weather lookup
+- [ ] **C-7 v1.3 hardening:** folder/tag-based target selection

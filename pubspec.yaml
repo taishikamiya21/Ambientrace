@@ -69,6 +69,9 @@ dependencies:
   # v1.2: collection helpers (firstWhereOrNull)
   collection: ^1.18.0
 
+  # v1.2 Phase B: ZIP packaging for card export
+  archive: ^4.0.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

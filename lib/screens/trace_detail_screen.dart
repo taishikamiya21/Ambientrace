@@ -40,8 +40,16 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
   final GlobalKey _cardKey = GlobalKey();
 
   // ストーリーコントロールエリアの固定高さ
-  // idle: 上下 md(16) × 2 + ボタン 52px = 84px
-  static const double _controlsHeight = 84.0;
+  // idle: 上下 md(16) × 2 + ボタン 52px = 84px。+4px のバッファでサブピクセル丸めを吸収。
+  static const double _controlsHeight = 88.0;
+
+  @override
+  void initState() {
+    super.initState();
+    // Hydrate previously generated memory so it shows on re-entry and is
+    // available when the user exports the card image.
+    _generatedStory = widget.trace.aiDescription;
+  }
 
   String get _languageCode =>
       ui.PlatformDispatcher.instance.locale.languageCode;
@@ -267,6 +275,7 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
 
   Widget _buildStoryControlsContent(bool isLlmConfigured) {
     final tc = context.onCanvasColor;
+    final isJa = _languageCode == 'ja';
     if (_isGeneratingStory) {
       return SizedBox(
         key: const ValueKey('loading'),
@@ -285,7 +294,7 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
               ),
               const SizedBox(width: AppSpacing.sm),
               Text(
-                'Generating...',
+                isJa ? '生成中...' : 'Generating...',
                 style: AppTypography.mono(
                     color: tc, opacity: AppOpacity.textTertiary),
               ),
@@ -312,7 +321,7 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
               TextButton.icon(
                 onPressed: _generateStory,
                 icon: const Icon(Icons.refresh, size: 16),
-                label: const Text('Try Again'),
+                label: Text(isJa ? 'もう一度試す' : 'Try Again'),
               ),
             ],
           ),
@@ -333,7 +342,7 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
               color: tc.withValues(alpha: AppOpacity.textTertiary),
             ),
             label: Text(
-              'Regenerate',
+              isJa ? '再生成' : 'Regenerate',
               style: AppTypography.mono(
                   color: tc, opacity: AppOpacity.textTertiary),
             ),
@@ -370,7 +379,9 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
               ),
               const SizedBox(width: AppSpacing.sm),
               Text(
-                isLlmConfigured ? 'Generate Memory' : 'API Key Required',
+                isLlmConfigured
+                    ? (isJa ? 'メモリーを生成' : 'Generate Memory')
+                    : (isJa ? 'APIキーが必要です' : 'API Key Required'),
                 style: AppTypography.label(
                   color: tc,
                   opacity: isLlmConfigured
@@ -495,10 +506,15 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
     if (_isSaving) return;
     setState(() => _isSaving = true);
     HapticFeedback.lightImpact();
+    final isJa = _languageCode == 'ja';
     try {
       final hasAccess = await Gal.requestAccess();
       if (!hasAccess) {
-        if (mounted) _showSnackBar('写真ライブラリへのアクセスを許可してください。\n設定 > Ambientrace > 写真');
+        if (mounted) {
+          _showSnackBar(isJa
+              ? '写真ライブラリへのアクセスを許可してください。\n設定 > Ambientrace > 写真'
+              : 'Please grant access to your photo library.\nSettings > Ambientrace > Photos');
+        }
         return;
       }
       await WidgetsBinding.instance.endOfFrame;
@@ -510,10 +526,12 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
       await Gal.putImageBytes(byteData.buffer.asUint8List());
       if (mounted) {
         HapticFeedback.mediumImpact();
-        _showSnackBar('画像を保存しました');
+        _showSnackBar(isJa ? '画像を保存しました' : 'Image saved to library');
       }
     } catch (e) {
-      if (mounted) _showSnackBar('保存に失敗しました');
+      if (mounted) {
+        _showSnackBar(isJa ? '保存に失敗しました' : 'Failed to save image');
+      }
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -553,8 +571,13 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
       HapticFeedback.mediumImpact();
     } catch (e) {
       if (mounted) {
+        final isJa = _languageCode == 'ja';
+        final detail = e.toString().length > 40
+            ? e.toString().substring(0, 40)
+            : e.toString();
         _showSnackBar(
-            '共有に失敗しました: ${e.toString().length > 40 ? e.toString().substring(0, 40) : e.toString()}');
+          isJa ? '共有に失敗しました: $detail' : 'Failed to share: $detail',
+        );
       }
     } finally {
       if (mounted) setState(() => _isSharing = false);
@@ -590,27 +613,44 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
       );
 
       if (mounted) {
+        final isJa = _languageCode == 'ja';
+        final sanitized = story != null ? _sanitizeStory(story) : null;
         setState(() {
-          _generatedStory =
-              story != null ? _sanitizeStory(story) : null;
+          _generatedStory = sanitized;
           _isGeneratingStory = false;
           if (story == null) {
-            _storyError = 'Failed to generate memory. Please try again.';
+            _storyError = isJa
+                ? 'メモリーの生成に失敗しました。もう一度お試しください。'
+                : 'Failed to generate memory. Please try again.';
           }
         });
+        if (sanitized != null && sanitized.isNotEmpty) {
+          await widget.storageService.upsertTrace(
+            widget.trace.copyWith(aiDescription: sanitized),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
+        final isJa = _languageCode == 'ja';
         setState(() {
           _isGeneratingStory = false;
-          _storyError = 'An error occurred. Please try again.';
+          _storyError = isJa
+              ? 'エラーが発生しました。もう一度お試しください。'
+              : 'An error occurred. Please try again.';
         });
       }
     }
   }
 
   String _sanitizeStory(String story) {
-    final trimmed = story.trim();
+    // Collapse any newlines and surrounding whitespace into single spaces so
+    // the rendered text can wrap naturally inside the card. The card has a
+    // hard 4-line cap; manual line breaks just waste vertical space.
+    final flattened = story
+        .replaceAll(RegExp(r'\s*[\r\n]+\s*'), ' ')
+        .replaceAll(RegExp(r' {2,}'), ' ');
+    final trimmed = flattened.trim();
     if (trimmed.endsWith('.') ||
         trimmed.endsWith('!') ||
         trimmed.endsWith('?') ||
@@ -696,6 +736,7 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
   }
 
   void _confirmDelete(BuildContext context) {
+    final isJa = _languageCode == 'ja';
     showModalBottomSheet(
       context: context,
       backgroundColor: context.canvasSecondaryColor,
@@ -721,14 +762,16 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
               ),
               const SizedBox(height: AppSpacing.xl),
               Text(
-                'Delete Trace?',
+                isJa ? 'トレースを削除しますか？' : 'Delete Trace?',
                 style: AppTypography.subtitle(
                     color: context.onCanvasColor,
                     opacity: AppOpacity.textHero),
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
-                'This trace will be permanently deleted.',
+                isJa
+                    ? 'このトレースは完全に削除されます。'
+                    : 'This trace will be permanently deleted.',
                 style: AppTypography.body(
                     color: context.onCanvasColor,
                     opacity: AppOpacity.textSecondary),
@@ -757,7 +800,7 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
                     ),
                   ),
                   child: Text(
-                    'Delete',
+                    isJa ? '削除' : 'Delete',
                     style: AppTypography.label()
                         .copyWith(color: AppColors.error),
                   ),
@@ -783,7 +826,7 @@ class _TraceDetailScreenState extends State<TraceDetailScreen> {
                     ),
                   ),
                   child: Text(
-                    'Cancel',
+                    isJa ? 'キャンセル' : 'Cancel',
                     style: AppTypography.label(
                         color: context.onCanvasColor,
                         opacity: AppOpacity.textSecondary),

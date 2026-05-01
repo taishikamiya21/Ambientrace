@@ -75,27 +75,42 @@ Each phrase must be 1-4 words. Never end with articles. Return ONLY comma-separa
         ? '時刻: $time / 雰囲気: $tracesText / 色彩: $colorsText / 天気: $weatherText / 場所: $placeText'
         : 'Time: $time / Atmosphere: $tracesText / Colors: $colorsText / Weather: $weatherText / Place: $placeText';
 
+    // Output is rendered into a card slot that wraps automatically. The model
+    // must NOT insert manual line breaks — pass it as a single flowing
+    // sentence/paragraph. Char-count guides ensure it fits 4 visual lines
+    // after wrapping.
+    const jaNoBreak = '改行や箇条書きを使わず、1段落の流れる文章として返答してください。';
+    const enNoBreak =
+        'Return a single flowing paragraph. Do NOT insert line breaks or bullet points.';
     switch (preset) {
       case PromptPreset.minimal:
         return ja
-            ? '''次のデータから、1文・30文字以内の簡潔な記録文を生成してください。必ず句点で終えること。\n$dataLine'''
-            : '''Generate a single sentence under 10 words from this data. Must end with a period.\n$dataLine''';
+            ? '''次のデータから、1文・25文字以内の簡潔な記録文を生成してください。必ず句点で終えること。$jaNoBreak\n$dataLine'''
+            : '''Generate a single sentence under 10 words from this data. Must end with a period. $enNoBreak\n$dataLine''';
       case PromptPreset.poetic:
         return ja
             ? '''以下のデータから、その瞬間の空気感を描写する短い詩的な文章を生成してください。
 $dataLine
-条件: 1〜2文の短い散文(合計80文字以内) / 感覚的・詩的 / 過去形または現在進行形 / 必ず句点(。)、感嘆符(！)、または疑問符(？)で文を終える / 文の途中で絶対に終わらない'''
+ルール:
+- 1〜2文・合計70文字以内
+- 感覚的・詩的、過去形または現在進行形
+- 必ず句点(。)、感嘆符(！)、疑問符(？)のいずれかで文を終える
+- $jaNoBreak'''
             : '''Write a short, poetic narrative from this ambient data. Imagine the scene.
 $dataLine
-Rules: 1-2 sentences, under 40 words. Sensory and poetic. Past tense or present continuous. CRITICAL: Every sentence MUST end with a period, exclamation mark, or question mark.''';
+Rules:
+- 1-2 sentences, under 28 words total
+- Sensory and poetic, past tense or present continuous
+- Every sentence MUST end with a period, exclamation mark, or question mark
+- $enNoBreak''';
       case PromptPreset.documentary:
         return ja
-            ? '''以下のデータから、観察記録として1〜2文・80文字以内の事実描写を生成してください。詩的表現を避け、客観的に。必ず句点で終えること。\n$dataLine'''
-            : '''Write 1-2 sentences of factual observation under 40 words. Avoid poetic language. End with a period.\n$dataLine''';
+            ? '''以下のデータから、観察記録として1〜2文・70文字以内の事実描写を生成してください。詩的表現を避け、客観的に。必ず句点で終え、$jaNoBreak\n$dataLine'''
+            : '''Write 1-2 sentences of factual observation, under 28 words. Avoid poetic language. End with a period. $enNoBreak\n$dataLine''';
       case PromptPreset.exhibition:
         return ja
-            ? '''以下のデータから、展示キャプションとして2文・100文字以内の余韻のある叙述を生成してください。最後は句点で終えること。\n$dataLine'''
-            : '''Write a 2-sentence exhibition wall caption under 50 words. Restrained, evocative tone. End with a period.\n$dataLine''';
+            ? '''以下のデータから、美術館の壁ラベル風に2文・80文字以内の余韻のある叙述を生成してください。抑制された静謐な調子で。最後は句点で終え、$jaNoBreak\n$dataLine'''
+            : '''Write a 2-sentence gallery wall caption, under 32 words. Restrained, evocative tone. End with a period. $enNoBreak\n$dataLine''';
     }
   }
 }

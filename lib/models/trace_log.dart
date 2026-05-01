@@ -86,6 +86,42 @@ class TraceLog {
     return '${capturedAt.year}/${capturedAt.month.toString().padLeft(2, '0')}/${capturedAt.day.toString().padLeft(2, '0')}';
   }
 
+  TraceLog copyWith({
+    String? id,
+    DateTime? capturedAt,
+    DateTime? createdAt,
+    double? latitude,
+    double? longitude,
+    String? placeName,
+    double? temperature,
+    String? weatherCondition,
+    double? noiseLevel,
+    int? stepCount,
+    List<String>? imageLabels,
+    List<int>? colorPalette,
+    String? aiDescription,
+    String? originalFileName,
+    String? aiProviderUsed,
+  }) {
+    return TraceLog(
+      id: id ?? this.id,
+      capturedAt: capturedAt ?? this.capturedAt,
+      createdAt: createdAt ?? this.createdAt,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      placeName: placeName ?? this.placeName,
+      temperature: temperature ?? this.temperature,
+      weatherCondition: weatherCondition ?? this.weatherCondition,
+      noiseLevel: noiseLevel ?? this.noiseLevel,
+      stepCount: stepCount ?? this.stepCount,
+      imageLabels: imageLabels ?? this.imageLabels,
+      colorPalette: colorPalette ?? this.colorPalette,
+      aiDescription: aiDescription ?? this.aiDescription,
+      originalFileName: originalFileName ?? this.originalFileName,
+      aiProviderUsed: aiProviderUsed ?? this.aiProviderUsed,
+    );
+  }
+
   /// Convert to JSON
   Map<String, dynamic> toJson() => {
     'id': id,

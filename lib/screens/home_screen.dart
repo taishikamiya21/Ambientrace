@@ -1,16 +1,25 @@
+import 'dart:io';
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:gal/gal.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
+
 import '../models/folder.dart';
 import '../models/trace_log.dart';
 import '../services/storage_service.dart';
 import '../services/image_labeling_service.dart';
 import '../theme/app_theme.dart';
-import 'capture_screen.dart';
-import 'trace_detail_screen.dart';
-import 'settings_screen.dart';
 import '../widgets/folder_selector.dart';
+import '../widgets/shareable_trace_card.dart' as shareable;
 import '../widgets/trace_card.dart';
+import 'capture_screen.dart';
+import 'settings_screen.dart';
+import 'trace_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final StorageService storageService;
@@ -249,6 +258,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                   );
                                   if (!context.mounted) return;
+                                  // Image import / JSON import via settings
+                                  // can change traces too, not just folders.
+                                  _loadTraces();
                                   await _loadFolders();
                                 },
                               ),
@@ -416,6 +428,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ...tracesForDate.map((trace) => TraceCard(
                                 trace: trace,
                                 onTap: () => _openDetail(trace),
+                                onLongPress: () => _showCardActions(trace),
                               )),
                         ],
                       ),
@@ -469,6 +482,279 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
+  }
+
+  // ── 一覧画面: カード長押しアクション ─────────────────────
+
+  bool get _isJa => Localizations.localeOf(context).languageCode == 'ja';
+
+  Future<void> _showCardActions(TraceLog trace) async {
+    final isJa = _isJa;
+    final tc = context.onCanvasColor;
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: context.canvasSecondaryColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius:
+            BorderRadius.vertical(top: Radius.circular(AppRadius.surface)),
+      ),
+      builder: (sheetCtx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.xl,
+            AppSpacing.lg,
+            AppSpacing.xl,
+            AppSpacing.md,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: tc.withValues(alpha: AppOpacity.textGhost),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              _sheetButton(
+                icon: Icons.photo_library_outlined,
+                label: isJa ? 'フォトライブラリに保存' : 'Save to Library',
+                onTap: () async {
+                  Navigator.pop(sheetCtx);
+                  await _saveCardToLibrary(trace);
+                },
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              _sheetButton(
+                icon: Icons.share_outlined,
+                label: isJa ? '共有する' : 'Share',
+                onTap: () async {
+                  Navigator.pop(sheetCtx);
+                  await _shareCard(trace);
+                },
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              _sheetButton(
+                icon: Icons.delete_outline,
+                label: isJa ? '削除' : 'Delete',
+                destructive: true,
+                onTap: () async {
+                  Navigator.pop(sheetCtx);
+                  await _confirmDelete(trace);
+                },
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              _sheetButton(
+                icon: Icons.close,
+                label: isJa ? 'キャンセル' : 'Cancel',
+                muted: true,
+                onTap: () => Navigator.pop(sheetCtx),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _sheetButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    bool muted = false,
+    bool destructive = false,
+  }) {
+    final tc = context.onCanvasColor;
+    final fg = destructive ? AppColors.error : tc;
+    final iconAlpha = muted ? AppOpacity.textCaption : AppOpacity.textBody;
+    final textAlpha = muted ? AppOpacity.textCaption : AppOpacity.textHigh;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.md,
+        ),
+        decoration: BoxDecoration(
+          color: tc.withValues(
+            alpha: muted ? AppOpacity.surfaceFaint : AppOpacity.surfaceSubtle,
+          ),
+          borderRadius: BorderRadius.circular(AppRadius.container),
+          border: Border.all(
+            color: tc.withValues(alpha: AppOpacity.borderSubtle),
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              color: destructive ? fg : fg.withValues(alpha: iconAlpha),
+              size: 20,
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Text(
+              label,
+              style: AppTypography.body(
+                color: fg,
+                opacity: destructive ? AppOpacity.textHigh : textAlpha,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _confirmDelete(TraceLog trace) async {
+    final isJa = _isJa;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(isJa ? 'トレースを削除しますか？' : 'Delete Trace?'),
+        content: Text(
+          isJa
+              ? 'このトレースは完全に削除されます。'
+              : 'This trace will be permanently deleted.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(isJa ? 'キャンセル' : 'Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(
+              isJa ? '削除' : 'Delete',
+              style: TextStyle(color: AppColors.error),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (!mounted || ok != true) return;
+    await widget.storageService.deleteTrace(trace.id);
+    _loadTraces();
+    await _loadFolders();
+  }
+
+  Future<Uint8List?> _renderCard(TraceLog trace) async {
+    final lang =
+        WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+    final boundaryKey = GlobalKey();
+    final overlay = Overlay.of(context);
+    late OverlayEntry entry;
+    entry = OverlayEntry(
+      builder: (_) => Positioned(
+        left: -10000,
+        top: -10000,
+        // MediaQuery override keeps hero height and layout consistent across
+        // devices so the saved/shared image looks identical on every phone.
+        child: MediaQuery(
+          data: const MediaQueryData(
+            size: Size(360, 540),
+            devicePixelRatio: 1.0,
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: SizedBox(
+              width: 360,
+              height: 540,
+              child: RepaintBoundary(
+                key: boundaryKey,
+                child: shareable.TraceCard(
+                  trace: trace,
+                  languageCode: lang,
+                  story: trace.aiDescription,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    overlay.insert(entry);
+    try {
+      await WidgetsBinding.instance.endOfFrame;
+      await WidgetsBinding.instance.endOfFrame;
+      final boundary = boundaryKey.currentContext?.findRenderObject()
+          as RenderRepaintBoundary?;
+      if (boundary == null) return null;
+      final image = await boundary.toImage(pixelRatio: 3.0);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      return byteData?.buffer.asUint8List();
+    } finally {
+      entry.remove();
+    }
+  }
+
+  Future<void> _saveCardToLibrary(TraceLog trace) async {
+    final isJa = _isJa;
+    try {
+      final hasAccess = await Gal.requestAccess();
+      if (!hasAccess) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                isJa
+                    ? '写真ライブラリへのアクセスを許可してください。'
+                    : 'Please grant photo library access.',
+              ),
+            ),
+          );
+        }
+        return;
+      }
+      final bytes = await _renderCard(trace);
+      if (bytes == null) {
+        throw Exception('render failed');
+      }
+      await Gal.putImageBytes(bytes);
+      if (mounted) {
+        HapticFeedback.mediumImpact();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(isJa ? '画像を保存しました' : 'Image saved to library'),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(isJa ? '保存に失敗しました' : 'Failed to save')),
+        );
+      }
+    }
+  }
+
+  Future<void> _shareCard(TraceLog trace) async {
+    final isJa = _isJa;
+    try {
+      final bytes = await _renderCard(trace);
+      if (bytes == null) throw Exception('render failed');
+      final dir = await getTemporaryDirectory();
+      final file = File('${dir.path}/ambientrace_${trace.id}.png');
+      await file.writeAsBytes(bytes);
+      if (!mounted) return;
+      final box = context.findRenderObject() as RenderBox?;
+      final origin =
+          box != null ? box.localToGlobal(Offset.zero) & box.size : null;
+      await Share.shareXFiles(
+        [XFile(file.path)],
+        text: 'Captured with Ambientrace',
+        sharePositionOrigin: origin,
+      );
+      HapticFeedback.mediumImpact();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(isJa ? '共有に失敗しました' : 'Failed to share')),
+        );
+      }
+    }
   }
 
   Widget _buildEmptyState(Color tc) {

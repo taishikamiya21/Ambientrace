@@ -12,8 +12,14 @@ import '../theme/app_theme.dart';
 class TraceCard extends StatefulWidget {
   final TraceLog trace;
   final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
 
-  const TraceCard({super.key, required this.trace, this.onTap});
+  const TraceCard({
+    super.key,
+    required this.trace,
+    this.onTap,
+    this.onLongPress,
+  });
 
   @override
   State<TraceCard> createState() => _TraceCardState();
@@ -60,6 +66,12 @@ class _TraceCardState extends State<TraceCard>
       onTapDown: _onTapDown,
       onTapUp: _onTapUp,
       onTapCancel: _onTapCancel,
+      onLongPress: widget.onLongPress == null
+          ? null
+          : () {
+              HapticFeedback.mediumImpact();
+              widget.onLongPress!();
+            },
       behavior: HitTestBehavior.opaque,
       child: AnimatedBuilder(
         animation: _scaleAnimation,

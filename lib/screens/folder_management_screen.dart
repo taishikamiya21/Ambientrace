@@ -40,14 +40,25 @@ class _FolderManagementScreenState extends State<FolderManagementScreen> {
   }
 
   Future<void> _delete(Folder f) async {
+    final isJa = Localizations.localeOf(context).languageCode == 'ja';
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text('Delete "${f.name}"?'),
-        content: const Text('Traces inside this folder will not be deleted.'),
+        title: Text(isJa ? '「${f.name}」を削除しますか？' : 'Delete "${f.name}"?'),
+        content: Text(
+          isJa
+              ? 'フォルダ内のトレースは削除されません。'
+              : 'Traces inside this folder will not be deleted.',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Delete')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(isJa ? 'キャンセル' : 'Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(isJa ? '削除' : 'Delete'),
+          ),
         ],
       ),
     );
@@ -57,35 +68,19 @@ class _FolderManagementScreenState extends State<FolderManagementScreen> {
     await _load();
   }
 
-  Future<String?> _promptName({required String initial}) async {
-    final controller = TextEditingController(text: initial);
-    try {
-      return await showDialog<String>(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: Text(initial.isEmpty ? 'New folder' : 'Rename folder'),
-          content: TextField(controller: controller, autofocus: true),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, controller.text),
-              child: const Text('OK'),
-            ),
-          ],
-        ),
-      );
-    } finally {
-      controller.dispose();
-    }
+  Future<String?> _promptName({required String initial}) {
+    final isJa = Localizations.localeOf(context).languageCode == 'ja';
+    return showDialog<String>(
+      context: context,
+      builder: (_) => _FolderNameDialog(initial: initial, isJa: isJa),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final isJa = Localizations.localeOf(context).languageCode == 'ja';
     return Scaffold(
-      appBar: AppBar(title: const Text('Folders')),
+      appBar: AppBar(title: Text(isJa ? 'フォルダ' : 'Folders')),
       body: ListView.separated(
         itemCount: _folders.length,
         separatorBuilder: (_, __) => const Divider(height: 1),
@@ -93,15 +88,25 @@ class _FolderManagementScreenState extends State<FolderManagementScreen> {
           final f = _folders[i];
           return ListTile(
             title: Text(f.name),
-            subtitle: Text('${f.traceIds.length} traces'),
+            subtitle: Text(
+              isJa
+                  ? '${f.traceIds.length}件のトレース'
+                  : '${f.traceIds.length} traces',
+            ),
             trailing: PopupMenuButton<String>(
               onSelected: (v) {
                 if (v == 'rename') _rename(f);
                 if (v == 'delete') _delete(f);
               },
-              itemBuilder: (_) => const [
-                PopupMenuItem(value: 'rename', child: Text('Rename')),
-                PopupMenuItem(value: 'delete', child: Text('Delete')),
+              itemBuilder: (_) => [
+                PopupMenuItem(
+                  value: 'rename',
+                  child: Text(isJa ? '名前を変更' : 'Rename'),
+                ),
+                PopupMenuItem(
+                  value: 'delete',
+                  child: Text(isJa ? '削除' : 'Delete'),
+                ),
               ],
             ),
           );
@@ -111,6 +116,63 @@ class _FolderManagementScreenState extends State<FolderManagementScreen> {
         onPressed: _create,
         child: const Icon(Icons.add),
       ),
+    );
+  }
+}
+
+class _FolderNameDialog extends StatefulWidget {
+  final String initial;
+  final bool isJa;
+
+  const _FolderNameDialog({required this.initial, required this.isJa});
+
+  @override
+  State<_FolderNameDialog> createState() => _FolderNameDialogState();
+}
+
+class _FolderNameDialogState extends State<_FolderNameDialog> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initial);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isJa = widget.isJa;
+    return AlertDialog(
+      title: Text(
+        widget.initial.isEmpty
+            ? (isJa ? '新規フォルダ' : 'New folder')
+            : (isJa ? 'フォルダ名を変更' : 'Rename folder'),
+      ),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        textInputAction: TextInputAction.done,
+        onSubmitted: (value) => Navigator.pop(context, value),
+        decoration: InputDecoration(
+          hintText: isJa ? 'フォルダ名' : 'Folder name',
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(isJa ? 'キャンセル' : 'Cancel'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(context, _controller.text),
+          child: const Text('OK'),
+        ),
+      ],
     );
   }
 }
