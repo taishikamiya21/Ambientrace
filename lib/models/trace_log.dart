@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 /// A single "trace" - the ambient data captured at a moment
 class TraceLog {
   final String id;
+
   /// When the photo was originally taken (from EXIF or capture time)
   final DateTime capturedAt;
+
   /// When this trace card was created in the app
   final DateTime createdAt;
   final double? latitude;
@@ -17,6 +19,8 @@ class TraceLog {
   final List<String> imageLabels;
   final List<int> colorPalette;
   final String? aiDescription;
+  final String? originalFileName;
+  final String? aiProviderUsed;
 
   TraceLog({
     required this.id,
@@ -32,6 +36,8 @@ class TraceLog {
     this.imageLabels = const [],
     this.colorPalette = const [],
     this.aiDescription,
+    this.originalFileName,
+    this.aiProviderUsed,
   }) : createdAt = createdAt ?? capturedAt;
 
   /// Get colors as Color objects
@@ -82,37 +88,41 @@ class TraceLog {
 
   /// Convert to JSON
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'capturedAt': capturedAt.toIso8601String(),
-        'createdAt': createdAt.toIso8601String(),
-        'latitude': latitude,
-        'longitude': longitude,
-        'placeName': placeName,
-        'temperature': temperature,
-        'weatherCondition': weatherCondition,
-        'noiseLevel': noiseLevel,
-        'stepCount': stepCount,
-        'imageLabels': imageLabels,
-        'colorPalette': colorPalette,
-        'aiDescription': aiDescription,
-      };
+    'id': id,
+    'capturedAt': capturedAt.toIso8601String(),
+    'createdAt': createdAt.toIso8601String(),
+    'latitude': latitude,
+    'longitude': longitude,
+    'placeName': placeName,
+    'temperature': temperature,
+    'weatherCondition': weatherCondition,
+    'noiseLevel': noiseLevel,
+    'stepCount': stepCount,
+    'imageLabels': imageLabels,
+    'colorPalette': colorPalette,
+    'aiDescription': aiDescription,
+    'originalFileName': originalFileName,
+    'aiProviderUsed': aiProviderUsed,
+  };
 
   /// Create from JSON
   factory TraceLog.fromJson(Map<String, dynamic> json) => TraceLog(
-        id: json['id'] as String,
-        capturedAt: DateTime.parse(json['capturedAt'] as String),
-        createdAt: json['createdAt'] != null
-            ? DateTime.parse(json['createdAt'] as String)
-            : null,
-        latitude: json['latitude'] as double?,
-        longitude: json['longitude'] as double?,
-        placeName: json['placeName'] as String?,
-        temperature: json['temperature'] as double?,
-        weatherCondition: json['weatherCondition'] as String?,
-        noiseLevel: json['noiseLevel'] as double?,
-        stepCount: json['stepCount'] as int?,
-        imageLabels: List<String>.from(json['imageLabels'] ?? []),
-        colorPalette: List<int>.from(json['colorPalette'] ?? []),
-        aiDescription: json['aiDescription'] as String?,
-      );
+    id: json['id'] as String,
+    capturedAt: DateTime.parse(json['capturedAt'] as String),
+    createdAt: json['createdAt'] != null
+        ? DateTime.parse(json['createdAt'] as String)
+        : null,
+    latitude: (json['latitude'] as num?)?.toDouble(),
+    longitude: (json['longitude'] as num?)?.toDouble(),
+    placeName: json['placeName'] as String?,
+    temperature: (json['temperature'] as num?)?.toDouble(),
+    weatherCondition: json['weatherCondition'] as String?,
+    noiseLevel: (json['noiseLevel'] as num?)?.toDouble(),
+    stepCount: json['stepCount'] as int?,
+    imageLabels: List<String>.from(json['imageLabels'] ?? []),
+    colorPalette: List<int>.from(json['colorPalette'] ?? []),
+    aiDescription: json['aiDescription'] as String?,
+    originalFileName: json['originalFileName'] as String?,
+    aiProviderUsed: json['aiProviderUsed'] as String?,
+  );
 }
