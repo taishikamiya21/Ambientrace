@@ -1,14 +1,20 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/trace_log.dart';
+import 'folder_service.dart';
 
 class StorageService {
   static const String _tracesKey = 'trace_logs';
   SharedPreferences? _prefs;
+  final FolderService folderService;
+
+  StorageService({FolderService? folderService})
+    : folderService = folderService ?? FolderService();
 
   /// Initialize storage
   Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
+    await folderService.init();
   }
 
   /// Save a new trace log
@@ -50,6 +56,7 @@ class StorageService {
     final traces = getAllTraces();
     traces.removeWhere((t) => t.id == id);
     await _saveTraces(traces);
+    await folderService.removeTraceFromAllFolders(id);
   }
 
   /// Get trace count
