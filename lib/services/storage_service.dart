@@ -59,6 +59,31 @@ class StorageService {
     await folderService.removeTraceFromAllFolders(id);
   }
 
+  /// Find a trace by id.
+  TraceLog? findById(String id) {
+    for (final trace in getAllTraces()) {
+      if (trace.id == id) return trace;
+    }
+    return null;
+  }
+
+  /// Insert or replace a trace with the same id.
+  Future<void> upsertTrace(TraceLog trace) async {
+    final traces = getAllTraces();
+    final index = traces.indexWhere((t) => t.id == trace.id);
+    if (index >= 0) {
+      traces[index] = trace;
+    } else {
+      traces.add(trace);
+    }
+    await _saveTraces(traces);
+  }
+
+  /// Replace all trace data.
+  Future<void> replaceAllTraces(List<TraceLog> traces) async {
+    await _saveTraces(traces);
+  }
+
   /// Get trace count
   int get traceCount => getAllTraces().length;
 

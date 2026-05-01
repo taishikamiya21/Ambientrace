@@ -36,6 +36,18 @@ class FolderService {
     return f;
   }
 
+  Future<Folder> createFolderWithId(Folder folder) async {
+    final index = _folders.indexWhere((f) => f.id == folder.id);
+    if (index >= 0) {
+      _folders[index] = folder;
+    } else {
+      _folders.add(folder);
+    }
+    await _persist();
+    _rebuildReverseIndex();
+    return folder;
+  }
+
   Future<void> renameFolder(String id, String newName) async {
     _folders = _folders
         .map((f) => f.id == id ? f.renamed(newName) : f)
