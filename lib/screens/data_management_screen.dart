@@ -491,8 +491,23 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
 
   Future<List<({String path, String originalFileName})>>
       _pickFromFiles() async {
+    // file_picker on iOS routes `FileType.image` through
+    // UIImagePickerController, which is the Photo Library — not the Files
+    // app. To force the document-picker route (Files / iCloud Drive /
+    // other providers) we use `FileType.custom` with image extensions.
     final picked = await FilePicker.platform.pickFiles(
-      type: FileType.image,
+      type: FileType.custom,
+      allowedExtensions: const [
+        'jpg',
+        'jpeg',
+        'png',
+        'heic',
+        'heif',
+        'webp',
+        'tiff',
+        'tif',
+        'gif',
+      ],
       allowMultiple: true,
     );
     if (picked == null) return const [];
