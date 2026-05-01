@@ -58,6 +58,18 @@ dependencies:
   package_info_plus: ^8.0.0
   native_exif: ^0.7.0
 
+  # v1.2: secure storage for API keys
+  flutter_secure_storage: ^9.2.2
+
+  # v1.2: file picking for import
+  file_picker: ^8.1.4
+
+  # v1.2: CSV export
+  csv: ^6.0.0
+
+  # v1.2: collection helpers (firstWhereOrNull)
+  collection: ^1.18.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
