@@ -4,7 +4,6 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
-// ignore: depend_on_referenced_packages
 import 'package:image/image.dart' as img;
 
 /// Extracts a 5-color palette from an image using LAB k-means++ clustering with
@@ -50,24 +49,19 @@ class ColorService {
   ];
 
   Future<List<int>> extractColors(ImageProvider provider) async {
-    final bytes = await _imageBytes(provider);
-    if (bytes == null) {
-      _log('imageBytes returned null → neutral fallback');
-      return _neutralFallback();
-    }
-    final decoded = img.decodeImage(bytes);
+    final decoded = await _decodeImage(provider);
     if (decoded == null) {
-      _log('img.decodeImage returned null → neutral fallback');
+      _log(() => 'image decode failed → neutral fallback');
       return _neutralFallback();
     }
-    _log('decoded ${decoded.width}x${decoded.height} format=${decoded.format} '
-        'bitsPerChannel=${decoded.bitsPerChannel} '
+    _log(() => 'decoded ${decoded.width}x${decoded.height} '
+        'format=${decoded.format} bitsPerChannel=${decoded.bitsPerChannel} '
         'numChannels=${decoded.numChannels} hasAlpha=${decoded.hasAlpha}');
 
     final small = _downscale(decoded, maxLongEdge: _maxLongEdge);
-    if (small.width > 0 && small.height > 0) {
+    if (debugLogging && small.width > 0 && small.height > 0) {
       final fp = small.getPixel(0, 0);
-      _log('firstPixel raw r=${fp.r} g=${fp.g} b=${fp.b} a=${fp.a} '
+      _log(() => 'firstPixel raw r=${fp.r} g=${fp.g} b=${fp.b} a=${fp.a} '
           'rType=${fp.r.runtimeType} maxCh=${fp.maxChannelValue} '
           'rNorm=${fp.rNormalized.toStringAsFixed(3)} '
           'gNorm=${fp.gNormalized.toStringAsFixed(3)} '
@@ -97,11 +91,11 @@ class ColorService {
       idx++;
     }
     if (pixels.isEmpty) {
-      _log('empty pixels → neutral fallback');
+      _log(() => 'empty pixels → neutral fallback');
       return _neutralFallback();
     }
     final n = pixels.length;
-    _log('downscaled ${small.width}x${small.height} pixels=$n '
+    _log(() => 'downscaled ${small.width}x${small.height} pixels=$n '
         'meanRGB=(${sumR ~/ n},${sumG ~/ n},${sumB ~/ n}) '
         'samples=${samples.join(' ')}');
 
@@ -176,19 +170,22 @@ class ColorService {
       clusters.add(_Cluster(centroid, score));
     }
     if (clusters.isEmpty) {
-      _log('no surviving clusters → neutral fallback');
+      _log(() => 'no surviving clusters → neutral fallback');
       return _neutralFallback();
     }
 
     clusters.sort((a, b) => b.score.compareTo(a.score));
-    _log('image meanL=${meanL.toStringAsFixed(1)} '
-        'p95Chroma=${p95Chroma.toStringAsFixed(1)}');
-    for (var i = 0; i < math.min(5, clusters.length); i++) {
-      final c = clusters[i].centroid;
-      final ch = math.sqrt(c.a * c.a + c.b * c.b);
-      _log('cluster[$i] L=${c.l.toStringAsFixed(1)} '
-          'a=${c.a.toStringAsFixed(1)} b=${c.b.toStringAsFixed(1)} '
-          'C=${ch.toStringAsFixed(1)} score=${clusters[i].score.toStringAsFixed(3)}');
+    if (debugLogging) {
+      _log(() => 'image meanL=${meanL.toStringAsFixed(1)} '
+          'p95Chroma=${p95Chroma.toStringAsFixed(1)}');
+      for (var i = 0; i < math.min(5, clusters.length); i++) {
+        final c = clusters[i].centroid;
+        final ch = math.sqrt(c.a * c.a + c.b * c.b);
+        _log(() => 'cluster[$i] L=${c.l.toStringAsFixed(1)} '
+            'a=${c.a.toStringAsFixed(1)} b=${c.b.toStringAsFixed(1)} '
+            'C=${ch.toStringAsFixed(1)} '
+            'score=${clusters[i].score.toStringAsFixed(3)}');
+      }
     }
 
     // CIE76 ΔE dedup, keep higher-scoring cluster. Chroma-aware: clusters
@@ -221,15 +218,16 @@ class ColorService {
         final r = (argb >> 16) & 0xFF;
         final g = (argb >> 8) & 0xFF;
         final b = argb & 0xFF;
-        _log('palette[$i] rgb($r,$g,$b)');
+        _log(() => 'palette[$i] rgb($r,$g,$b)');
       }
     }
     return result;
   }
 
-  static void _log(String message) {
+  /// Logging is closure-gated so the message is never built when disabled.
+  static void _log(String Function() messageBuilder) {
     if (!debugLogging) return;
-    debugPrint('[ColorService] $message');
+    debugPrint('[ColorService] ${messageBuilder()}');
   }
 
   static List<int> _padWithLightnessVariants(
@@ -412,7 +410,12 @@ class ColorService {
   static int _argb(int r, int g, int b) =>
       0xFF000000 | (r << 16) | (g << 8) | b;
 
-  Future<Uint8List?> _imageBytes(ImageProvider provider) async {
+  /// Resolve the provider into an `img.Image` via raw straight RGBA bytes.
+  /// Skipping the previous PNG re-encode round-trip avoids both a wasted
+  /// encode/decode pass and the bit-depth ambiguity that hid the v1.2
+  /// white-out bug (Flutter's PNG output for some iOS sources came back as
+  /// a non-uint8 format on the `image` side).
+  Future<img.Image?> _decodeImage(ImageProvider provider) async {
     final completer = Completer<ui.Image>();
     final stream = provider.resolve(ImageConfiguration.empty);
     final listener = ImageStreamListener(
@@ -422,8 +425,16 @@ class ColorService {
     stream.addListener(listener);
     try {
       final ui.Image image = await completer.future;
-      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-      return byteData?.buffer.asUint8List();
+      final byteData =
+          await image.toByteData(format: ui.ImageByteFormat.rawStraightRgba);
+      if (byteData == null) return null;
+      return img.Image.fromBytes(
+        width: image.width,
+        height: image.height,
+        bytes: byteData.buffer,
+        numChannels: 4,
+        order: img.ChannelOrder.rgba,
+      );
     } finally {
       stream.removeListener(listener);
     }
